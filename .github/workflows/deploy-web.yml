@@ -67,14 +67,15 @@ jobs:
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: |
-          if [ "${{ github.event.inputs.target }}" = "firebase" ]; then
-            BASE_HREF="/"
-          else
-            BASE_HREF="/medikal_uygulama/"
-          fi
+          # Custom domain (medgift.us) and Firebase serve from site root.
+          # github.io/repo path still works as a redirect once the custom domain is set.
           flutter build web --release \
-            --base-href "$BASE_HREF" \
+            --base-href / \
             --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY}"
+
+      - name: Add CNAME for medgift.us
+        if: ${{ github.event.inputs.target != 'firebase' }}
+        run: echo "medgift.us" > build/web/CNAME
 
       - name: Deploy to GitHub Pages (gh-pages)
         if: ${{ github.event.inputs.target != 'firebase' }}
@@ -83,6 +84,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
           force_orphan: true
+          cname: medgift.us
           user_name: github-actions[bot]
           user_email: github-actions[bot]@users.noreply.github.com
 
