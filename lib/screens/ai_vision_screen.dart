@@ -4,9 +4,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/donation_models.dart';
 import '../services/ai_vision_service.dart';
 import '../widgets/ai_scan_result_card.dart';
+import '../widgets/async_state_widgets.dart';
 import '../widgets/common_widgets.dart';
 
 class AiVisionScreen extends StatefulWidget {
@@ -60,7 +62,7 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
     if (file.bytes == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not read image data. Try another file.')),
+        SnackBar(content: Text(AppLocalizations.of(context).t('aiScan.readError'))),
       );
       return;
     }
@@ -77,13 +79,14 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
     setState(() {
       _isAnalyzing = true;
       _result = null;
-      _analysisStep = 'Connecting to GPT-4o Vision...';
+      _analysisStep = AppLocalizations.of(context).t('aiScan.connecting');
     });
 
     try {
       await Future<void>.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
-      setState(() => _analysisStep = 'Identifying brand, model & category...');
+      setState(() =>
+          _analysisStep = AppLocalizations.of(context).t('aiScan.identifying'));
 
       final AiVisionResult analysis;
       if (preset != null) {
@@ -93,7 +96,8 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
       }
 
       if (!mounted) return;
-      setState(() => _analysisStep = 'Calculating estimated retail value...');
+      setState(
+          () => _analysisStep = AppLocalizations.of(context).t('aiScan.valuing'));
       await Future<void>.delayed(const Duration(milliseconds: 500));
 
       setState(() {
@@ -147,53 +151,57 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width > 1000;
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Scan'),
+        title: Text(loc.t('aiScan.title')),
         actions: [
           if (_imageBytes != null || _result != null)
             TextButton.icon(
               onPressed: _isAnalyzing ? null : _clearScan,
               icon: const Icon(Icons.refresh),
-              label: const Text('New Scan'),
+              label: Text(loc.t('aiScan.newScan')),
             ),
         ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SectionHeader(
-              title: 'GPT-4o Vision Equipment Scanner',
-              subtitle:
-                  'Upload a DME or wound care photo to auto-detect brand, model, category, and estimated tax-deductible value.',
-            ),
-            const SizedBox(height: 16),
-            const ComplianceBanner(),
-            const SizedBox(height: 24),
-            if (isWide)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _buildUploadPanel()),
-                  const SizedBox(width: 24),
-                  Expanded(child: _buildResultsPanel()),
-                ],
-              )
-            else ...[
-              _buildUploadPanel(),
+        child: ContentConstrained(
+          maxWidth: 1100,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeader(
+                title: loc.t('aiScan.heroTitle'),
+                subtitle: loc.t('aiScan.heroSubtitle'),
+              ),
+              const SizedBox(height: 16),
+              const ComplianceBanner(),
               const SizedBox(height: 24),
-              _buildResultsPanel(),
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildUploadPanel()),
+                    const SizedBox(width: 24),
+                    Expanded(child: _buildResultsPanel()),
+                  ],
+                )
+              else ...[
+                _buildUploadPanel(),
+                const SizedBox(height: 24),
+                _buildResultsPanel(),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildUploadPanel() {
+    final loc = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -203,10 +211,13 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Upload Photo', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  loc.t('aiScan.uploadPhoto'),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 8),
                 Text(
-                  'JPEG or PNG of the item label, packaging, or full product view.',
+                  loc.t('aiScan.uploadHint'),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
@@ -244,7 +255,7 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _isAnalyzing ? null : _pickImage,
                         icon: const Icon(Icons.upload_file),
-                        label: const Text('Choose Photo'),
+                        label: Text(loc.t('aiScan.choosePhoto')),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -254,7 +265,7 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
                             ? null
                             : () => _runAnalysis(),
                         icon: const Icon(Icons.document_scanner_outlined),
-                        label: const Text('Run AI Scan'),
+                        label: Text(loc.t('aiScan.runScan')),
                       ),
                     ),
                   ],
@@ -264,10 +275,13 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        Text('Quick Simulate', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          loc.t('aiScan.quickSimulate'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 4),
         Text(
-          'No photo handy? Run a demo scan with pre-loaded GPT-4o Vision responses.',
+          loc.t('aiScan.simulateHint'),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 12),
@@ -279,7 +293,8 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
             return ActionChip(
               avatar: Icon(demo.icon, size: 18, color: demo.color),
               label: Text(label),
-              onPressed: _isAnalyzing ? null : () => _simulatePreset(demo.preset),
+              onPressed:
+                  _isAnalyzing ? null : () => _simulatePreset(demo.preset),
             );
           }).toList(),
         ),
@@ -288,27 +303,12 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
   }
 
   Widget _buildResultsPanel() {
+    final loc = AppLocalizations.of(context);
     if (_result == null && !_isAnalyzing) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            children: [
-              Icon(Icons.auto_awesome_outlined, size: 48, color: Colors.grey.shade400),
-              const SizedBox(height: 12),
-              Text(
-                'Scan results will appear here',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Upload a photo or use Quick Simulate to extract brand, model, category, and estimated retail value for your IRS donation record.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
+      return EmptyStateCard(
+        icon: Icons.auto_awesome_outlined,
+        title: loc.t('aiScan.emptyResults'),
+        body: loc.t('aiScan.emptyBody'),
       );
     }
 
@@ -316,7 +316,13 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(32),
-          child: _AnalysisOverlay(step: _analysisStep, expanded: true),
+          child: Column(
+            children: [
+              const SkeletonList(itemCount: 2, itemHeight: 72),
+              const SizedBox(height: 16),
+              _AnalysisOverlay(step: _analysisStep, expanded: true),
+            ],
+          ),
         ),
       );
     }
@@ -343,14 +349,15 @@ class _UploadPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.add_photo_alternate_outlined, size: 56, color: Colors.grey.shade400),
         const SizedBox(height: 12),
-        Text('Drop or click to upload', style: Theme.of(context).textTheme.titleSmall),
+        Text(loc.t('aiScan.dropHint'), style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 4),
-        Text('DME equipment or wound care supplies', style: Theme.of(context).textTheme.bodySmall),
+        Text(loc.t('aiScan.dropSubhint'), style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
@@ -381,6 +388,7 @@ class _ImagePreview extends StatelessWidget {
                 Icon(
                   switch (preset!) {
                     AiScanPreset.invacareWheelchair => Icons.accessible,
+                    AiScanPreset.driveBlueStreakWheelchair => Icons.accessible,
                     AiScanPreset.driveRollator => Icons.directions_walk,
                     AiScanPreset.woundDressingKit => Icons.healing,
                     AiScanPreset.oxygenConcentrator => Icons.air,
@@ -389,7 +397,10 @@ class _ImagePreview extends StatelessWidget {
                   color: AppTheme.primaryBlue.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 8),
-                Text('Simulated scan', style: Theme.of(context).textTheme.labelLarge),
+                Text(
+                  AppLocalizations.of(context).t('aiScan.simulated'),
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
               ],
             ),
           )
@@ -443,7 +454,10 @@ class _AnalysisOverlay extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 3),
             ),
             const SizedBox(height: 16),
-            Text('GPT-4o Vision analyzing...', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              AppLocalizations.of(context).t('aiScan.analyzing'),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             if (step.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(step, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),

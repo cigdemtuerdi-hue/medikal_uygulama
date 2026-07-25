@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/localized_labels.dart';
 import '../models/donation_models.dart';
 import '../services/donation_service.dart';
+import '../services/urgent_need_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/request_tracking_card.dart';
 
@@ -16,10 +19,19 @@ class RequestsScreen extends StatefulWidget {
 class _RequestsScreenState extends State<RequestsScreen> {
   RequestStatus? _filter;
 
+  @override
+  void initState() {
+    super.initState();
+    UrgentNeedService.instance.refreshExpirations();
+  }
+
   List<OrganizationRequest> get _filteredRequests {
+    UrgentNeedService.instance.refreshExpirations();
     final requests = DonationService.openRequests;
-    if (_filter == null) return requests;
-    return requests.where((r) => r.status == _filter).toList();
+    final filtered = _filter == null
+        ? requests
+        : requests.where((r) => r.status == _filter);
+    return UrgentNeedService.instance.sortedPartnerRequests(filtered);
   }
 
   int _countFor(RequestStatus? status) {
@@ -29,18 +41,19 @@ class _RequestsScreenState extends State<RequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final pending = _countFor(RequestStatus.pending);
     final shipped = _countFor(RequestStatus.shipped);
     final delivered = _countFor(RequestStatus.delivered);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Partner Requests'),
+        title: Text(loc.t('requests.appBarTitle')),
         actions: [
           IconButton(
             onPressed: () => setState(() => _filter = null),
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
+            tooltip: loc.t('common.refresh'),
           ),
         ],
       ),
@@ -49,10 +62,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(
-              title: 'Live Request Tracking',
-              subtitle:
-                  'Real-time status of medical supply requests from US hospitals, clinics, and nonprofits',
+            SectionHeader(
+              title: loc.t('requests.sectionTitle'),
+              subtitle: loc.t('requests.sectionSubtitle'),
             ),
             const SizedBox(height: 16),
             LayoutBuilder(
@@ -60,7 +72,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 final isWide = constraints.maxWidth > 700;
                 final children = [
                   _StatusSummaryCard(
-                    label: 'Pending',
+                    label: loc.t('requests.statusPending'),
                     count: pending,
                     color: Colors.orange.shade700,
                     icon: Icons.hourglass_top_outlined,
@@ -70,7 +82,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     }),
                   ),
                   _StatusSummaryCard(
-                    label: 'Shipped',
+                    label: loc.t('requests.statusShipped'),
                     count: shipped,
                     color: AppTheme.primaryBlue,
                     icon: Icons.local_shipping_outlined,
@@ -80,7 +92,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                     }),
                   ),
                   _StatusSummaryCard(
-                    label: 'Delivered',
+                    label: loc.t('requests.statusDelivered'),
                     count: delivered,
                     color: AppTheme.accentTeal,
                     icon: Icons.check_circle_outline,
@@ -117,15 +129,20 @@ class _RequestsScreenState extends State<RequestsScreen> {
               children: [
                 Text(
                   _filter == null
-                      ? 'All Requests (${_filteredRequests.length})'
-                      : '${DonationService.requestStatusLabel(_filter!)} (${_filteredRequests.length})',
+                      ? loc.t('requests.allRequests', {
+                          'count': _filteredRequests.length,
+                        })
+                      : loc.t('requests.filteredTitle', {
+                          'status': locRequestStatus(loc, _filter!),
+                          'count': _filteredRequests.length,
+                        }),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
                 if (_filter != null)
                   TextButton(
                     onPressed: () => setState(() => _filter = null),
-                    child: const Text('Clear filter'),
+                    child: Text(loc.t('requests.clearFilter')),
                   ),
               ],
             ),
@@ -136,7 +153,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   padding: const EdgeInsets.all(32),
                   child: Center(
                     child: Text(
-                      'No requests in this status.',
+                      loc.t('requests.empty'),
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),

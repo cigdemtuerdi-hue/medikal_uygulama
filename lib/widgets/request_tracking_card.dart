@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/localized_labels.dart';
 import '../models/donation_models.dart';
 import '../services/donation_service.dart';
+import 'urgent_need_badge.dart';
 
 class RequestTrackingCard extends StatelessWidget {
   const RequestTrackingCard({
@@ -31,6 +34,7 @@ class RequestTrackingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final progress = request.unitsRequested == 0
         ? 0.0
         : request.unitsFulfilled / request.unitsRequested;
@@ -75,6 +79,13 @@ class RequestTrackingCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (request.isActivelyUrgent()) ...[
+              const SizedBox(height: 10),
+              UrgentNeedBadge(
+                status: request.effectiveVerificationStatus(),
+                showCountdownHours: request.hoursRemaining(),
+              ),
+            ],
             const SizedBox(height: 12),
             Text(request.itemNeeded, style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 16),
@@ -93,7 +104,10 @@ class RequestTrackingCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '${request.unitsFulfilled}/${request.unitsRequested} units',
+                  loc.t('requestCard.unitsProgress', {
+                    'fulfilled': request.unitsFulfilled,
+                    'requested': request.unitsRequested,
+                  }),
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ],
@@ -114,22 +128,23 @@ class RequestStatusTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final steps = [
       _TimelineStepData(
         status: RequestStatus.pending,
-        label: 'Pending',
+        label: locRequestStatus(loc, RequestStatus.pending),
         date: request.requestedAt,
         icon: Icons.hourglass_top_outlined,
       ),
       _TimelineStepData(
         status: RequestStatus.shipped,
-        label: 'Shipped',
+        label: locRequestStatus(loc, RequestStatus.shipped),
         date: request.shippedAt,
         icon: Icons.local_shipping_outlined,
       ),
       _TimelineStepData(
         status: RequestStatus.delivered,
-        label: 'Delivered',
+        label: locRequestStatus(loc, RequestStatus.delivered),
         date: request.deliveredAt,
         icon: Icons.check_circle_outline,
       ),

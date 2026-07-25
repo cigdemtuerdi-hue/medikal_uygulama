@@ -1,10 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'config/app_config.dart';
+import 'config/app_routes.dart';
 import 'config/app_theme.dart';
-import 'screens/app_shell.dart';
+import 'l10n/app_localizations.dart';
+import 'l10n/locale_controller.dart';
+import 'services/emergency_mode_service.dart';
+import 'services/item_lifecycle_service.dart';
+import 'widgets/disaster_emergency_widgets.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env', isOptional: true);
+  await LocaleController.instance.loadSavedLocale();
+
+  // Warm Pass-It-On demo inventory so My Received Items is ready on first open.
+  // ignore: unnecessary_statements
+  ItemLifecycleService.instance;
+  // ignore: unnecessary_statements
+  EmergencyModeService.instance;
+
+  if (!AppConfig.hasGoogleMapsApiKey) {
+    debugPrint('WARNING: ${AppConfig.missingApiKeyMessage}');
+  }
+
   runApp(const MedGiftApp());
 }
 
@@ -13,11 +34,37 @@ class MedGiftApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MedGift US',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      home: const AppShell(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: LocaleController.instance,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          title: 'MedGift US',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          initialRoute: AppRoutes.entry,
+          routes: AppRoutes.routes,
+          builder: (context, child) {
+            final direction = LocaleController.instance.textDirection;
+            return Directionality(
+              textDirection: direction,
+              child: Column(
+                children: [
+                  const EmergencyResponseBanner(),
+                  Expanded(child: child ?? const SizedBox.shrink()),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -1,0 +1,96 @@
+# Builds Flutter web and deploys to GitHub Pages (gh-pages branch)
+# OR Firebase Hosting when secrets are configured.
+#
+# Live URL:
+#   https://cigdemtuerdi-hue.github.io/medikal_uygulama/
+#
+# One-time setup:
+#   Repo → Settings → Pages → Source: Deploy from a branch → gh-pages / /(root)
+
+name: Deploy Web
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Hosting target"
+        required: true
+        default: github-pages
+        type: choice
+        options:
+          - github-pages
+          - firebase
+
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create .env for asset bundle
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          ADMIN_NOTIFY_EMAIL: ${{ secrets.ADMIN_NOTIFY_EMAIL }}
+          ADMIN_EMAIL_ENDPOINT: ${{ secrets.ADMIN_EMAIL_ENDPOINT }}
+          ADMIN_PIN: ${{ secrets.ADMIN_PIN }}
+        run: |
+          cat > .env << EOF
+          GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+          ADMIN_NOTIFY_EMAIL=${ADMIN_NOTIFY_EMAIL}
+          ADMIN_EMAIL_ENDPOINT=${ADMIN_EMAIL_ENDPOINT}
+          ADMIN_PIN=${ADMIN_PIN}
+          EOF
+          sed -i 's/^[[:space:]]*//' .env
+          test -s .env || echo "GOOGLE_MAPS_API_KEY=" > .env
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build web
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.target }}" = "firebase" ]; then
+            BASE_HREF="/"
+          else
+            BASE_HREF="/medikal_uygulama/"
+          fi
+          flutter build web --release \
+            --base-href "$BASE_HREF" \
+            --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY}"
+
+      - name: Deploy to GitHub Pages (gh-pages)
+        if: ${{ github.event.inputs.target != 'firebase' }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+
+      - name: Deploy to Firebase Hosting
+        if: ${{ github.event.inputs.target == 'firebase' }}
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: medgift-us

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/recipient_models.dart';
 import '../services/ai_matching_service.dart';
 
@@ -15,6 +16,7 @@ class AiMatchingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     final percent = (summary.overallScore * 100).round();
 
     return Column(
@@ -24,7 +26,7 @@ class AiMatchingIndicator extends StatelessWidget {
           children: [
             const Icon(Icons.auto_awesome, size: 18, color: AppTheme.primaryBlue),
             const SizedBox(width: 8),
-            Text('AI Matching', style: theme.textTheme.titleSmall),
+            Text(loc.t('aiMatching.title'), style: theme.textTheme.titleSmall),
             const Spacer(),
             Text(
               '$percent%',

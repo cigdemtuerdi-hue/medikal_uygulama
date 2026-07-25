@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+
+import '../config/app_routes.dart';
+import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/language_menu_button.dart';
+import '../widgets/medgift_logo.dart';
+import '../widgets/medgift_manifesto_section.dart';
+import '../widgets/partnership_footer.dart';
+import '../widgets/ai_support_chat_widget.dart';
+import 'about_us_screen.dart';
+import 'onboarding/role_selection_screen.dart';
+
+/// First-screen Login / Sign Up landing with manifesto and Partner with Us.
+class AuthLandingScreen extends StatelessWidget {
+  const AuthLandingScreen({super.key});
+
+  void _openSignUp(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AiSupportHost(child: RoleSelectionScreen()),
+      ),
+    );
+  }
+
+  void _openLogin(BuildContext context) {
+    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+  }
+
+  void _openAboutUs(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AiSupportHost(child: AboutUsScreen()),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        actions: const [LanguageMenuButton()],
+      ),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Center(
+                    child: MedGiftBrand(
+                      showLabel: true,
+                      logoSize: 72,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    loc.t('auth.welcomeTitle'),
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryDeepBlue,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    loc.t('auth.welcomeSubtitle'),
+                    style: theme.textTheme.bodyLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  const Center(child: LanguageMenuButton()),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () => _openLogin(context),
+                    icon: const Icon(Icons.login),
+                    label: Text(loc.t('auth.logIn')),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => _openSignUp(context),
+                    icon: const Icon(Icons.person_add_alt_1_outlined),
+                    label: Text(loc.t('auth.signUp')),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    loc.t('auth.newHere'),
+                    style: theme.textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => _openAboutUs(context),
+                    child: Text(loc.t('about.openLink')),
+                  ),
+                  const SizedBox(height: 24),
+                  const MedGiftManifestoSection(),
+                  const PartnershipFooter(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

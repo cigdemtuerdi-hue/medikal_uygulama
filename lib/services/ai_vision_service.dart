@@ -31,6 +31,7 @@ class AiVisionService {
   String presetLabel(AiScanPreset preset) {
     return switch (preset) {
       AiScanPreset.invacareWheelchair => 'Invacare Wheelchair',
+      AiScanPreset.driveBlueStreakWheelchair => 'Drive Medical Blue Streak Wheelchair',
       AiScanPreset.driveRollator => 'Drive Rollator Walker',
       AiScanPreset.woundDressingKit => '3M Wound Dressing Kit',
       AiScanPreset.oxygenConcentrator => 'Philips Oxygen Concentrator',
@@ -40,6 +41,8 @@ class AiVisionService {
   static const _keywordPresetMap = {
     'wheel': AiScanPreset.invacareWheelchair,
     'chair': AiScanPreset.invacareWheelchair,
+    'bluestreak': AiScanPreset.driveBlueStreakWheelchair,
+    'blue-streak': AiScanPreset.driveBlueStreakWheelchair,
     'walker': AiScanPreset.driveRollator,
     'rollator': AiScanPreset.driveRollator,
     'bandage': AiScanPreset.woundDressingKit,
@@ -64,6 +67,22 @@ class AiVisionService {
           'FDA Class I device. Confirm brake function, upholstery integrity, and tire condition before donation.',
       recommendation:
           'High-match item for rural health alliances and veterans care programs.',
+      isDme: true,
+      taxDeductionNote:
+          'IRS Publication 561: deduct fair market value of used DME in good condition. Keep this scan receipt with your donation record.',
+    ),
+    AiScanPreset.driveBlueStreakWheelchair: AiVisionResult(
+      brand: 'Drive Medical',
+      model: 'Blue Streak',
+      productName: 'Lightweight Transport Wheelchair',
+      category: 'DME · Mobility Equipment',
+      estimatedRetailValueUsd: 150,
+      suggestedCondition: ItemCondition.good,
+      confidence: 0.93,
+      fdaNote:
+          'FDA Class I device. Verify frame integrity, wheel locks, footrests, and upholstery before donation.',
+      recommendation:
+          'Ideal for community clinics and senior centers needing affordable transport wheelchairs.',
       isDme: true,
       taxDeductionNote:
           'IRS Publication 561: deduct fair market value of used DME in good condition. Keep this scan receipt with your donation record.',

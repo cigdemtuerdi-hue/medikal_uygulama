@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class ComplianceBanner extends StatelessWidget {
   const ComplianceBanner({super.key});
@@ -18,8 +19,7 @@ class ComplianceBanner extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'US Compliance: Do not share PHI. Only donate clean, safe items. '
-                '501(c)(3) tax receipts available for qualifying nonprofits.',
+                AppLocalizations.of(context).t('compliance.banner'),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -83,10 +83,20 @@ class SectionHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
-                Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  subtitle!,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ],
           ),

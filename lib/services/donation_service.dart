@@ -1,8 +1,9 @@
 import '../models/donation_models.dart';
+import '../models/urgent_need_models.dart';
 
 class DonationService {
   static const donorProfile = DonorProfile(
-    name: 'Cigdem Y.',
+    name: 'Cigdem Yeter',
     email: 'donor@medgift.us',
     memberSince: 'March 2025',
     zipCode: '94102',
@@ -50,6 +51,9 @@ class DonationService {
       unitsRequested: 200,
       unitsFulfilled: 48,
       category: DonationCategory.woundCare,
+      isUrgentNeed: true,
+      urgentExpiresAt: DateTime.now().add(const Duration(hours: 48)),
+      verificationStatus: UrgentVerificationStatus.pending,
     ),
     OrganizationRequest(
       id: 'req-004',
@@ -63,6 +67,10 @@ class DonationService {
       unitsRequested: 6,
       unitsFulfilled: 1,
       category: DonationCategory.dme,
+      isUrgentNeed: true,
+      urgentExpiresAt: DateTime.now().add(const Duration(hours: 60)),
+      verificationStatus: UrgentVerificationStatus.verified,
+      hasVerificationDoc: true,
     ),
     OrganizationRequest(
       id: 'req-005',
@@ -80,7 +88,35 @@ class DonationService {
     ),
   ];
 
+  /// Converts expired urgent partner requests back to standard.
+  static void applyUrgentExpirations({DateTime? now}) {
+    final clock = now ?? DateTime.now();
+    for (final request in openRequests) {
+      if (!request.isUrgentNeed) continue;
+      if (request.urgentExpiresAt == null) continue;
+      if (!clock.isAfter(request.urgentExpiresAt!)) continue;
+      request.isUrgentNeed = false;
+      request.verificationStatus = UrgentVerificationStatus.expired;
+    }
+  }
+
   static final List<DonationRecord> donationHistory = [
+    DonationRecord(
+      id: 'don-006',
+      receiptNumber: 'MG-2026-0044',
+      title: 'Drive Medical Blue Streak Wheelchair',
+      organizationName: 'Pacific Home Health',
+      organizationEin: '93-5566778',
+      category: DonationCategory.dme,
+      condition: ItemCondition.good,
+      quantity: 1,
+      zipCode: '94102',
+      donatedAt: DateTime(2026, 7, 10),
+      estimatedRetailValueUsd: 150,
+      taxDeductionUsd: 120,
+      brand: 'Drive Medical',
+      model: 'Blue Streak',
+    ),
     DonationRecord(
       id: 'don-001',
       receiptNumber: 'MG-2026-0041',

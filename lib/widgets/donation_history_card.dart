@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/localized_labels.dart';
 import '../models/donation_models.dart';
 import '../services/ai_vision_service.dart';
-import '../services/donation_service.dart';
+import '../services/donation_service.dart' show formatDonationDate;
 import '../services/tax_receipt_service.dart';
 
 class DonationHistoryCard extends StatelessWidget {
@@ -16,6 +18,7 @@ class DonationHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final taxService = TaxReceiptService();
 
     return Card(
@@ -55,8 +58,11 @@ class DonationHistoryCard extends StatelessWidget {
                         ),
                       const SizedBox(height: 4),
                       Text(
-                        '${DonationService.categoryLabel(record.category)} · '
-                        '${conditionLabel(record.condition)} · Qty ${record.quantity}',
+                        loc.t('donationHistory.meta', {
+                          'category': locCategory(loc, record.category),
+                          'condition': locCondition(loc, record.condition),
+                          'qty': record.quantity,
+                        }),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -72,7 +78,10 @@ class DonationHistoryCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    Text('tax deduction', style: Theme.of(context).textTheme.labelSmall),
+                    Text(
+                      loc.t('donationHistory.taxDeductionLabel'),
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ],
                 ),
               ],
@@ -86,7 +95,10 @@ class DonationHistoryCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    '${record.organizationName} (EIN ${record.organizationEin})',
+                    loc.t('donationHistory.orgLine', {
+                      'org': record.organizationName,
+                      'ein': record.organizationEin,
+                    }),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
@@ -114,7 +126,7 @@ class DonationHistoryCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => taxService.downloadReceipt(context, record),
                 icon: const Icon(Icons.download_outlined),
-                label: const Text('Download Tax Receipt'),
+                label: Text(loc.t('donationHistory.downloadReceipt')),
               ),
             ),
           ],

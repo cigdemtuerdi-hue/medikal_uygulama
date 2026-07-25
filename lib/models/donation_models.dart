@@ -1,3 +1,5 @@
+import 'urgent_need_models.dart';
+
 enum DonationCategory { dme, woundCare }
 
 enum ItemCondition { excellent, good, fair, needsRepair, notDonatable }
@@ -20,6 +22,18 @@ enum WoundCareType {
   adhesiveBandages,
   woundCleansers,
   other,
+}
+
+/// How the donor can hand off / transport the donated item.
+enum HandoffOption {
+  /// Recipient must pick up at the donor address.
+  pickupOnly,
+
+  /// Donor can help load / carry the item.
+  assistanceAvailable,
+
+  /// Parties can meet at a midway public location.
+  meetupPossible,
 }
 
 class DonationItem {
@@ -95,7 +109,7 @@ class DonationRecord {
 }
 
 class OrganizationRequest {
-  const OrganizationRequest({
+  OrganizationRequest({
     required this.id,
     required this.name,
     required this.city,
@@ -109,6 +123,10 @@ class OrganizationRequest {
     required this.unitsRequested,
     required this.unitsFulfilled,
     required this.category,
+    this.isUrgentNeed = false,
+    this.urgentExpiresAt,
+    this.verificationStatus = UrgentVerificationStatus.none,
+    this.hasVerificationDoc = false,
   });
 
   final String id;
@@ -117,13 +135,39 @@ class OrganizationRequest {
   final String state;
   final String itemNeeded;
   final String urgency;
-  final RequestStatus status;
+  RequestStatus status;
   final DateTime requestedAt;
   final DateTime? shippedAt;
   final DateTime? deliveredAt;
   final int unitsRequested;
   final int unitsFulfilled;
   final DonationCategory category;
+
+  /// Urgent Need Verification Mode (partner / org requests).
+  bool isUrgentNeed;
+  DateTime? urgentExpiresAt;
+  UrgentVerificationStatus verificationStatus;
+  final bool hasVerificationDoc;
+
+  bool isActivelyUrgent({DateTime? now}) {
+    if (!isUrgentNeed) return false;
+    if (verificationStatus == UrgentVerificationStatus.expired) return false;
+    if (urgentExpiresAt == null) return true;
+    return UrgentNeedRules.isWithinWindow(urgentExpiresAt, now: now);
+  }
+
+  UrgentVerificationStatus effectiveVerificationStatus({DateTime? now}) {
+    if (!isUrgentNeed) return UrgentVerificationStatus.none;
+    if (!isActivelyUrgent(now: now)) return UrgentVerificationStatus.expired;
+    return verificationStatus;
+  }
+
+  int? hoursRemaining({DateTime? now}) {
+    if (!isActivelyUrgent(now: now) || urgentExpiresAt == null) return null;
+    final remaining = urgentExpiresAt!.difference(now ?? DateTime.now());
+    if (remaining.isNegative) return 0;
+    return remaining.inHours.clamp(0, 72);
+  }
 }
 
 class AiVisionResult {
@@ -156,6 +200,7 @@ class AiVisionResult {
 
 enum AiScanPreset {
   invacareWheelchair,
+  driveBlueStreakWheelchair,
   driveRollator,
   woundDressingKit,
   oxygenConcentrator,

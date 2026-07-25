@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/donation_models.dart';
 import 'ai_vision_service.dart';
 import 'donation_service.dart';
+import 'tax_receipt_pdf_service.dart';
 
 class TaxReceiptService {
   Future<void> downloadReceipt(BuildContext context, DonationRecord record) async {
@@ -14,6 +16,19 @@ class TaxReceiptService {
 
   String buildReceiptText(DonationRecord record) {
     final donor = DonationService.donorProfile;
+    final dmeNote = record.category == DonationCategory.dme
+        ? '''
+
+DME EQUIPMENT DONATION NOTE
+───────────────────────────
+This donation qualifies as durable medical equipment (DME). The item
+was donated in the condition stated above and received by a qualified
+501(c)(3) healthcare organization for charitable use. Retain device
+photos and inspection records with your tax documentation per IRS
+Publication 561.
+'''
+        : '';
+
     return '''
 MEDGIFT US — CHARITABLE DONATION TAX RECEIPT
 ═══════════════════════════════════════════
@@ -47,7 +62,7 @@ IRS COMPLIANCE NOTE
 No goods or services were provided in exchange for this donation.
 The donor is responsible for determining the fair market value per
 IRS Publication 561. Retain this receipt for your tax records.
-
+$dmeNote
 MedGift US · medgift.us · support@medgift.us
 ''';
   }
@@ -66,17 +81,16 @@ class _TaxReceiptDialogState extends State<_TaxReceiptDialog> {
   final _service = TaxReceiptService();
   bool _isDownloading = false;
 
-  Future<void> _simulateDownload() async {
+  Future<void> _downloadPdf() async {
     setState(() => _isDownloading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    final message = await TaxReceiptPdfService.instance
+        .downloadDonationReceipt(widget.record);
     if (!mounted) return;
     setState(() => _isDownloading = false);
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Tax receipt ${widget.record.receiptNumber}.pdf downloaded successfully.',
-        ),
+        content: Text(message),
         action: SnackBarAction(
           label: 'View',
           onPressed: () => _service.downloadReceipt(context, widget.record),
@@ -128,10 +142,10 @@ class _TaxReceiptDialogState extends State<_TaxReceiptDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: Text(AppLocalizations.of(context).t('common.close')),
         ),
         FilledButton.icon(
-          onPressed: _isDownloading ? null : _simulateDownload,
+          onPressed: _isDownloading ? null : _downloadPdf,
           icon: _isDownloading
               ? const SizedBox(
                   width: 18,
