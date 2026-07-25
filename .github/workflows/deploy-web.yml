@@ -1,11 +1,20 @@
 # Builds Flutter web and deploys to GitHub Pages (gh-pages branch)
 # OR Firebase Hosting when secrets are configured.
 #
-# Live URL:
-#   https://cigdemtuerdi-hue.github.io/medikal_uygulama/
+# Live URLs:
+#   https://medgift.us
+#   https://www.medgift.us  (CNAME → cigdemtuerdi-hue.github.io)
 #
-# One-time setup:
-#   Repo → Settings → Pages → Source: Deploy from a branch → gh-pages / /(root)
+# DNS (GoDaddy example):
+#   A     @     185.199.108.153  (+ .109/.110/.111)
+#   CNAME www   cigdemtuerdi-hue.github.io
+#
+# Custom domain file:
+#   web/CNAME (+ repo-root CNAME) → medgift.us
+#   Published on every gh-pages deploy via peaceiris cname + build/web/CNAME
+#
+# Pages setup:
+#   Settings → Pages → Custom domain: medgift.us → Enforce HTTPS
 
 name: Deploy Web
 
@@ -73,9 +82,12 @@ jobs:
             --base-href / \
             --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY}"
 
-      - name: Add CNAME for medgift.us
+      - name: Ensure CNAME for medgift.us in build output
         if: ${{ github.event.inputs.target != 'firebase' }}
-        run: echo "medgift.us" > build/web/CNAME
+        run: |
+          # web/CNAME is copied by Flutter into build/web; rewrite to guarantee apex domain.
+          echo "medgift.us" > build/web/CNAME
+          echo "Published CNAME=$(cat build/web/CNAME)"
 
       - name: Deploy to GitHub Pages (gh-pages)
         if: ${{ github.event.inputs.target != 'firebase' }}
