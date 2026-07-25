@@ -15,6 +15,12 @@
 #
 # Pages setup:
 #   Settings → Pages → Custom domain: medgift.us → Enforce HTTPS
+#
+# Google Maps API key HTTP referrers (Cloud Console):
+#   https://medgift.us/*
+#   https://www.medgift.us/*
+# Secret (optional, for dart-define / .env asset):
+#   GOOGLE_MAPS_API_KEY
 
 name: Deploy Web
 
