@@ -57,7 +57,7 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
 
     try {
       return await _lookupSuggestions(trimmed).timeout(
-        const Duration(seconds: 12),
+        const Duration(seconds: 6),
         onTimeout: () => const [],
       );
     } catch (_) {
@@ -137,19 +137,7 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
               ),
               textCapitalization: TextCapitalization.words,
               keyboardType: TextInputType.streetAddress,
-              onChanged: (value) {
-                field.didChange(value);
-                final trimmed = value.trim();
-                if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
-                  AddressAutocompleteService.instance
-                      .findByZip(trimmed)
-                      .then((match) {
-                    if (match != null && mounted) {
-                      widget.onAddressSelected?.call(match);
-                    }
-                  });
-                }
-              },
+              onChanged: field.didChange,
             );
           },
           itemBuilder: (context, suggestion) {

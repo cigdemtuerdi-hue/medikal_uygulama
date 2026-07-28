@@ -78,18 +78,24 @@ class AddressAutocompleteService {
     final offline = UsOfflineAddressCatalog.findByZip(zip);
     if (offline != null) return offline;
 
-    final fromApi = await UsZipLookupService.instance.lookup(zip);
-    if (fromApi != null) return fromApi;
+    // Prefer free Zippopotam before waiting on Google Maps JS (can stall).
+    try {
+      final fromApi = await UsZipLookupService.instance.lookup(zip).timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => null,
+      );
+      if (fromApi != null) return fromApi;
+    } catch (_) {}
 
     if (!_lookup.isAvailable) return null;
 
     try {
       final ready = await _lookup.waitUntilReady(
-        timeout: const Duration(seconds: 5),
+        timeout: const Duration(seconds: 3),
       );
       if (!ready) return null;
       final remote = await _lookup.findByZip(zip).timeout(
-        const Duration(seconds: 10),
+        const Duration(seconds: 4),
         onTimeout: () => null,
       );
       if (remote == null || !UsAddressFilter.matches(remote)) {
