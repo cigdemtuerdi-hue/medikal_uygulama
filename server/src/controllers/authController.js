@@ -516,11 +516,20 @@ async function login(req, res, next) {
     }
 
     const user = await findUserWithPassword(email);
-    if (!user?.passwordHash) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: 'E-posta veya şifre hatalı.',
         code: 'INVALID_CREDENTIALS',
+      });
+    }
+
+    if (!user.passwordHash) {
+      return res.status(401).json({
+        success: false,
+        message:
+          'Bu hesap için henüz şifre belirlenmemiş. Şifre belirle / sıfırla adımını kullanın.',
+        code: 'PASSWORD_NOT_SET',
       });
     }
 

@@ -70,9 +70,16 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    final loc = AppLocalizations.of(context);
+    final message = result.code == 'PASSWORD_NOT_SET'
+        ? loc.t('auth.passwordNotSet')
+        : (result.message.trim().isNotEmpty
+            ? result.message
+            : loc.t('auth.loginFailed'));
+
     setState(() {
       _loading = false;
-      _errorMessage = result.message;
+      _errorMessage = message;
     });
   }
 
@@ -181,6 +188,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  loc.t('auth.setPasswordHelp'),
+                  style: theme.textTheme.bodySmall,
+                  textAlign: TextAlign.start,
+                ),
+              ],
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _loading ? null : _submit,
@@ -201,11 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: _loading
-                    ? null
-                    : () => Navigator.of(context).pushNamed(
-                          AppRoutes.forgotPassword,
-                        ),
+                onPressed: _loading ? null : _openForgotPassword,
                 child: Text(loc.t('auth.forgotPasswordCta')),
               ),
             ],

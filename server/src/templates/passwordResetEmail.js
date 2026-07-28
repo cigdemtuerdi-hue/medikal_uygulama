@@ -10,32 +10,34 @@
  * @returns {{ subject: string, html: string, text: string }}
  */
 function buildPasswordResetEmail({ resetUrl, recipientEmail }) {
-  const subject = 'MedGift — Şifre Sıfırlama';
+  const subject = 'MedGift — Set or reset your password / Şifre belirle veya sıfırla';
   const brand = 'Medgift LLC';
-  const cta = 'Şifremi Sıfırla';
+  const cta = 'Set / Reset Password · Şifreyi Belirle';
   const safeUrl = String(resetUrl || '').trim();
 
   const text = [
     `${brand}`,
     '',
-    'Şifre sıfırlama talebinizi aldık.',
+    'Set or reset your MedGift password / MedGift şifrenizi belirleyin veya sıfırlayın.',
     '',
-    'Hesabınızın şifresini yenilemek için aşağıdaki bağlantıyı kullanın:',
+    'If you never set a password, or forgot it, use this link:',
+    'Şifre hiç belirlenmediyse veya unutulduysa bu bağlantıyı kullanın:',
     safeUrl,
     '',
-    'Bu bağlantı güvenlik nedeniyle 1 saat geçerlidir.',
+    'This link expires in 1 hour for security. / Bu bağlantı güvenlik nedeniyle 1 saat geçerlidir.',
     '',
-    'Bu talebi siz yapmadıysanız, bu e-postayı yok sayabilirsiniz. Şifreniz değişmez.',
+    'If you did not request this, ignore this email. Your password will not change.',
+    'Bu talebi siz yapmadıysanız e-postayı yok sayın. Şifreniz değişmez.',
     '',
     `— ${brand}`,
     'https://medgift.us',
-    recipientEmail ? `Alıcı: ${recipientEmail}` : '',
+    recipientEmail ? `Recipient / Alıcı: ${recipientEmail}` : '',
   ]
     .filter(Boolean)
     .join('\n');
 
   const html = `<!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,12 +56,16 @@ function buildPasswordResetEmail({ resetUrl, recipientEmail }) {
           </tr>
           <tr>
             <td style="padding:32px 32px 8px 32px;">
-              <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:600;color:#0a4f5c;">Şifre sıfırlama</h1>
+              <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:600;color:#0a4f5c;">Set or reset your password</h1>
+              <p style="margin:0 0 12px 0;font-size:15px;line-height:1.55;color:#334155;">
+                Never set a password, or forgot it? Use the button below to create a new MedGift password.
+              </p>
               <p style="margin:0 0 16px 0;font-size:15px;line-height:1.55;color:#334155;">
-                Hesabınız için bir şifre sıfırlama talebi aldık. Aşağıdaki düğmeye tıklayarak yeni şifrenizi belirleyebilirsiniz.
+                Şifre hiç belirlenmediyse veya unutulduysa aşağıdaki düğmeyle yeni MedGift şifrenizi oluşturabilirsiniz.
               </p>
               <p style="margin:0 0 28px 0;font-size:14px;line-height:1.5;color:#64748b;">
-                Bu bağlantı <strong style="color:#0a4f5c;">güvenlik nedeniyle 1 saat</strong> geçerlidir.
+                This link is valid for <strong style="color:#0a4f5c;">1 hour</strong> /
+                Bu bağlantı <strong style="color:#0a4f5c;">1 saat</strong> geçerlidir.
               </p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px auto;">
                 <tr>
@@ -72,12 +78,14 @@ function buildPasswordResetEmail({ resetUrl, recipientEmail }) {
                 </tr>
               </table>
               <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#64748b;">
+                If the button does not work, paste this link into your browser /
                 Düğme çalışmazsa bu bağlantıyı tarayıcınıza yapıştırın:
               </p>
               <p style="margin:0 0 24px 0;font-size:12px;line-height:1.45;word-break:break-all;">
                 <a href="${safeUrl}" style="color:#0d6e6e;">${safeUrl}</a>
               </p>
               <p style="margin:0;font-size:13px;line-height:1.5;color:#94a3b8;">
+                If you did not request this, ignore this email. Your password will not change. /
                 Bu talebi siz yapmadıysanız e-postayı yok sayın. Şifreniz değişmez.
               </p>
             </td>
