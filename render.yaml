@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: medgift-us-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: MONGODB_URI
+        value: memory
+      - key: USE_MEMORY_DB
+        value: "true"
+      - key: APP_ORIGIN
+        value: https://medgift.us
+      - key: EMAIL_DRY_RUN
+        value: "false"
+      - key: SMS_DRY_RUN
+        value: "false"
+      - key: FROM_EMAIL
+        value: info@medgift.us
+      - key: EMAIL_HOST
+        value: smtpout.secureserver.net
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_SECURE
+        value: "false"
+      - key: EMAIL_USER
+        value: info@medgift.us
+      - key: EMAIL_PASS
+        sync: false
+      - key: SMS_PROVIDER
+        value: twilio
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_API_KEY
+        sync: false
+      - key: TWILIO_API_SECRET
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+      - key: SEED_DEMO_USER_EMAIL
+        value: donor@medgift.us
+      - key: SEED_DEMO_USER_PHONE
+        value: "+15551234567"

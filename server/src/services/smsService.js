@@ -6,7 +6,9 @@
  *
  * Optional production env (when SMS_DRY_RUN=false):
  *   SMS_PROVIDER=console|twilio  (console = log only)
- *   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
+ *   TWILIO_ACCOUNT_SID, TWILIO_FROM_NUMBER
+ *   + TWILIO_API_KEY + TWILIO_API_SECRET  (preferred)
+ *   or TWILIO_AUTH_TOKEN
  */
 
 function isDryRun() {
@@ -56,16 +58,23 @@ async function sendPasswordResetSms({ to, code }) {
   if (provider === 'twilio') {
     // Lazy require so local dry-run does not need the Twilio package.
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const apiKey = (process.env.TWILIO_API_KEY || '').trim();
+    const apiSecret = (process.env.TWILIO_API_SECRET || '').trim();
+    const authToken = (process.env.TWILIO_AUTH_TOKEN || '').trim();
     const from = process.env.TWILIO_FROM_NUMBER;
-    if (!accountSid || !authToken || !from) {
+    const hasApiKey = Boolean(apiKey && apiSecret);
+    const hasAuthToken = Boolean(authToken);
+    if (!accountSid || !from || (!hasApiKey && !hasAuthToken)) {
       const err = new Error('Twilio yapılandırması eksik.');
       err.code = 'SMS_CONFIG_MISSING';
       err.status = 503;
       throw err;
     }
 
-    const twilio = require('twilio')(accountSid, authToken);
+    // Prefer Account SID + Auth Token when set (Twilio Console curl style).
+    const twilio = hasAuthToken
+      ? require('twilio')(accountSid, authToken)
+      : require('twilio')(apiKey, apiSecret, { accountSid });
     try {
       const msg = await twilio.messages.create({
         to,

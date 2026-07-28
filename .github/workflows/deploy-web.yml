@@ -67,6 +67,8 @@ jobs:
           ADMIN_PIN: ${{ secrets.ADMIN_PIN }}
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
+          # Default matches render.yaml service name when secret is empty.
+          API_BASE_URL="${API_BASE_URL:-https://medgift-us-api.onrender.com}"
           cat > .env << EOF
           GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
           ADMIN_NOTIFY_EMAIL=${ADMIN_NOTIFY_EMAIL}
@@ -76,6 +78,7 @@ jobs:
           EOF
           sed -i 's/^[[:space:]]*//' .env
           test -s .env || echo "GOOGLE_MAPS_API_KEY=" > .env
+          echo "Using API_BASE_URL=${API_BASE_URL}"
 
       - name: Pub get
         run: flutter pub get
@@ -87,6 +90,7 @@ jobs:
         run: |
           # Custom domain (medgift.us) and Firebase serve from site root.
           # github.io/repo path still works as a redirect once the custom domain is set.
+          API_BASE_URL="${API_BASE_URL:-https://medgift-us-api.onrender.com}"
           flutter build web --release \
             --base-href / \
             --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY}" \
