@@ -680,5 +680,11 @@
   "auth.phoneHint": "+1 555 123 4567",
   "auth.phoneHelper": "Enter the mobile number that should receive the 4-digit code.",
   "auth.phoneRequired": "Enter a valid phone number (at least 10 digits).",
-  "auth.smsDevCodeBanner": "Local test mode — SMS was not sent. Your code is {code}."
+  "auth.smsDevCodeBanner": "Local test mode — SMS was not sent. Your code is {code}.",
+  "onboarding.setPassword": "Create a password",
+  "onboarding.setPasswordHint": "You will use this password to log in later.",
+  "onboarding.password": "Password *",
+  "onboarding.confirmPassword": "Confirm password *",
+  "auth.loginFailed": "Email or password is incorrect.",
+  "auth.registerFailed": "Could not create your account. Please try again."
 }

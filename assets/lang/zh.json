@@ -678,5 +678,11 @@
   "auth.phoneHint": "+1 555 123 4567",
   "auth.phoneHelper": "请输入接收 4 位验证码的手机号。",
   "auth.phoneRequired": "请输入有效手机号（至少 10 位数字）。",
-  "auth.smsDevCodeBanner": "本地测试模式 — 未发送短信。您的验证码是 {code}。"
+  "auth.smsDevCodeBanner": "本地测试模式 — 未发送短信。您的验证码是 {code}。",
+  "onboarding.setPassword": "设置密码",
+  "onboarding.setPasswordHint": "之后登录时将使用此密码。",
+  "onboarding.password": "密码 *",
+  "onboarding.confirmPassword": "确认密码 *",
+  "auth.loginFailed": "邮箱或密码不正确。",
+  "auth.registerFailed": "无法创建账户，请重试。"
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../config/app_routes.dart';
 import '../l10n/app_localizations.dart';
+import '../services/auth_api_service.dart';
 import '../widgets/ai_support_chat_widget.dart';
 import '../widgets/auth_form_scaffold.dart';
 
@@ -23,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _loading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -50,12 +52,28 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    setState(() => _loading = true);
-    // Login API lands in a later auth step; for now open the app shell.
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    setState(() {
+      _loading = true;
+      _errorMessage = null;
+    });
+
+    final result = await AuthApiService.instance.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
     if (!mounted) return;
-    setState(() => _loading = false);
-    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+
+    if (result.success) {
+      setState(() => _loading = false);
+      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      return;
+    }
+
+    setState(() {
+      _loading = false;
+      _errorMessage = result.message;
+    });
   }
 
   void _openForgotPassword() {
@@ -77,6 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (_errorMessage != null) ...[
+                AuthStatusBanner(message: _errorMessage!, isError: true),
+                const SizedBox(height: 16),
+              ],
               Semantics(
                 textField: true,
                 label: loc.t('auth.emailLabel'),

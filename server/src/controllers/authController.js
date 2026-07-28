@@ -401,9 +401,153 @@ async function resetPasswordSms(req, res, next) {
   }
 }
 
+/**
+ * Load a user including passwordHash (Mongoose selects it opt-in; memory always has it).
+ */
+async function findUserWithPassword(email) {
+  const User = getUserModel();
+  const result = User.findOne({ email });
+  if (result && typeof result.select === 'function') {
+    return result.select('+passwordHash');
+  }
+  return result;
+}
+
+/**
+ * POST /api/auth/register
+ * Body: { email, password, phone? }
+ * Creates an account with a bcrypt password hash so login works after signup.
+ */
+async function register(req, res, next) {
+  try {
+    const email = sanitizeEmail(req.body?.email);
+    const password = sanitizePassword(req.body?.password);
+    const phoneRaw =
+      typeof req.body?.phone === 'string' ? req.body.phone.trim() : '';
+    const phone = phoneRaw ? normalizePhone(phoneRaw) : '';
+
+    if (!email || !isValidEmailFormat(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçerli bir e-posta adresi girin.',
+        code: 'EMAIL_INVALID',
+      });
+    }
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        message: 'Şifre en az 8 karakter olmalıdır.',
+        code: 'PASSWORD_TOO_SHORT',
+      });
+    }
+
+    if (phoneRaw && !isValidPhoneFormat(phoneRaw)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçerli bir telefon numarası girin.',
+        code: 'PHONE_INVALID',
+      });
+    }
+
+    const existing = await findUserWithPassword(email);
+    if (existing?.passwordHash) {
+      return res.status(409).json({
+        success: false,
+        message: 'Bu e-posta ile zaten bir hesap var. Giriş yapın.',
+        code: 'EMAIL_TAKEN',
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+    if (existing) {
+      // Seeded / passwordless row — attach credentials.
+      existing.passwordHash = passwordHash;
+      if (phone) existing.phone = phone;
+      await existing.save();
+      return res.status(200).json({
+        success: true,
+        message: 'Hesabınız oluşturuldu. Giriş yapabilirsiniz.',
+        email,
+      });
+    }
+
+    const User = getUserModel();
+    await User.create({
+      email,
+      phone: phone || null,
+      passwordHash,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Hesabınız oluşturuldu. Giriş yapabilirsiniz.',
+      email,
+    });
+  } catch (err) {
+    // Unique index race on email.
+    if (err && (err.code === 11000 || /duplicate/i.test(String(err.message)))) {
+      return res.status(409).json({
+        success: false,
+        message: 'Bu e-posta ile zaten bir hesap var. Giriş yapın.',
+        code: 'EMAIL_TAKEN',
+      });
+    }
+    return next(err);
+  }
+}
+
+/**
+ * POST /api/auth/login
+ * Body: { email, password }
+ */
+async function login(req, res, next) {
+  try {
+    const email = sanitizeEmail(req.body?.email);
+    const password = sanitizePassword(req.body?.password);
+
+    if (!email || !isValidEmailFormat(email) || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'E-posta ve şifre gerekli.',
+        code: 'CREDENTIALS_REQUIRED',
+      });
+    }
+
+    const user = await findUserWithPassword(email);
+    if (!user?.passwordHash) {
+      return res.status(401).json({
+        success: false,
+        message: 'E-posta veya şifre hatalı.',
+        code: 'INVALID_CREDENTIALS',
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.passwordHash);
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        message: 'E-posta veya şifre hatalı.',
+        code: 'INVALID_CREDENTIALS',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Giriş başarılı.',
+      email: user.email,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   forgotPassword,
   resetPassword,
   resetPasswordSms,
+  register,
+  login,
   hashResetToken,
 };

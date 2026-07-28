@@ -67,6 +67,41 @@ class AuthApiService {
     );
   }
 
+  Future<AuthApiResult> register({
+    required String email,
+    required String password,
+    String? phone,
+  }) async {
+    final body = <String, dynamic>{
+      'email': email.trim().toLowerCase(),
+      'password': password,
+    };
+    final trimmedPhone = phone?.trim() ?? '';
+    if (trimmedPhone.isNotEmpty) body['phone'] = trimmedPhone;
+
+    return _postJson(
+      '/api/auth/register',
+      body: body,
+      fallbackSuccessMessage: 'Hesabınız oluşturuldu. Giriş yapabilirsiniz.',
+      fallbackErrorMessage: 'Kayıt tamamlanamadı. Lütfen tekrar deneyin.',
+    );
+  }
+
+  Future<AuthApiResult> login({
+    required String email,
+    required String password,
+  }) async {
+    return _postJson(
+      '/api/auth/login',
+      body: {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      },
+      fallbackSuccessMessage: 'Giriş başarılı.',
+      fallbackErrorMessage: 'E-posta veya şifre hatalı.',
+    );
+  }
+
   Future<AuthApiResult> resetPassword({
     required String token,
     required String newPassword,

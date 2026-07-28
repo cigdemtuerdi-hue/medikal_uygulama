@@ -680,5 +680,11 @@
   "auth.phoneHint": "+90 555 123 4567",
   "auth.phoneHelper": "4 haneli kodun gönderileceği cep telefonu numarasını girin.",
   "auth.phoneRequired": "Geçerli bir telefon numarası girin (en az 10 hane).",
-  "auth.smsDevCodeBanner": "Yerel test modu — SMS gönderilmedi. Kodunuz: {code}"
+  "auth.smsDevCodeBanner": "Yerel test modu — SMS gönderilmedi. Kodunuz: {code}",
+  "onboarding.setPassword": "Şifre belirle",
+  "onboarding.setPasswordHint": "Daha sonra giriş yapmak için bu şifreyi kullanacaksınız.",
+  "onboarding.password": "Şifre *",
+  "onboarding.confirmPassword": "Şifreyi onayla *",
+  "auth.loginFailed": "E-posta veya şifre hatalı.",
+  "auth.registerFailed": "Hesap oluşturulamadı. Lütfen tekrar deneyin."
 }

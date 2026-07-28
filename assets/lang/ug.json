@@ -678,5 +678,11 @@
   "auth.phoneHint": "+1 555 123 4567",
   "auth.phoneHelper": "4 خانىلىق كود ئەۋەتىلىدىغان يانفون نومۇرىنى كىرگۈزۈڭ.",
   "auth.phoneRequired": "ئىناۋەتلىك تېلېفون نومۇرى كىرگۈزۈڭ (كەم دېگەندە 10 خانە).",
-  "auth.smsDevCodeBanner": "يەرلىك سىناق ھالىتى — SMS ئەۋەتىلمىدى. كودىڭىز: {code}"
+  "auth.smsDevCodeBanner": "يەرلىك سىناق ھالىتى — SMS ئەۋەتىلمىدى. كودىڭىز: {code}",
+  "onboarding.setPassword": "پارول بەلگىلەش",
+  "onboarding.setPasswordHint": "كېيىن كىرىش ئۈچۈن بۇ پارولنى ئىشلىتىسىز.",
+  "onboarding.password": "پارول *",
+  "onboarding.confirmPassword": "پارولنى جەزملەش *",
+  "auth.loginFailed": "ئېلخەت ياكى پارول خاتا.",
+  "auth.registerFailed": "ھېساب قۇرۇلمىدى. قايتا سىناڭ."
 }

@@ -35,7 +35,20 @@ const resetPasswordLimiter = rateLimit({
   handler: rateLimitHandler,
 });
 
+/**
+ * Register / login — curb credential stuffing without blocking real users.
+ * 20 requests / 15 minutes per IP.
+ */
+const authCredentialLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitHandler,
+});
+
 module.exports = {
   forgotPasswordLimiter,
   resetPasswordLimiter,
+  authCredentialLimiter,
 };

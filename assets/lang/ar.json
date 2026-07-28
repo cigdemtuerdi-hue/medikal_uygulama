@@ -678,5 +678,11 @@
   "auth.phoneHint": "+1 555 123 4567",
   "auth.phoneHelper": "أدخل رقم الجوال الذي سيستلم الرمز المكون من 4 أرقام.",
   "auth.phoneRequired": "أدخل رقم هاتف صالحًا (10 أرقام على الأقل).",
-  "auth.smsDevCodeBanner": "وضع الاختبار المحلي — لم يُرسل SMS. رمزك هو {code}"
+  "auth.smsDevCodeBanner": "وضع الاختبار المحلي — لم يُرسل SMS. رمزك هو {code}",
+  "onboarding.setPassword": "إنشاء كلمة مرور",
+  "onboarding.setPasswordHint": "ستستخدم كلمة المرور هذه لتسجيل الدخول لاحقًا.",
+  "onboarding.password": "كلمة المرور *",
+  "onboarding.confirmPassword": "تأكيد كلمة المرور *",
+  "auth.loginFailed": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  "auth.registerFailed": "تعذر إنشاء الحساب. يرجى المحاولة مرة أخرى."
 }

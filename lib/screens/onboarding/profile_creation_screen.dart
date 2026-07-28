@@ -5,6 +5,7 @@ import '../../config/app_routes.dart';
 import '../../config/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/user_onboarding_models.dart';
+import '../../services/auth_api_service.dart';
 import '../../services/onboarding_document_service.dart';
 import '../../services/onboarding_service.dart';
 import '../../services/ngo_partner_service.dart';
@@ -13,6 +14,7 @@ import '../../widgets/document_upload_card.dart';
 import '../../widgets/us_address_autocomplete_field.dart';
 import '../../widgets/ai_support_chat_widget.dart';
 import '../app_shell.dart';
+import '../reset_password_screen.dart' show kMinPasswordLength;
 
 class ProfileCreationScreen extends StatefulWidget {
   const ProfileCreationScreen({
@@ -34,6 +36,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   final _zipController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
   final _orgNameController = TextEditingController();
@@ -47,6 +51,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   String? _conditionVideoPath;
   bool _isSubmitting = false;
   bool _manualAddressEntry = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   bool get _isRecipient => widget.role == UserRole.recipient;
   bool get _isNgo => widget.role == UserRole.ngoPartner;
@@ -59,6 +65,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     _zipController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _cityController.dispose();
     _stateController.dispose();
     _orgNameController.dispose();
@@ -122,13 +130,31 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
     setState(() => _isSubmitting = true);
 
+    final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
+    final password = _passwordController.text;
+
+    final registerResult = await AuthApiService.instance.register(
+      email: email,
+      password: password,
+      phone: phone,
+    );
+
+    if (!mounted) return;
+
+    if (!registerResult.success) {
+      setState(() => _isSubmitting = false);
+      _showMessage(registerResult.message);
+      return;
+    }
+
     final profile = UserOnboardingProfile(
       role: widget.role,
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
       zipCode: _zipController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
+      email: email,
+      phone: phone,
       city: _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
       state: _stateController.text.trim().isEmpty ? null : _stateController.text.trim(),
       idDocumentPath: _idDocumentPath!,
@@ -289,6 +315,78 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                     final phone = value?.trim() ?? '';
                     if (phone.length < 10) {
                       return loc.t('onboarding.phoneInvalid');
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  loc.t('onboarding.setPassword'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryDeepBlue,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  loc.t('onboarding.setPasswordHint'),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  autofillHints: const [AutofillHints.newPassword],
+                  decoration: InputDecoration(
+                    labelText: loc.t('onboarding.password'),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: _obscurePassword
+                          ? loc.t('auth.showPassword')
+                          : loc.t('auth.hidePassword'),
+                      onPressed: () => setState(
+                        () => _obscurePassword = !_obscurePassword,
+                      ),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if ((value ?? '').length < kMinPasswordLength) {
+                      return loc.t('auth.passwordMinLength');
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  autofillHints: const [AutofillHints.newPassword],
+                  decoration: InputDecoration(
+                    labelText: loc.t('onboarding.confirmPassword'),
+                    prefixIcon: const Icon(Icons.lock_person_outlined),
+                    suffixIcon: IconButton(
+                      tooltip: _obscureConfirmPassword
+                          ? loc.t('auth.showPassword')
+                          : loc.t('auth.hidePassword'),
+                      onPressed: () => setState(
+                        () =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword,
+                      ),
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value != _passwordController.text) {
+                      return loc.t('auth.passwordsDoNotMatch');
                     }
                     return null;
                   },

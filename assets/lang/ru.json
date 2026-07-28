@@ -678,5 +678,11 @@
   "auth.phoneHint": "+1 555 123 4567",
   "auth.phoneHelper": "Введите номер, на который придёт 4-значный код.",
   "auth.phoneRequired": "Введите корректный номер (не менее 10 цифр).",
-  "auth.smsDevCodeBanner": "Локальный тест — SMS не отправлено. Ваш код: {code}"
+  "auth.smsDevCodeBanner": "Локальный тест — SMS не отправлено. Ваш код: {code}",
+  "onboarding.setPassword": "Создайте пароль",
+  "onboarding.setPasswordHint": "Этот пароль понадобится для входа позже.",
+  "onboarding.password": "Пароль *",
+  "onboarding.confirmPassword": "Подтвердите пароль *",
+  "auth.loginFailed": "Неверный email или пароль.",
+  "auth.registerFailed": "Не удалось создать аккаунт. Попробуйте ещё раз."
 }
