@@ -143,7 +143,9 @@ class GooglePlacesAddressService {
       } else if (types.contains('locality') ||
           types.contains('postal_town') ||
           types.contains('sublocality') ||
-          types.contains('neighborhood')) {
+          types.contains('neighborhood') ||
+          types.contains('administrative_area_level_3') ||
+          types.contains('administrative_area_level_2')) {
         city ??= component.longName;
       } else if (types.contains('administrative_area_level_1')) {
         state = component.shortName;

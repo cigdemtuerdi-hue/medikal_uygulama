@@ -52,7 +52,20 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
   }
 
   Future<List<UsAddressSuggestion>> _fetchSuggestions(String pattern) async {
-    final result = await AddressAutocompleteService.instance.search(pattern);
+    final trimmed = pattern.trim();
+    if (trimmed.isEmpty) return const [];
+
+    // ZIP-first: Geocoding returns a concrete city/state row that Places
+    // Autocomplete often omits for bare 5-digit postal codes.
+    if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
+      final zipMatch =
+          await AddressAutocompleteService.instance.findByZip(trimmed);
+      if (zipMatch != null) {
+        return [zipMatch];
+      }
+    }
+
+    final result = await AddressAutocompleteService.instance.search(trimmed);
     if (result.manualFallback) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _activateManualFallback();
@@ -86,7 +99,7 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
         return TypeAheadField<UsAddressSuggestion>(
           controller: widget.controller,
           debounceDuration: const Duration(milliseconds: 250),
-          hideOnEmpty: true,
+          hideOnEmpty: false,
           hideOnLoading: false,
           suggestionsCallback: _fetchSuggestions,
           onSelected: (suggestion) async {
@@ -119,20 +132,8 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
                 errorText: field.errorText,
               ),
               textCapitalization: TextCapitalization.words,
-              onChanged: (value) async {
-                field.didChange(value);
-                final trimmed = value.trim();
-                if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
-                  final match =
-                      await AddressAutocompleteService.instance.findByZip(
-                    trimmed,
-                  );
-                  if (!mounted) return;
-                  if (match != null) {
-                    widget.onAddressSelected?.call(match);
-                  }
-                }
-              },
+              keyboardType: TextInputType.streetAddress,
+              onChanged: field.didChange,
             );
           },
           itemBuilder: (context, suggestion) {

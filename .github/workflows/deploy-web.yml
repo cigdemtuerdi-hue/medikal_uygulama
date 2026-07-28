@@ -80,6 +80,30 @@ jobs:
           test -s .env || echo "GOOGLE_MAPS_API_KEY=" > .env
           echo "Using API_BASE_URL=${API_BASE_URL}"
 
+      - name: Inject Google Maps JS key into web/index.html
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+          key = (os.environ.get("GOOGLE_MAPS_API_KEY") or "").strip()
+          path = pathlib.Path("web/index.html")
+          text = path.read_text()
+          if not key:
+              print("WARNING: GOOGLE_MAPS_API_KEY secret empty — keeping index.html key as-is")
+              raise SystemExit(0)
+          updated, count = re.subn(
+              r"(maps\.googleapis\.com/maps/api/js\?key=)[^&\"']+",
+              rf"\1{key}",
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("Could not find Maps JS key in web/index.html")
+          path.write_text(updated)
+          print(f"Injected Maps JS key into web/index.html (len={len(key)})")
+          PY
+
       - name: Pub get
         run: flutter pub get
 
