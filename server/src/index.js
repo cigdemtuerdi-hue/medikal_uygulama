@@ -48,14 +48,6 @@ app.get('/api/health', (_req, res) => {
   }
 
   const emailPassSet = Boolean((process.env.EMAIL_PASS || '').trim());
-  const twilioSidSet = Boolean((process.env.TWILIO_ACCOUNT_SID || '').trim());
-  const twilioTokenSet = Boolean((process.env.TWILIO_AUTH_TOKEN || '').trim());
-  const twilioKeyPairSet = Boolean(
-    (process.env.TWILIO_API_KEY || '').trim() &&
-      (process.env.TWILIO_API_SECRET || '').trim(),
-  );
-  const twilioFromSet = Boolean((process.env.TWILIO_FROM_NUMBER || '').trim());
-  const smsProvider = (process.env.SMS_PROVIDER || 'console').toLowerCase();
 
   res.json({
     ok: true,
@@ -63,7 +55,6 @@ app.get('/api/health', (_req, res) => {
     db,
     emailDryRun:
       String(process.env.EMAIL_DRY_RUN || '').toLowerCase() === 'true',
-    smsDryRun: String(process.env.SMS_DRY_RUN || '').toLowerCase() === 'true',
     messaging: {
       emailConfigured: Boolean(
         (process.env.EMAIL_HOST || '').trim() &&
@@ -71,13 +62,7 @@ app.get('/api/health', (_req, res) => {
           emailPassSet,
       ),
       emailHost: (process.env.EMAIL_HOST || '').trim() || null,
-      smsProvider,
-      twilioConfigured: Boolean(
-        smsProvider === 'twilio' &&
-          twilioSidSet &&
-          twilioFromSet &&
-          (twilioTokenSet || twilioKeyPairSet),
-      ),
+      smsEnabled: false,
     },
   });
 });
@@ -139,9 +124,10 @@ async function start() {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.info(`[api] Listening on http://127.0.0.1:${PORT}`);
-    console.info('[api] POST /api/auth/forgot-password  (method=email|sms)');
+    console.info('[api] POST /api/auth/forgot-password');
     console.info('[api] POST /api/auth/reset-password/:token');
-    console.info('[api] POST /api/auth/reset-password-sms');
+    console.info('[api] POST /api/auth/register');
+    console.info('[api] POST /api/auth/login');
   });
 }
 

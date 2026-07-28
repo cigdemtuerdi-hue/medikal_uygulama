@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    /** E.164-ish phone used for SMS OTP reset (optional). */
+    /** Optional contact phone (E.164-ish). */
     phone: {
       type: String,
       default: null,
@@ -35,13 +35,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    /** SHA-256 of the 4-digit SMS OTP. */
+    /** Legacy SMS OTP fields (unused — SMS reset removed). */
     resetSmsCodeHash: {
       type: String,
       default: null,
       index: true,
     },
-    /** Absolute expiry for the SMS OTP (typically now + 10 minutes). */
     resetSmsExpires: {
       type: Date,
       default: null,

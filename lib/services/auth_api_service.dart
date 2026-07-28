@@ -5,30 +5,19 @@ import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
 
-enum PasswordResetMethod { email, sms }
-
-/// Result of an auth API call (forgot / reset password).
+/// Result of an auth API call (forgot / reset password, register, login).
 class AuthApiResult {
   const AuthApiResult({
     required this.success,
     required this.message,
     this.statusCode,
     this.code,
-    this.method,
-    this.phoneHint,
-    this.devCode,
-    this.dryRun = false,
   });
 
   final bool success;
   final String message;
   final int? statusCode;
   final String? code;
-  final PasswordResetMethod? method;
-  final String? phoneHint;
-  /// Present only when API runs with SMS_DRY_RUN=true (local/dev).
-  final String? devCode;
-  final bool dryRun;
 }
 
 /// HTTP client for MedGift US auth endpoints on the Node API.
@@ -45,23 +34,14 @@ class AuthApiService {
 
   Future<AuthApiResult> requestPasswordReset({
     required String email,
-    String? phone,
-    PasswordResetMethod method = PasswordResetMethod.email,
   }) async {
-    final body = <String, dynamic>{
-      'method': method == PasswordResetMethod.sms ? 'sms' : 'email',
-    };
-    final trimmedEmail = email.trim().toLowerCase();
-    if (trimmedEmail.isNotEmpty) body['email'] = trimmedEmail;
-    final trimmedPhone = phone?.trim() ?? '';
-    if (trimmedPhone.isNotEmpty) body['phone'] = trimmedPhone;
-
     return _postJson(
       '/api/auth/forgot-password',
-      body: body,
-      fallbackSuccessMessage: method == PasswordResetMethod.sms
-          ? 'Doğrulama kodu telefonunuza SMS ile gönderildi.'
-          : 'Sıfırlama bağlantısı e-postanıza gönderildi',
+      body: {
+        'email': email.trim().toLowerCase(),
+        'method': 'email',
+      },
+      fallbackSuccessMessage: 'Sıfırlama bağlantısı e-postanıza gönderildi',
       fallbackErrorMessage:
           'Şifre sıfırlama isteği gönderilemedi. Lütfen tekrar deneyin.',
     );
@@ -118,29 +98,6 @@ class AuthApiService {
     );
   }
 
-  Future<AuthApiResult> resetPasswordWithSms({
-    String? email,
-    String? phone,
-    required String code,
-    required String newPassword,
-  }) async {
-    final body = <String, dynamic>{
-      'code': code.trim(),
-      'newPassword': newPassword,
-    };
-    final trimmedEmail = email?.trim().toLowerCase() ?? '';
-    if (trimmedEmail.isNotEmpty) body['email'] = trimmedEmail;
-    final trimmedPhone = phone?.trim() ?? '';
-    if (trimmedPhone.isNotEmpty) body['phone'] = trimmedPhone;
-
-    return _postJson(
-      '/api/auth/reset-password-sms',
-      body: body,
-      fallbackSuccessMessage: 'Şifreniz başarıyla güncellendi.',
-      fallbackErrorMessage: 'SMS kodu geçersiz veya süresi dolmuş.',
-    );
-  }
-
   Future<AuthApiResult> _postJson(
     String path, {
     required Map<String, dynamic> body,
@@ -162,15 +119,6 @@ class AuthApiService {
       final parsed = _tryParseJson(response.body);
       final message = (parsed?['message'] as String?)?.trim();
       final code = parsed?['code'] as String?;
-      final phoneHint = (parsed?['phoneHint'] as String?)?.trim();
-      final devCode = (parsed?['devCode'] as String?)?.trim();
-      final dryRun = parsed?['dryRun'] == true;
-      final methodRaw = (parsed?['method'] as String?)?.trim().toLowerCase();
-      final method = methodRaw == 'sms'
-          ? PasswordResetMethod.sms
-          : methodRaw == 'email'
-              ? PasswordResetMethod.email
-              : null;
       final ok = response.statusCode >= 200 &&
           response.statusCode < 300 &&
           (parsed?['success'] != false);
@@ -183,10 +131,6 @@ class AuthApiService {
               : fallbackSuccessMessage,
           statusCode: response.statusCode,
           code: code,
-          method: method,
-          phoneHint: phoneHint,
-          devCode: devCode,
-          dryRun: dryRun,
         );
       }
 
@@ -197,10 +141,6 @@ class AuthApiService {
             : fallbackErrorMessage,
         statusCode: response.statusCode,
         code: code,
-        method: method,
-        phoneHint: phoneHint,
-        devCode: devCode,
-        dryRun: dryRun,
       );
     } catch (err, stack) {
       debugPrint('[AuthApiService] $path failed: $err\n$stack');
