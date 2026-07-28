@@ -5,8 +5,28 @@ class UsOfflineAddressCatalog {
   UsOfflineAddressCatalog._();
 
   static const List<UsAddressSuggestion> entries = [
-    // California
+    // California — Orange County / Inland Empire (common donation ZIPs)
+    UsAddressSuggestion(zipCode: '92606', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92602', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92603', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92604', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92612', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92614', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92618', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92620', city: 'Irvine', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92626', city: 'Costa Mesa', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92627', city: 'Costa Mesa', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92660', city: 'Newport Beach', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92663', city: 'Newport Beach', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92701', city: 'Santa Ana', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92705', city: 'Santa Ana', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92801', city: 'Anaheim', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92805', city: 'Anaheim', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92840', city: 'Garden Grove', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92866', city: 'Orange', state: 'CA'),
+    UsAddressSuggestion(zipCode: '92868', city: 'Orange', state: 'CA'),
     UsAddressSuggestion(zipCode: '92880', city: 'Eastvale', state: 'CA'),
+    // California — major metros
     UsAddressSuggestion(zipCode: '90012', city: 'Los Angeles', state: 'CA'),
     UsAddressSuggestion(zipCode: '90210', city: 'Beverly Hills', state: 'CA'),
     UsAddressSuggestion(zipCode: '94102', city: 'San Francisco', state: 'CA'),

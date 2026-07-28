@@ -77,42 +77,48 @@ class PlatformAddressLookup {
         try {
           final statusValue = readGoogleMapsStatus(status);
           if (statusValue == 'ZERO_RESULTS' || predictions == null) {
-            completer.complete(const []);
+            if (!completer.isCompleted) completer.complete(const []);
             return;
           }
           if (statusValue != 'OK') {
-            completer.complete(const []);
+            if (!completer.isCompleted) completer.complete(const []);
             return;
           }
 
           final list = (predictions as JSArray).toDart;
-          completer.complete(
-            UsAddressFilter.onlyUnitedStates(
-              list
-                  .map(
-                    (prediction) {
-                      final row = prediction as _Prediction;
-                      return UsAddressSuggestion(
-                        zipCode: '',
-                        city: '',
-                        state: '',
-                        streetAddress: row.description,
-                        placeId: row.placeId,
-                        needsResolution: true,
-                      );
-                    },
-                  )
-                  .where((suggestion) => suggestion.primaryLine.isNotEmpty)
-                  .toList(),
-            ),
-          );
+          if (!completer.isCompleted) {
+            completer.complete(
+              UsAddressFilter.onlyUnitedStates(
+                list
+                    .map(
+                      (prediction) {
+                        final row = prediction as _Prediction;
+                        return UsAddressSuggestion(
+                          zipCode: '',
+                          city: '',
+                          state: '',
+                          streetAddress: row.description,
+                          placeId: row.placeId,
+                          needsResolution: true,
+                        );
+                      },
+                    )
+                    .where((suggestion) => suggestion.primaryLine.isNotEmpty)
+                    .toList(),
+              ),
+            );
+          }
         } catch (_) {
           if (!completer.isCompleted) completer.complete(const []);
         }
       }).toJS,
     );
 
-    return completer.future;
+    // Maps JS callbacks can stall forever if Geocoding/Places is restricted.
+    return completer.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => const [],
+    );
   }
 
   Future<UsAddressSuggestion> resolve(UsAddressSuggestion suggestion) async {
@@ -154,26 +160,32 @@ class PlatformAddressLookup {
         try {
           final statusValue = readGoogleMapsStatus(status);
           if (statusValue == 'ZERO_RESULTS' || results == null) {
-            completer.complete(const []);
+            if (!completer.isCompleted) completer.complete(const []);
             return;
           }
           if (statusValue != 'OK') {
-            completer.complete(const []);
+            if (!completer.isCompleted) completer.complete(const []);
             return;
           }
-          completer.complete(
-            (results as JSArray)
-                .toDart
-                .map((result) => result as _GeocoderResult)
-                .toList(),
-          );
+          if (!completer.isCompleted) {
+            completer.complete(
+              (results as JSArray)
+                  .toDart
+                  .map((result) => result as _GeocoderResult)
+                  .toList(),
+            );
+          }
         } catch (_) {
           if (!completer.isCompleted) completer.complete(const []);
         }
       }).toJS,
     );
 
-    return completer.future;
+    // Without a timeout, a missing JS callback leaves TypeAhead spinning forever.
+    return completer.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => const [],
+    );
   }
 
   UsAddressSuggestion _fromGeocoderResult(_GeocoderResult result) {
