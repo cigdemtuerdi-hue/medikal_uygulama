@@ -669,5 +669,9 @@
   "auth.passwordNotSet": "Aún no hay contraseña en esta cuenta. Usa Crear o restablecer contraseña.",
   "auth.setPasswordHelp": "Si te registraste antes de que se pidiera contraseña, abre Crear o restablecer contraseña para crear la primera.",
   "auth.logOut": "Cerrar sesión",
-  "auth.logOutConfirm": "¿Cerrar sesión en tu cuenta de MedGift?"
+  "auth.logOutConfirm": "¿Cerrar sesión en tu cuenta de MedGift?",
+  "profile.saveProfile": "Guardar perfil",
+  "profile.editSaved": "Tu perfil se actualizó.",
+  "profile.editValidation": "Completa todos los campos obligatorios.",
+  "profile.editNoProfile": "No hay perfil de registro. Completa el registro de nuevo."
 }

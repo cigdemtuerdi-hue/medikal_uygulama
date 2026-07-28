@@ -669,5 +669,9 @@
   "auth.passwordNotSet": "لم تُعيَّن كلمة مرور لهذا الحساب بعد. استخدم تعيين أو إعادة تعيين كلمة المرور.",
   "auth.setPasswordHelp": "إذا سجّلت قبل أن تصبح كلمة المرور مطلوبة، افتح تعيين أو إعادة تعيين كلمة المرور لإنشاء أول كلمة مرور.",
   "auth.logOut": "تسجيل الخروج",
-  "auth.logOutConfirm": "هل تريد تسجيل الخروج من حساب MedGift؟"
+  "auth.logOutConfirm": "هل تريد تسجيل الخروج من حساب MedGift؟",
+  "profile.saveProfile": "حفظ الملف",
+  "profile.editSaved": "تم تحديث ملفك.",
+  "profile.editValidation": "يرجى إكمال جميع الحقول المطلوبة.",
+  "profile.editNoProfile": "لا يوجد ملف تسجيل. يرجى إكمال التسجيل مجددًا."
 }

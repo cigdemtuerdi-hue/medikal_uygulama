@@ -671,5 +671,9 @@
   "auth.passwordNotSet": "Bu hesap için henüz şifre belirlenmemiş. Şifre belirle / sıfırla adımını kullanın.",
   "auth.setPasswordHelp": "Şifre zorunlu olmadan önce kayıt olduysanız, ilk şifrenizi oluşturmak için Şifre belirle / sıfırla sayfasını açın.",
   "auth.logOut": "Çıkış yap",
-  "auth.logOutConfirm": "MedGift hesabınızdan çıkış yapılsın mı?"
+  "auth.logOutConfirm": "MedGift hesabınızdan çıkış yapılsın mı?",
+  "profile.saveProfile": "Profili kaydet",
+  "profile.editSaved": "Profiliniz güncellendi.",
+  "profile.editValidation": "Lütfen zorunlu alanları doldurun.",
+  "profile.editNoProfile": "Kayıt profili bulunamadı. Lütfen kaydı tekrar tamamlayın."
 }

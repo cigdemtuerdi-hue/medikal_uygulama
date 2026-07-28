@@ -99,18 +99,10 @@ class ProfileAddressService {
     final onboarding = await OnboardingService().loadProfile();
     if (onboarding != null) {
       await OnboardingService().saveProfile(
-        UserOnboardingProfile(
-          role: onboarding.role,
-          firstName: onboarding.firstName,
-          lastName: onboarding.lastName,
+        onboarding.copyWith(
           zipCode: address.zipCode,
-          email: onboarding.email,
-          phone: onboarding.phone,
-          idDocumentPath: onboarding.idDocumentPath,
           city: address.city ?? onboarding.city,
           state: address.state ?? onboarding.state,
-          doctorReportPath: onboarding.doctorReportPath,
-          conditionVideoPath: onboarding.conditionVideoPath,
         ),
       );
     }

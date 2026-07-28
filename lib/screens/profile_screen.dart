@@ -29,8 +29,11 @@ import '../widgets/pass_it_on_entry_card.dart';
 import '../widgets/profile_avatar_image.dart';
 import '../widgets/verified_ngo_badge.dart';
 import '../widgets/wishlist_section_card.dart';
+import '../services/onboarding_service.dart';
+import '../models/user_onboarding_models.dart';
 import 'admin_inquiries_screen.dart';
 import 'dme_product_detail_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -43,8 +46,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _profileImageService = ProfileImageService();
   final _addressService = ProfileAddressService.instance;
   final _exchangeService = ExchangeService.instance;
+  final _onboardingService = OnboardingService();
   String? _profileImagePath;
   ProfileAddress? _savedAddress;
+  UserOnboardingProfile? _memberProfile;
   bool _loadingAddress = true;
 
   @override
@@ -52,8 +57,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _loadProfileImage();
     _loadAddress();
+    _loadMemberProfile();
     _exchangeService.addListener(_onExchangeChanged);
     WishlistService.instance.addListener(_onExchangeChanged);
+  }
+
+  Future<void> _loadMemberProfile() async {
+    final profile = await _onboardingService.loadProfile();
+    if (!mounted) return;
+    setState(() => _memberProfile = profile);
+  }
+
+  Future<void> _openEditProfile() async {
+    final loc = AppLocalizations.of(context);
+    var profile = _memberProfile ?? await _onboardingService.loadProfile();
+    if (!mounted) return;
+
+    if (profile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('profile.editNoProfile'))),
+      );
+      return;
+    }
+
+    final updated = await Navigator.of(context).push<UserOnboardingProfile>(
+      MaterialPageRoute<UserOnboardingProfile>(
+        builder: (_) => EditProfileScreen(initialProfile: profile),
+      ),
+    );
+    if (!mounted) return;
+    if (updated != null) {
+      setState(() => _memberProfile = updated);
+      await _loadAddress();
+    }
   }
 
   @override
@@ -169,8 +205,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final donor = DonationService.donorProfile;
+    final member = _memberProfile;
+    final displayName = member?.fullName ??
+        _savedAddress?.name ??
+        donor.name;
+    final displayEmail = member?.email ?? donor.email;
     final address = _savedAddress;
-    final displayZip = address?.zipCode ?? donor.zipCode;
+    final displayZip = address?.zipCode ?? member?.zipCode ?? donor.zipCode;
     final displayLocation =
         address?.shortLabel ?? loc.t('common.zipPrefix', {'zip': displayZip});
     final totalDeductions = DonationService.totalTaxDeductionsUsd;
@@ -229,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                donor.name,
+                                displayName,
                                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -243,7 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ],
                               const SizedBox(height: 4),
                               Text(
-                                donor.email,
+                                displayEmail,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: Colors.white70,
                                     ),
@@ -262,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         OutlinedButton(
-                          onPressed: _showImageSourceSheet,
+                          onPressed: _openEditProfile,
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white54),
@@ -346,8 +387,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const PassItOnEntryCard(),
             const SizedBox(height: 24),
             CorporateEsgBadgesSection(
-              organizationName: donor.name,
-              organizationId: 'donor-${donor.email.hashCode.abs()}',
+              organizationName: displayName,
+              organizationId: 'donor-${displayEmail.hashCode.abs()}',
             ),
             const SizedBox(height: 24),
             if (_loadingAddress)

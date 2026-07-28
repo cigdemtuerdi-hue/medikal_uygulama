@@ -58,6 +58,38 @@ class UserOnboardingProfile {
     return '$first$last'.toUpperCase();
   }
 
+  UserOnboardingProfile copyWith({
+    UserRole? role,
+    String? firstName,
+    String? lastName,
+    String? zipCode,
+    String? email,
+    String? phone,
+    String? idDocumentPath,
+    String? city,
+    String? state,
+    String? doctorReportPath,
+    String? conditionVideoPath,
+    String? organizationName,
+    String? organizationEin,
+  }) {
+    return UserOnboardingProfile(
+      role: role ?? this.role,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      zipCode: zipCode ?? this.zipCode,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      idDocumentPath: idDocumentPath ?? this.idDocumentPath,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      doctorReportPath: doctorReportPath ?? this.doctorReportPath,
+      conditionVideoPath: conditionVideoPath ?? this.conditionVideoPath,
+      organizationName: organizationName ?? this.organizationName,
+      organizationEin: organizationEin ?? this.organizationEin,
+    );
+  }
+
   Map<String, String> toStorageMap() {
     final map = <String, String>{
       'role': role.name,
