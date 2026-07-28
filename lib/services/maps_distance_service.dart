@@ -1,7 +1,12 @@
+import 'dart:math' as math;
+
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import '../models/item_proximity_result.dart';
 import '../models/map_distance_result.dart';
 import '../models/profile_address.dart';
 import 'maps_distance_lookup.dart';
+import 'proximity_matching_service.dart';
 
 /// Distance + geocoding backed by a platform-specific lookup:
 /// the Maps JavaScript API on web (avoids CORS) and Google Maps
@@ -14,6 +19,12 @@ class MapsDistanceService {
   static const double donorPrivacyRadiusMeters = 3218.688; // ~2 miles
 
   PlatformDistanceLookup get _lookup => PlatformDistanceLookup.instance;
+  ProximityMatchingService get _proximity => ProximityMatchingService.instance;
+
+  bool get isAvailable => _lookup.isAvailable;
+
+  /// True when we can show distance even if Google APIs fail (ZIP centroids).
+  bool get canShowProximity => true;
 
   Future<ItemProximityResult?> calculateItemProximity({
     required ProfileAddress recipient,
@@ -21,22 +32,42 @@ class MapsDistanceService {
     String? donorCity,
     String? donorState,
   }) async {
-    if (!_lookup.isAvailable) return null;
-
     try {
-      final recipientLatLng = await _lookup.geocodeAddress(
-        recipient.formattedAddress,
-      );
-      final donorAreaCenter = await _lookup.geocodeAddress(
-        '$donorZipCode, USA',
-      );
+      LatLng? recipientLatLng;
+      LatLng? donorAreaCenter;
+
+      if (_lookup.isAvailable) {
+        final ready = await _lookup.waitUntilReady();
+        if (ready) {
+          recipientLatLng = await _lookup.geocodeAddress(
+            recipient.formattedAddress,
+          );
+          recipientLatLng ??=
+              await _lookup.geocodeZip(recipient.zipCode);
+
+          donorAreaCenter = await _lookup.geocodeZip(donorZipCode);
+          donorAreaCenter ??=
+              await _lookup.geocodeAddress('$donorZipCode, USA');
+        }
+      }
+
+      recipientLatLng ??= _proximity.latLngForZip(recipient.zipCode);
+      donorAreaCenter ??= _proximity.latLngForZip(donorZipCode);
+
       if (recipientLatLng == null || donorAreaCenter == null) return null;
 
-      final miles = await _lookup.distanceMiles(
-        origin: recipient.formattedAddress,
-        destination: '$donorZipCode, USA',
+      double? miles;
+      if (_lookup.isAvailable) {
+        miles = await _lookup.distanceMiles(
+          origin: recipient.formattedAddress,
+          destination: '$donorZipCode, USA',
+        );
+      }
+      miles ??= _proximity.estimateMilesBetweenZips(
+        recipient.zipCode,
+        donorZipCode,
       );
-      if (miles == null) return null;
+      miles ??= _haversineMiles(recipientLatLng, donorAreaCenter);
 
       final donorAreaLabel = donorCity != null && donorState != null
           ? '$donorCity, $donorState $donorZipCode area'
@@ -50,7 +81,12 @@ class MapsDistanceService {
         donorAreaRadiusMeters: donorPrivacyRadiusMeters,
         donorAreaLabel: donorAreaLabel,
       );
-    } catch (_) {
+    } catch (error, stack) {
+      assert(() {
+        // ignore: avoid_print
+        print('MapsDistanceService.calculateItemProximity failed: $error\n$stack');
+        return true;
+      }());
       return null;
     }
   }
@@ -59,19 +95,40 @@ class MapsDistanceService {
     required ProfileAddress origin,
     required ProfileAddress destination,
   }) async {
-    if (!_lookup.isAvailable) return null;
-
     try {
-      final originLatLng = await _lookup.geocodeAddress(origin.formattedAddress);
-      final destinationLatLng =
-          await _lookup.geocodeAddress(destination.formattedAddress);
+      LatLng? originLatLng;
+      LatLng? destinationLatLng;
+
+      if (_lookup.isAvailable) {
+        final ready = await _lookup.waitUntilReady();
+        if (ready) {
+          originLatLng = await _lookup.geocodeAddress(origin.formattedAddress);
+          originLatLng ??= await _lookup.geocodeZip(origin.zipCode);
+
+          destinationLatLng =
+              await _lookup.geocodeAddress(destination.formattedAddress);
+          destinationLatLng ??=
+              await _lookup.geocodeZip(destination.zipCode);
+        }
+      }
+
+      originLatLng ??= _proximity.latLngForZip(origin.zipCode);
+      destinationLatLng ??= _proximity.latLngForZip(destination.zipCode);
+
       if (originLatLng == null || destinationLatLng == null) return null;
 
-      final miles = await _lookup.distanceMiles(
-        origin: origin.formattedAddress,
-        destination: destination.formattedAddress,
+      double? miles;
+      if (_lookup.isAvailable) {
+        miles = await _lookup.distanceMiles(
+          origin: origin.formattedAddress,
+          destination: destination.formattedAddress,
+        );
+      }
+      miles ??= _proximity.estimateMilesBetweenZips(
+        origin.zipCode,
+        destination.zipCode,
       );
-      if (miles == null) return null;
+      miles ??= _haversineMiles(originLatLng, destinationLatLng);
 
       return MapDistanceResult(
         distanceText: _formatDistanceLabel(miles),
@@ -86,9 +143,24 @@ class MapsDistanceService {
     }
   }
 
+  double _haversineMiles(LatLng from, LatLng to) {
+    const earthRadiusMeters = 6371000.0;
+    final dLat = _toRadians(to.latitude - from.latitude);
+    final dLng = _toRadians(to.longitude - from.longitude);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(from.latitude)) *
+            math.cos(_toRadians(to.latitude)) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return (earthRadiusMeters * c) / 1609.344;
+  }
+
+  double _toRadians(double degrees) => degrees * math.pi / 180;
+
   String _formatItemDistanceLabel(double miles) {
     if (miles < 0.1) {
-      return 'This item is less than 0.1 miles away from you';
+      return 'This item is in your area (same ZIP region)';
     }
     if (miles < 10) {
       return 'This item is ${miles.toStringAsFixed(1)} miles away from you';

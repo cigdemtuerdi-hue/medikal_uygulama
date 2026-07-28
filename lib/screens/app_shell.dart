@@ -5,7 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/async_state_widgets.dart';
 import '../widgets/medgift_logo.dart';
 
-enum _BottomNavItem { home, profile, myItems }
+enum _BottomNavItem { home, recipient, profile, myItems }
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key, this.initialTab});
@@ -34,6 +34,8 @@ class _AppShellState extends State<AppShell> {
       switch (item) {
         case _BottomNavItem.home:
           _selectedIndex = AppTab.home.tabIndex;
+        case _BottomNavItem.recipient:
+          _selectedIndex = AppTab.recipient.tabIndex;
         case _BottomNavItem.profile:
           _selectedIndex = AppTab.profile.tabIndex;
         case _BottomNavItem.myItems:
@@ -43,8 +45,9 @@ class _AppShellState extends State<AppShell> {
   }
 
   int get _bottomNavIndex {
-    if (_selectedIndex == AppTab.myItems.tabIndex) return 2;
-    if (_selectedIndex == AppTab.profile.tabIndex) return 1;
+    if (_selectedIndex == AppTab.myItems.tabIndex) return 3;
+    if (_selectedIndex == AppTab.profile.tabIndex) return 2;
+    if (_selectedIndex == AppTab.recipient.tabIndex) return 1;
     if (_selectedIndex == AppTab.home.tabIndex) return 0;
     return 0;
   }
@@ -119,6 +122,11 @@ class _AppShellState extends State<AppShell> {
                   icon: const Icon(Icons.home_outlined),
                   selectedIcon: const Icon(Icons.home),
                   label: loc.t('nav.home'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.person_pin_outlined),
+                  selectedIcon: const Icon(Icons.person_pin),
+                  label: loc.t('nav.recipient'),
                 ),
                 NavigationDestination(
                   icon: const Icon(Icons.person_outline),

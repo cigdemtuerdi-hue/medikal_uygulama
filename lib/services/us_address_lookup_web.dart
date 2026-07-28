@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
+import '../config/app_config.dart';
 import '../models/us_address_models.dart';
+import 'google_maps_ready.dart';
 
 /// Web lookup — calls the Google Maps JavaScript API that is loaded via the
 /// script tag in `web/index.html`. Requests run inside the Maps JS library,
@@ -16,12 +18,27 @@ class PlatformAddressLookup {
   _Geocoder? _geocoder;
 
   bool get isAvailable {
+    if (!AppConfig.hasGoogleMapsApiKey && !isGoogleMapsScriptReady) {
+      return false;
+    }
+    if (!isGoogleMapsScriptReady) return false;
     final google = globalContext.getProperty<JSObject?>('google'.toJS);
     if (google == null || google.isUndefinedOrNull) return false;
     final maps = google.getProperty<JSObject?>('maps'.toJS);
     if (maps == null || maps.isUndefinedOrNull) return false;
     final places = maps.getProperty<JSObject?>('places'.toJS);
     return places != null && !places.isUndefinedOrNull;
+  }
+
+  Future<bool> waitUntilReady({
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
+    if (!AppConfig.hasGoogleMapsApiKey && !isGoogleMapsScriptReady) {
+      return false;
+    }
+    final mapsReady = await waitForGoogleMapsReady(timeout: timeout);
+    if (!mapsReady) return false;
+    return isAvailable;
   }
 
   _AutocompleteService get _autocompleteService {

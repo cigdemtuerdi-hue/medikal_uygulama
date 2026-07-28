@@ -3,6 +3,7 @@ import 'package:google_maps_webservice/distance.dart';
 import 'package:google_maps_webservice/geocoding.dart';
 
 import '../config/app_config.dart';
+import 'google_maps_ready.dart';
 
 /// Native (iOS/Android/desktop) lookup — direct HTTP calls to
 /// Google Maps Web Services. CORS does not apply outside the browser.
@@ -25,6 +26,34 @@ class PlatformDistanceLookup {
   }
 
   bool get isAvailable => AppConfig.hasGoogleMapsApiKey;
+
+  Future<bool> waitUntilReady({
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
+    return waitForGoogleMapsReady(timeout: timeout);
+  }
+
+  Future<LatLng?> geocodeZip(String zip) async {
+    final normalized = zip.trim();
+    if (normalized.length != 5 || int.tryParse(normalized) == null) {
+      return null;
+    }
+
+    final response = await _geocoder.searchByAddress(
+      normalized,
+      language: 'en',
+      region: 'us',
+      components: [
+        Component(Component.country, 'us'),
+        Component(Component.postalCode, normalized),
+      ],
+    );
+
+    if (!response.isOkay || response.results.isEmpty) return null;
+
+    final location = response.results.first.geometry.location;
+    return LatLng(location.lat, location.lng);
+  }
 
   Future<LatLng?> geocodeAddress(String query) async {
     final response = await _geocoder.searchByAddress(

@@ -55,8 +55,6 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) return const [];
 
-    // ZIP-first: Geocoding returns a concrete city/state row that Places
-    // Autocomplete often omits for bare 5-digit postal codes.
     if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
       final zipMatch =
           await AddressAutocompleteService.instance.findByZip(trimmed);
@@ -66,13 +64,16 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
     }
 
     final result = await AddressAutocompleteService.instance.search(trimmed);
+    if (result.suggestions.isNotEmpty) {
+      return result.suggestions;
+    }
+
     if (result.manualFallback) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _activateManualFallback();
       });
-      return const [];
     }
-    return result.suggestions;
+    return const [];
   }
 
   @override
@@ -133,7 +134,19 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
               ),
               textCapitalization: TextCapitalization.words,
               keyboardType: TextInputType.streetAddress,
-              onChanged: field.didChange,
+              onChanged: (value) {
+                field.didChange(value);
+                final trimmed = value.trim();
+                if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
+                  AddressAutocompleteService.instance
+                      .findByZip(trimmed)
+                      .then((match) {
+                    if (match != null && mounted) {
+                      widget.onAddressSelected?.call(match);
+                    }
+                  });
+                }
+              },
             );
           },
           itemBuilder: (context, suggestion) {

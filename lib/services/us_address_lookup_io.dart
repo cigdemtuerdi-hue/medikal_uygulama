@@ -1,5 +1,6 @@
 import '../config/app_config.dart';
 import '../models/us_address_models.dart';
+import 'google_maps_ready.dart';
 import 'google_places_address_service.dart';
 
 /// Native (iOS/Android/desktop) lookup — direct HTTP calls to
@@ -10,6 +11,12 @@ class PlatformAddressLookup {
   static final PlatformAddressLookup instance = PlatformAddressLookup._();
 
   bool get isAvailable => AppConfig.hasGoogleMapsApiKey;
+
+  Future<bool> waitUntilReady({
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
+    return waitForGoogleMapsReady(timeout: timeout);
+  }
 
   Future<List<UsAddressSuggestion>> search(String query) {
     return GooglePlacesAddressService.instance.search(query);

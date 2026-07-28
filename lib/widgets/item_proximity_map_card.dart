@@ -1,15 +1,13 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../config/app_config.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/available_donation_item.dart';
 import '../models/item_proximity_result.dart';
 import '../models/profile_address.dart';
 import '../services/maps_distance_service.dart';
+import '../services/proximity_matching_service.dart';
+import 'proximity_map_preview.dart';
 
 class ItemProximityMapCard extends StatefulWidget {
   const ItemProximityMapCard({
@@ -29,7 +27,7 @@ class _ItemProximityMapCardState extends State<ItemProximityMapCard> {
   ItemProximityResult? _result;
   bool _isLoading = true;
   bool _hasError = false;
-  GoogleMapController? _mapController;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -37,22 +35,61 @@ class _ItemProximityMapCardState extends State<ItemProximityMapCard> {
     _loadProximity();
   }
 
-  Future<void> _loadProximity() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
+  ItemProximityResult? _offlineResult() {
+    final proximity = ProximityMatchingService.instance;
+    final recipientLatLng = proximity.latLngForZip(widget.recipient.zipCode);
+    final donorCenter = proximity.latLngForZip(widget.item.donorZipCode);
+    if (recipientLatLng == null || donorCenter == null) return null;
 
-    if (!AppConfig.hasGoogleMapsApiKey) {
-      if (!mounted) return;
+    final miles = proximity.estimateMilesBetweenZips(
+          widget.recipient.zipCode,
+          widget.item.donorZipCode,
+        ) ??
+        0;
+
+    final donorAreaLabel = widget.item.donorCity != null &&
+            widget.item.donorState != null
+        ? '${widget.item.donorCity}, ${widget.item.donorState} ${widget.item.donorZipCode} area'
+        : 'ZIP ${widget.item.donorZipCode} area';
+
+    return ItemProximityResult(
+      distanceText: _formatDistance(miles),
+      distanceMiles: miles,
+      recipientLocation: recipientLatLng,
+      donorAreaCenter: donorCenter,
+      donorAreaRadiusMeters: MapsDistanceService.donorPrivacyRadiusMeters,
+      donorAreaLabel: donorAreaLabel,
+    );
+  }
+
+  String _formatDistance(double miles) {
+    if (miles < 0.1) {
+      return 'This item is in your area (same ZIP region)';
+    }
+    if (miles < 10) {
+      return 'This item is ${miles.toStringAsFixed(1)} miles away from you';
+    }
+    return 'This item is ${miles.round()} miles away from you';
+  }
+
+  Future<void> _loadProximity() async {
+    final offline = _offlineResult();
+    if (offline != null && mounted) {
       setState(() {
+        _result = offline;
         _isLoading = false;
-        _hasError = true;
+        _hasError = false;
+        _errorMessage = null;
       });
-      return;
+    } else {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+        _errorMessage = null;
+      });
     }
 
-    final result = await MapsDistanceService.instance.calculateItemProximity(
+    final refined = await MapsDistanceService.instance.calculateItemProximity(
       recipient: widget.recipient,
       donorZipCode: widget.item.donorZipCode,
       donorCity: widget.item.donorCity,
@@ -62,90 +99,13 @@ class _ItemProximityMapCardState extends State<ItemProximityMapCard> {
     if (!mounted) return;
 
     setState(() {
-      _result = result;
+      _result = refined ?? offline;
       _isLoading = false;
-      _hasError = result == null;
+      _hasError = _result == null;
+      _errorMessage = _result == null
+          ? 'Could not estimate distance for these ZIP codes.'
+          : null;
     });
-
-    if (result != null && _mapController != null) {
-      _fitMapToArea(result);
-    }
-  }
-
-  void _fitMapToArea(ItemProximityResult result) {
-    final latDelta = result.donorAreaRadiusMeters / 111320;
-    final lngDelta = result.donorAreaRadiusMeters /
-        (111320 * math.cos(result.donorAreaCenter.latitude * math.pi / 180));
-
-    final bounds = LatLngBounds(
-      southwest: LatLng(
-        _min(
-          result.recipientLocation.latitude - 0.01,
-          result.donorAreaCenter.latitude - latDelta,
-        ),
-        _min(
-          result.recipientLocation.longitude - 0.01,
-          result.donorAreaCenter.longitude - lngDelta,
-        ),
-      ),
-      northeast: LatLng(
-        _max(
-          result.recipientLocation.latitude + 0.01,
-          result.donorAreaCenter.latitude + latDelta,
-        ),
-        _max(
-          result.recipientLocation.longitude + 0.01,
-          result.donorAreaCenter.longitude + lngDelta,
-        ),
-      ),
-    );
-
-    _mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 48));
-  }
-
-  double _min(double a, double b) => a < b ? a : b;
-  double _max(double a, double b) => a > b ? a : b;
-
-  Set<Marker> _buildMarkers(ItemProximityResult result) {
-    return {
-      Marker(
-        markerId: const MarkerId('recipient'),
-        position: result.recipientLocation,
-        infoWindow: const InfoWindow(
-          title: 'You',
-          snippet: 'Your location',
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-      ),
-    };
-  }
-
-  Set<Circle> _buildCircles(ItemProximityResult result) {
-    final circles = <Circle>{
-      Circle(
-        circleId: const CircleId('donor_privacy_area'),
-        center: result.donorAreaCenter,
-        radius: result.donorAreaRadiusMeters,
-        fillColor: AppTheme.primaryBlue.withValues(alpha: 0.18),
-        strokeColor: AppTheme.primaryBlue.withValues(alpha: 0.45),
-        strokeWidth: 2,
-      ),
-    };
-
-    final isCrisis = widget.item.disasterReliefAllocation;
-    if (isCrisis) {
-      circles.add(
-        Circle(
-          circleId: const CircleId('disaster_zone'),
-          center: result.donorAreaCenter,
-          radius: result.donorAreaRadiusMeters * 1.35,
-          fillColor: const Color(0xFFC62828).withValues(alpha: 0.16),
-          strokeColor: const Color(0xFFB71C1C).withValues(alpha: 0.65),
-          strokeWidth: 2,
-        ),
-      );
-    }
-    return circles;
   }
 
   @override
@@ -252,7 +212,7 @@ class _ItemProximityMapCardState extends State<ItemProximityMapCard> {
   }
 
   Widget _buildMapBody(BuildContext context) {
-    if (_isLoading) {
+    if (_isLoading && _result == null) {
       return const Center(
         child: SizedBox(
           width: 28,
@@ -267,37 +227,28 @@ class _ItemProximityMapCardState extends State<ItemProximityMapCard> {
         color: AppTheme.surfaceLight,
         padding: const EdgeInsets.all(24),
         child: Center(
-          child: Text(
-            AppConfig.hasGoogleMapsApiKey
-                ? 'Distance map is temporarily unavailable.'
-                : AppConfig.missingApiKeyMessage,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _errorMessage ?? 'Distance map is temporarily unavailable.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              TextButton(onPressed: _loadProximity, child: const Text('Retry')),
+            ],
           ),
         ),
       );
     }
 
     final result = _result!;
-    final midpoint = LatLng(
-      (result.recipientLocation.latitude + result.donorAreaCenter.latitude) /
-          2,
-      (result.recipientLocation.longitude +
-              result.donorAreaCenter.longitude) /
-          2,
-    );
-
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(target: midpoint, zoom: 10),
-      markers: _buildMarkers(result),
-      circles: _buildCircles(result),
-      zoomControlsEnabled: false,
-      myLocationButtonEnabled: false,
-      mapToolbarEnabled: false,
-      onMapCreated: (controller) {
-        _mapController = controller;
-        _fitMapToArea(result);
-      },
+    return ProximityMapPreview(
+      recipient: result.recipientLocation,
+      donorAreaCenter: result.donorAreaCenter,
+      donorAreaRadiusMeters: result.donorAreaRadiusMeters,
+      showDisasterZone: widget.item.disasterReliefAllocation,
     );
   }
 }
@@ -317,30 +268,27 @@ class _LegendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        children: [
-          Container(
-            width: isCircle ? 14 : 10,
-            height: isCircle ? 14 : 10,
-            decoration: BoxDecoration(
-              color: isCircle ? color.withValues(alpha: 0.25) : color,
-              shape: BoxShape.circle,
-              border: isCircle ? Border.all(color: color, width: 2) : null,
-            ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: isCircle ? 14 : 10,
+          height: isCircle ? 14 : 10,
+          decoration: BoxDecoration(
+            color: isCircle ? color.withValues(alpha: 0.25) : color,
+            shape: BoxShape.circle,
+            border: isCircle ? Border.all(color: color, width: 2) : null,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: Theme.of(context).textTheme.labelMedium),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.labelMedium),
+            Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -45,10 +45,21 @@ class DmeProductDetailScreen extends StatefulWidget {
 class _DmeProductDetailScreenState extends State<DmeProductDetailScreen> {
   final _profileAddressService = ProfileAddressService.instance;
   final _reservationService = ReservationService.instance;
-  ProfileAddress? _recipientAddress;
+  late ProfileAddress _recipientAddress = _defaultRecipientAddress();
   bool _downloadingLabel = false;
   bool _waiverAccepted = false;
   String? _waiverError;
+
+  static ProfileAddress _defaultRecipientAddress() {
+    final recipient = ProfileAddressService.matchedRecipient;
+    return ProfileAddress(
+      roleLabel: 'Recipient',
+      zipCode: recipient.zipCode,
+      city: recipient.city,
+      state: recipient.state,
+      name: recipient.name,
+    );
+  }
 
   @override
   void initState() {
@@ -112,15 +123,7 @@ class _DmeProductDetailScreenState extends State<DmeProductDetailScreen> {
     }
     setState(() => _waiverError = null);
 
-    final recipientProfile = ProfileAddressService.matchedRecipient;
-    final recipient = _recipientAddress ??
-        ProfileAddress(
-          roleLabel: 'Recipient',
-          zipCode: recipientProfile.zipCode,
-          city: recipientProfile.city,
-          state: recipientProfile.state,
-          name: recipientProfile.name,
-        );
+    final recipient = _recipientAddress;
 
     final confirmed = await showRoutePickupGuideSheet(
       context: context,
@@ -131,7 +134,7 @@ class _DmeProductDetailScreenState extends State<DmeProductDetailScreen> {
 
     final reservation = _reservationService.reserveItem(
       widget.item,
-      recipientName: recipientProfile.name,
+      recipientName: recipient.name ?? 'Recipient',
     );
     if (reservation == null) return;
 
@@ -256,12 +259,12 @@ class _DmeProductDetailScreenState extends State<DmeProductDetailScreen> {
                           const CrisisReliefNeedBadge(),
                         if (item.priorityToUrgentRequests)
                           const PriorityMatchBadge(),
-                        if (_recipientAddress != null)
+                        if (_recipientAddress.zipCode.isNotEmpty)
                           Builder(
                             builder: (context) {
                               final miles = ProximityMatchingService.instance
                                   .estimateMilesToItem(
-                                recipient: _recipientAddress!,
+                                recipient: _recipientAddress,
                                 item: item,
                               );
                               if (miles == null) {
@@ -337,12 +340,12 @@ class _DmeProductDetailScreenState extends State<DmeProductDetailScreen> {
                   compact: true,
                 ),
               ),
-            if (_recipientAddress != null) ...[
+            if (_recipientAddress.zipCode.isNotEmpty) ...[
               Builder(
                 builder: (context) {
                   final guide =
                       ProximityMatchingService.instance.buildRouteGuide(
-                    recipient: _recipientAddress!,
+                    recipient: _recipientAddress,
                     item: item,
                   );
                   if (!guide.isLocal) return const SizedBox.shrink();
@@ -353,7 +356,7 @@ class _DmeProductDetailScreenState extends State<DmeProductDetailScreen> {
                 },
               ),
               ItemProximityMapCard(
-                recipient: _recipientAddress!,
+                recipient: _recipientAddress,
                 item: item,
               ),
             ] else

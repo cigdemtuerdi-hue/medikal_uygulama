@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import '../models/available_donation_item.dart';
 import '../models/donation_models.dart';
 import '../models/profile_address.dart';
@@ -31,6 +33,13 @@ class ProximityMatchingService {
     'beverly hills': 'Beverly Hills Police Department visitor lot',
     'los angeles': 'LA Central Library plaza (daytime)',
   };
+
+  /// Offline ZIP centroid for map pins when Google Geocoding is unavailable.
+  LatLng? latLngForZip(String zip) {
+    final centroid = _centroidForZip(zip);
+    if (centroid == null) return null;
+    return LatLng(centroid.$1, centroid.$2);
+  }
 
   double? estimateMilesBetweenZips(String fromZip, String toZip) {
     final a = _centroidForZip(fromZip);

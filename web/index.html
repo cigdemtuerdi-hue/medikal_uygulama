@@ -31,9 +31,20 @@
 
   <title>MedGift US</title>
   <link rel="manifest" href="manifest.json">
-  <!-- Maps JS key: restrict HTTP referrers to https://medgift.us/* and https://www.medgift.us/*
-       Deploy Web workflow overwrites this key from the GOOGLE_MAPS_API_KEY secret. -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFUphMYjehwgdozhZcElbEq0FMnGo6UVQ&libraries=places"></script>
+  <!-- Maps JS key: allow http://localhost:* for local dev in Google Cloud Console. -->
+  <script>
+    window.googleMapsReady = false;
+    window.googleMapsLoadError = null;
+    window.initGoogleMaps = function () {
+      window.googleMapsReady = true;
+    };
+    window.gm_authFailure = function () {
+      window.googleMapsLoadError = 'Google Maps authentication failed. Check API key restrictions and billing.';
+    };
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFUphMYjehwgdozhZcElbEq0FMnGo6UVQ&libraries=places&region=US&language=en&callback=initGoogleMaps">
+  </script>
 </head>
 <body>
   <!--

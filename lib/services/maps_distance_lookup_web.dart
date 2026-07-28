@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:js_interop';
-import 'dart:js_interop_unsafe';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import '../config/app_config.dart';
+import 'google_maps_js_helpers_web.dart';
+import 'google_maps_ready.dart';
 
 /// Web lookup — calls the Google Maps JavaScript API loaded in
 /// `web/index.html`. Requests run inside the Maps JS library, so the
@@ -15,11 +18,16 @@ class PlatformDistanceLookup {
   _Geocoder? _geocoder;
   _DistanceMatrixService? _matrix;
 
-  bool get isAvailable {
-    final google = globalContext.getProperty<JSObject?>('google'.toJS);
-    if (google == null || google.isUndefinedOrNull) return false;
-    final maps = google.getProperty<JSObject?>('maps'.toJS);
-    return maps != null && !maps.isUndefinedOrNull;
+  bool get isAvailable =>
+      AppConfig.hasGoogleMapsApiKey || isGoogleMapsScriptReady;
+
+  Future<bool> waitUntilReady({
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
+    if (!AppConfig.hasGoogleMapsApiKey && !isGoogleMapsScriptReady) {
+      return false;
+    }
+    return waitForGoogleMapsReady(timeout: timeout);
   }
 
   _Geocoder get _geocoderService {
@@ -33,27 +41,62 @@ class PlatformDistanceLookup {
   }
 
   Future<LatLng?> geocodeAddress(String query) {
-    final completer = Completer<LatLng?>();
-
-    _geocoderService.geocode(
+    return _geocode(
       _GeocodeRequest(
         address: query,
         region: 'us',
         componentRestrictions: _GeocoderComponentRestrictions(country: 'US'),
       ),
-      ((JSArray<_GeocoderResult>? results, JSString status) {
-        final statusValue = status.toDart;
-        if (statusValue != 'OK' || results == null) {
-          completer.complete(null);
-          return;
+    ).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => null,
+    );
+  }
+
+  Future<LatLng?> geocodeZip(String zip) {
+    final normalized = zip.trim();
+    if (normalized.length != 5 || int.tryParse(normalized) == null) {
+      return Future.value(null);
+    }
+
+    return _geocode(
+      _GeocodeRequest(
+        componentRestrictions: _GeocoderComponentRestrictions(
+          country: 'US',
+          postalCode: normalized,
+        ),
+        region: 'us',
+      ),
+    ).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => null,
+    );
+  }
+
+  Future<LatLng?> _geocode(_GeocodeRequest request) {
+    final completer = Completer<LatLng?>();
+
+    _geocoderService.geocode(
+      request,
+      ((JSAny? results, JSAny? status) {
+        try {
+          final statusValue = readGoogleMapsStatus(status);
+          if (statusValue != 'OK' || results == null) {
+            completer.complete(null);
+            return;
+          }
+
+          final list = (results as JSArray).toDart;
+          if (list.isEmpty) {
+            completer.complete(null);
+            return;
+          }
+
+          final first = list.first as _GeocoderResult;
+          completer.complete(readGoogleLatLng(first.geometry.location));
+        } catch (_) {
+          if (!completer.isCompleted) completer.complete(null);
         }
-        final list = results.toDart;
-        if (list.isEmpty) {
-          completer.complete(null);
-          return;
-        }
-        final location = list.first.geometry.location;
-        completer.complete(LatLng(location.lat(), location.lng()));
       }).toJS,
     );
 
@@ -73,30 +116,44 @@ class PlatformDistanceLookup {
         travelMode: 'DRIVING',
         region: 'us',
       ),
-      ((_DistanceMatrixResponse? response, JSString status) {
-        final statusValue = status.toDart;
-        if (statusValue != 'OK' || response == null) {
-          completer.complete(null);
-          return;
-        }
+      ((JSAny? response, JSAny? status) {
+        try {
+          final statusValue = readGoogleMapsStatus(status);
+          if (statusValue != 'OK' || response == null) {
+            completer.complete(null);
+            return;
+          }
 
-        final rows = response.rows.toDart;
-        if (rows.isEmpty) {
-          completer.complete(null);
-          return;
-        }
+          final matrix = response as _DistanceMatrixResponse;
+          final rows = matrix.rows.toDart;
+          if (rows.isEmpty) {
+            completer.complete(null);
+            return;
+          }
 
-        final elements = rows.first.elements.toDart;
-        if (elements.isEmpty || elements.first.status != 'OK') {
-          completer.complete(null);
-          return;
-        }
+          final elements = rows.first.elements.toDart;
+          if (elements.isEmpty) {
+            completer.complete(null);
+            return;
+          }
 
-        completer.complete(elements.first.distance.value / 1609.344);
+          final element = elements.first;
+          if (element.status != 'OK') {
+            completer.complete(null);
+            return;
+          }
+
+          completer.complete(element.distance.value / 1609.344);
+        } catch (_) {
+          if (!completer.isCompleted) completer.complete(null);
+        }
       }).toJS,
     );
 
-    return completer.future;
+    return completer.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => null,
+    );
   }
 }
 
@@ -117,7 +174,10 @@ extension type _GeocodeRequest._(JSObject _) implements JSObject {
 
 extension type _GeocoderComponentRestrictions._(JSObject _)
     implements JSObject {
-  external factory _GeocoderComponentRestrictions({String? country});
+  external factory _GeocoderComponentRestrictions({
+    String? country,
+    String? postalCode,
+  });
 }
 
 extension type _GeocoderResult._(JSObject _) implements JSObject {
@@ -125,12 +185,7 @@ extension type _GeocoderResult._(JSObject _) implements JSObject {
 }
 
 extension type _Geometry._(JSObject _) implements JSObject {
-  external _JsLatLng get location;
-}
-
-extension type _JsLatLng._(JSObject _) implements JSObject {
-  external double lat();
-  external double lng();
+  external JSAny? get location;
 }
 
 @JS('google.maps.DistanceMatrixService')
