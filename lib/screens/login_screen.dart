@@ -3,9 +3,13 @@ import 'package:flutter/services.dart';
 
 import '../config/app_routes.dart';
 import '../l10n/app_localizations.dart';
+import '../models/user_onboarding_models.dart';
 import '../services/auth_api_service.dart';
+import '../services/auth_session_service.dart';
+import '../services/onboarding_service.dart';
 import '../widgets/ai_support_chat_widget.dart';
 import '../widgets/auth_form_scaffold.dart';
+import 'app_shell.dart';
 
 /// `/login` — email + password form with a clear path to forgot-password.
 class LoginScreen extends StatefulWidget {
@@ -65,8 +69,29 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (result.success) {
+      final email = _emailController.text.trim();
+      final role = await OnboardingService().loadRole();
+      await AuthSessionService.instance.startSession(
+        email: email,
+        role: role,
+      );
+      if (!mounted) return;
       setState(() => _loading = false);
-      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+
+      final initialTab = switch (role) {
+        UserRole.recipient => AppTab.recipient,
+        UserRole.ngoPartner => AppTab.ngoPortal,
+        UserRole.donor || null => AppTab.home,
+      };
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute<void>(
+          builder: (_) => AiSupportHost(
+            child: AppShell(initialTab: initialTab),
+          ),
+        ),
+        (route) => false,
+      );
       return;
     }
 

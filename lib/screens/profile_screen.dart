@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../config/app_routes.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/profile_address.dart';
 import '../services/ai_vision_service.dart';
+import '../services/auth_session_service.dart';
 import '../services/available_items_service.dart';
 import '../services/donation_service.dart';
 import '../services/emergency_mode_service.dart';
@@ -134,6 +136,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _loadProfileImage();
   }
 
+  Future<void> _logOut() async {
+    final loc = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(loc.t('auth.logOut')),
+        content: Text(loc.t('auth.logOutConfirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(loc.t('common.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(loc.t('auth.logOut')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    await AuthSessionService.instance.clearSession();
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.entry,
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -153,9 +184,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           const LanguageMenuButton(),
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: loc.t('profile.settingsTooltip'),
+            onPressed: _logOut,
+            icon: const Icon(Icons.logout),
+            tooltip: loc.t('auth.logOut'),
           ),
         ],
       ),

@@ -688,5 +688,7 @@
   "auth.loginFailed": "Email or password is incorrect.",
   "auth.registerFailed": "Could not create your account. Please try again.",
   "auth.passwordNotSet": "No password has been set for this account yet. Use Set or reset password to create one.",
-  "auth.setPasswordHelp": "If you signed up before passwords were required, open Set or reset password to create your first password."
+  "auth.setPasswordHelp": "If you signed up before passwords were required, open Set or reset password to create your first password.",
+  "auth.logOut": "Log out",
+  "auth.logOutConfirm": "Sign out of your MedGift account?"
 }

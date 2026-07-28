@@ -6,6 +6,7 @@ import '../../config/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/user_onboarding_models.dart';
 import '../../services/auth_api_service.dart';
+import '../../services/auth_session_service.dart';
 import '../../services/onboarding_document_service.dart';
 import '../../services/onboarding_service.dart';
 import '../../services/ngo_partner_service.dart';
@@ -165,6 +166,10 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     );
 
     await _onboardingService.saveProfile(profile);
+    await AuthSessionService.instance.startSession(
+      email: email,
+      role: widget.role,
+    );
     if (_isNgo) {
       NgoPartnerService.instance.activateSessionFromProfile(profile);
     }
@@ -173,16 +178,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
     setState(() => _isSubmitting = false);
 
-    final initialTab = switch (widget.role) {
-      UserRole.donor => AppTab.home,
-      UserRole.recipient => AppTab.recipient,
-      UserRole.ngoPartner => AppTab.ngoPortal,
-    };
-
+    // Land inside the app on Profile so the new member sees their account
+    // immediately — no return trip through Login.
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(
-        builder: (_) => AiSupportHost(
-          child: AppShell(initialTab: initialTab),
+        builder: (_) => const AiSupportHost(
+          child: AppShell(initialTab: AppTab.profile),
         ),
       ),
       (route) => false,

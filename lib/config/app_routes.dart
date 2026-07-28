@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../screens/ai_vision_screen.dart';
+import '../screens/app_entry_screen.dart';
 import '../screens/app_shell.dart';
-import '../screens/auth_landing_screen.dart';
 import '../screens/dme_donate_screen.dart';
 import '../screens/exchange_screen.dart';
 import '../screens/forgot_password_screen.dart';
@@ -191,8 +191,7 @@ class AppRoutes {
   }
 
   static Map<String, WidgetBuilder> get routes => {
-        AppRoutes.entry: (_) =>
-            const AiSupportHost(child: AuthLandingScreen()),
+        AppRoutes.entry: (_) => const AppEntryScreen(),
         AppRoutes.login: (_) => const LoginHost(),
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),

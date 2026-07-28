@@ -688,5 +688,7 @@
   "auth.loginFailed": "E-posta veya şifre hatalı.",
   "auth.registerFailed": "Hesap oluşturulamadı. Lütfen tekrar deneyin.",
   "auth.passwordNotSet": "Bu hesap için henüz şifre belirlenmemiş. Şifre belirle / sıfırla adımını kullanın.",
-  "auth.setPasswordHelp": "Şifre zorunlu olmadan önce kayıt olduysanız, ilk şifrenizi oluşturmak için Şifre belirle / sıfırla sayfasını açın."
+  "auth.setPasswordHelp": "Şifre zorunlu olmadan önce kayıt olduysanız, ilk şifrenizi oluşturmak için Şifre belirle / sıfırla sayfasını açın.",
+  "auth.logOut": "Çıkış yap",
+  "auth.logOutConfirm": "MedGift hesabınızdan çıkış yapılsın mı?"
 }
