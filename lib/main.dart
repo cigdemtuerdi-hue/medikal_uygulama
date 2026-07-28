@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'config/app_config.dart';
 import 'config/app_routes.dart';
 import 'config/app_theme.dart';
+import 'config/configure_url_strategy_stub.dart'
+    if (dart.library.html) 'config/configure_url_strategy_web.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/locale_controller.dart';
 import 'services/emergency_mode_service.dart';
@@ -13,6 +15,7 @@ import 'widgets/disaster_emergency_widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  configureAppUrlStrategy();
   await dotenv.load(fileName: '.env', isOptional: true);
   await LocaleController.instance.loadSavedLocale();
 
@@ -51,6 +54,7 @@ class MedGiftApp extends StatelessWidget {
           ],
           initialRoute: AppRoutes.entry,
           routes: AppRoutes.routes,
+          onGenerateRoute: AppRoutes.onGenerateRoute,
           builder: (context, child) {
             final direction = LocaleController.instance.textDirection;
             return Directionality(

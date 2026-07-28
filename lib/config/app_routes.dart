@@ -5,13 +5,16 @@ import '../screens/app_shell.dart';
 import '../screens/auth_landing_screen.dart';
 import '../screens/dme_donate_screen.dart';
 import '../screens/exchange_screen.dart';
+import '../screens/forgot_password_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/login_screen.dart';
 import '../screens/my_items_screen.dart';
 import '../screens/ngo_dashboard_screen.dart';
 import '../screens/onboarding/role_selection_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/recipient_profile_screen.dart';
 import '../screens/requests_screen.dart';
+import '../screens/reset_password_screen.dart';
 import '../screens/urgent_wishlist_screen.dart';
 import '../screens/wound_care_donate_screen.dart';
 import '../widgets/ai_support_chat_widget.dart';
@@ -140,13 +143,55 @@ class AppRoutes {
   static const profile = '/profile';
   static const roleSelection = '/onboarding/role';
   static const profileCreation = '/onboarding/profile';
+  static const login = '/login';
+  static const forgotPassword = '/forgot-password';
+  static const resetPasswordPrefix = '/reset-password';
+
+  /// Named route for reset screen when token is passed via [RouteSettings.arguments].
+  static const resetPassword = '/reset-password';
+
+  static String resetPasswordPath(String token) =>
+      '$resetPasswordPrefix/${Uri.encodeComponent(token)}';
 
   static Map<String, WidgetBuilder> get routes => {
         AppRoutes.entry: (_) =>
             const AiSupportHost(child: AuthLandingScreen()),
+        AppRoutes.login: (_) => const LoginHost(),
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),
+        AppRoutes.forgotPassword: (_) => const ForgotPasswordHost(),
         for (final tab in AppTab.values)
           tab.route: (_) => AiSupportHost(child: AppShell(initialTab: tab)),
       };
+
+  /// Resolves `/reset-password/:token` deep links from email.
+  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    final name = settings.name ?? '';
+
+    final resetMatch =
+        RegExp(r'^/reset-password/([^/]+)/?$').firstMatch(name);
+    if (resetMatch != null) {
+      final token = Uri.decodeComponent(resetMatch.group(1)!);
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => ResetPasswordHost(token: token),
+      );
+    }
+
+    // `/reset-password` with token in arguments (in-app navigation).
+    if (name == AppRoutes.resetPassword) {
+      final args = settings.arguments;
+      final token = args is String
+          ? args
+          : (args is Map && args['token'] is String)
+              ? args['token'] as String
+              : '';
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => ResetPasswordHost(token: token),
+      );
+    }
+
+    return null;
+  }
 }

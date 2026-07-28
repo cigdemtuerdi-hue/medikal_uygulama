@@ -24,7 +24,11 @@ class AuthLandingScreen extends StatelessWidget {
   }
 
   void _openLogin(BuildContext context) {
-    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    Navigator.of(context).pushNamed(AppRoutes.login);
+  }
+
+  void _openForgotPassword(BuildContext context) {
+    Navigator.of(context).pushNamed(AppRoutes.forgotPassword);
   }
 
   void _openAboutUs(BuildContext context) {
@@ -84,6 +88,7 @@ class AuthLandingScreen extends StatelessWidget {
                     label: Text(loc.t('auth.logIn')),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size.fromHeight(52),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -93,9 +98,20 @@ class AuthLandingScreen extends StatelessWidget {
                     label: Text(loc.t('auth.signUp')),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size.fromHeight(52),
                     ),
                   ),
                   const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => _openForgotPassword(context),
+                    icon: const Icon(Icons.lock_reset_outlined),
+                    label: Text(loc.t('auth.forgotPasswordCta')),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     loc.t('auth.newHere'),
                     style: theme.textTheme.bodySmall,

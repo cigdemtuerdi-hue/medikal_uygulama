@@ -42,6 +42,10 @@ app.*.map.json
 # Environment secrets
 .env
 
+# Node API (server/)
+server/node_modules/
+server/.env
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile

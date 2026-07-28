@@ -1,0 +1,24 @@
+{
+  "name": "medgift-us-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MedGift US auth & API server (forgot-password, etc.)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "mongoose": "^8.9.5",
+    "nodemailer": "^6.10.1",
+    "twilio": "^5.13.1"
+  }
+}

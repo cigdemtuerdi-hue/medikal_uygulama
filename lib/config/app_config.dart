@@ -71,4 +71,22 @@ class AppConfig {
     } catch (_) {}
     return 'medgift';
   }
+
+  /// Base URL for the MedGift Node API (forgot / reset password, etc.).
+  ///
+  /// Resolution order:
+  /// 1. `--dart-define=API_BASE_URL=...`
+  /// 2. `API_BASE_URL` in `.env`
+  /// 3. Local default `http://localhost:3001`
+  static String get apiBaseUrl {
+    const define = String.fromEnvironment('API_BASE_URL');
+    if (define.isNotEmpty) return define.trim().replaceAll(RegExp(r'/$'), '');
+    try {
+      final env = dotenv.maybeGet('API_BASE_URL')?.trim();
+      if (env != null && env.isNotEmpty) {
+        return env.replaceAll(RegExp(r'/$'), '');
+      }
+    } catch (_) {}
+    return 'http://127.0.0.1:3001';
+  }
 }

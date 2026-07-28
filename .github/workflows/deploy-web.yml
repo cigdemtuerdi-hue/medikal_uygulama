@@ -65,12 +65,14 @@ jobs:
           ADMIN_NOTIFY_EMAIL: ${{ secrets.ADMIN_NOTIFY_EMAIL }}
           ADMIN_EMAIL_ENDPOINT: ${{ secrets.ADMIN_EMAIL_ENDPOINT }}
           ADMIN_PIN: ${{ secrets.ADMIN_PIN }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
           cat > .env << EOF
           GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
           ADMIN_NOTIFY_EMAIL=${ADMIN_NOTIFY_EMAIL}
           ADMIN_EMAIL_ENDPOINT=${ADMIN_EMAIL_ENDPOINT}
           ADMIN_PIN=${ADMIN_PIN}
+          API_BASE_URL=${API_BASE_URL}
           EOF
           sed -i 's/^[[:space:]]*//' .env
           test -s .env || echo "GOOGLE_MAPS_API_KEY=" > .env
@@ -81,18 +83,22 @@ jobs:
       - name: Build web
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
           # Custom domain (medgift.us) and Firebase serve from site root.
           # github.io/repo path still works as a redirect once the custom domain is set.
           flutter build web --release \
             --base-href / \
-            --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY}"
+            --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY}" \
+            --dart-define=API_BASE_URL="${API_BASE_URL}"
 
       - name: Ensure CNAME for medgift.us in build output
         if: ${{ github.event.inputs.target != 'firebase' }}
         run: |
           # web/CNAME is copied by Flutter into build/web; rewrite to guarantee apex domain.
           echo "medgift.us" > build/web/CNAME
+          # SPA fallback so /forgot-password and /reset-password/:token work on GitHub Pages.
+          cp build/web/index.html build/web/404.html
           echo "Published CNAME=$(cat build/web/CNAME)"
 
       - name: Deploy to GitHub Pages (gh-pages)
