@@ -17,12 +17,15 @@ class AddressAutocompleteService {
   Future<AddressSearchResult> search(String query) async {
     final offline = UsOfflineAddressCatalog.search(query);
 
-    if (!_lookup.isAvailable) {
+    if (offline.isNotEmpty || !_lookup.isAvailable) {
       return AddressSearchResult(suggestions: offline);
     }
 
     try {
-      if (!await _ensureReady()) {
+      final ready = await _lookup.waitUntilReady(
+        timeout: const Duration(seconds: 4),
+      );
+      if (!ready) {
         return AddressSearchResult(suggestions: offline);
       }
       final remote = await _lookup.search(query);

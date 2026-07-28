@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/address_search_result.dart';
 import '../models/us_address_models.dart';
 import '../services/address_autocomplete_service.dart';
+import '../services/us_offline_address_catalog.dart';
 
 class UsAddressAutocompleteField extends StatefulWidget {
   const UsAddressAutocompleteField({
@@ -56,12 +57,15 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
     if (trimmed.isEmpty) return const [];
 
     if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
-      final zipMatch =
+      final zipMatch = UsOfflineAddressCatalog.findByZip(trimmed) ??
           await AddressAutocompleteService.instance.findByZip(trimmed);
       if (zipMatch != null) {
         return [zipMatch];
       }
     }
+
+    final offline = UsOfflineAddressCatalog.search(trimmed);
+    if (offline.isNotEmpty) return offline;
 
     final result = await AddressAutocompleteService.instance.search(trimmed);
     if (result.suggestions.isNotEmpty) {
@@ -138,13 +142,10 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
                 field.didChange(value);
                 final trimmed = value.trim();
                 if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
-                  AddressAutocompleteService.instance
-                      .findByZip(trimmed)
-                      .then((match) {
-                    if (match != null && mounted) {
-                      widget.onAddressSelected?.call(match);
-                    }
-                  });
+                  final match = UsOfflineAddressCatalog.findByZip(trimmed);
+                  if (match != null && mounted) {
+                    widget.onAddressSelected?.call(match);
+                  }
                 }
               },
             );

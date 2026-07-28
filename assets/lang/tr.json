@@ -463,6 +463,8 @@
   "passItOn.durationUnknown": "devam ediyor",
   "passItOn.metaPresent": "{date} · Mevcut",
   "passItOn.entryTitle": "Aktar ve Eşya Yolculuğu",
+  "browseEquipment.entryTitle": "Yakınınızdaki Ekipmanları Bulun",
+  "browseEquipment.entryBody": "Bağışlanan tekerlekli sandalye, yürüteç ve daha fazlasını görün — ZIP bölgenize mesafeyi inceleyin.",
   "passItOn.entryBody": "Alınan Öğelerimi Aç ({count}) — artık ihtiyacınız olmayan eşyaları tek dokunuşla yeniden listeleyin.",
   "ngo.verifiedBadge": "Doğrulanmış STK Ortağı",
   "ngo.appBarTitle": "Kâr Amacı Gütmeyen Portal",

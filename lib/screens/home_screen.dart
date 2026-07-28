@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../config/app_routes.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/localized_labels.dart';
 import '../models/donation_models.dart';
 import '../services/donation_service.dart';
+import '../widgets/browse_equipment_entry_card.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/corporate_esg_badge_cards.dart';
 import '../widgets/impact_esg_dashboard_card.dart';
@@ -48,6 +50,8 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const ComplianceBanner(),
+            const SizedBox(height: 16),
+            const BrowseEquipmentEntryCard(),
             const SizedBox(height: 16),
             const PassItOnEntryCard(),
             const SizedBox(height: 24),
@@ -99,19 +103,27 @@ class HomeScreen extends StatelessWidget {
               runSpacing: 12,
               children: [
                 FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed(AppRoutes.dme);
+                  },
                   icon: const Icon(Icons.accessible),
                   label: Text(loc.t('home.donateDme')),
                 ),
                 FilledButton.tonalIcon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushReplacementNamed(AppRoutes.woundCare);
+                  },
                   icon: const Icon(Icons.healing),
                   label: Text(loc.t('home.donateWoundCare')),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.document_scanner_outlined),
-                  label: Text(loc.t('home.aiEquipmentScan')),
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushReplacementNamed(AppRoutes.recipient);
+                  },
+                  icon: const Icon(Icons.near_me_outlined),
+                  label: Text(loc.t('browseEquipment.entryTitle')),
                 ),
               ],
             ),

@@ -463,6 +463,8 @@
   "passItOn.durationUnknown": "ongoing",
   "passItOn.metaPresent": "{date} · Present",
   "passItOn.entryTitle": "Pass It On & Item Journey",
+  "browseEquipment.entryTitle": "Find Equipment Near You",
+  "browseEquipment.entryBody": "Browse donated wheelchairs, walkers, and more — see distance to each item in your ZIP area.",
   "passItOn.entryBody": "Open My Received Items ({count}) — re-list gear you no longer need in one tap.",
   "ngo.verifiedBadge": "Verified NGO Partner",
   "ngo.appBarTitle": "Non-Profit Portal",
