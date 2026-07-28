@@ -153,6 +153,43 @@ class AppRoutes {
   static String resetPasswordPath(String token) =>
       '$resetPasswordPrefix/${Uri.encodeComponent(token)}';
 
+  /// Browser path for web deep links (`/forgot-password`, `/reset-password/:token`).
+  static String get initialRouteName {
+    final path = Uri.base.path;
+    if (path.isEmpty || path == '/') return entry;
+    return path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+  }
+
+  static Route<dynamic> _materialRoute(
+    RouteSettings settings,
+    WidgetBuilder builder,
+  ) {
+    return MaterialPageRoute<void>(settings: settings, builder: builder);
+  }
+
+  /// Single-route bootstrap so deep links are not buried under `/`.
+  static List<Route<dynamic>> onGenerateInitialRoutes(String initialRoute) {
+    final raw = initialRoute.isEmpty ? entry : initialRoute;
+    final path = Uri.tryParse(raw)?.path ?? raw;
+    final name = path.isEmpty ? entry : path;
+
+    final settings = RouteSettings(name: name);
+    final generated = onGenerateRoute(settings);
+    if (generated != null) return [generated];
+
+    final builder = routes[name];
+    if (builder != null) {
+      return [_materialRoute(settings, builder)];
+    }
+
+    return [
+      _materialRoute(
+        const RouteSettings(name: entry),
+        routes[entry]!,
+      ),
+    ];
+  }
+
   static Map<String, WidgetBuilder> get routes => {
         AppRoutes.entry: (_) =>
             const AiSupportHost(child: AuthLandingScreen()),

@@ -52,10 +52,9 @@ class MedGiftApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          // Use the browser path on web so /forgot-password and
-          // /reset-password/:token deep links work (not always `/`).
-          initialRoute:
-              WidgetsBinding.instance.platformDispatcher.defaultRouteName,
+          // Web deep links: read Uri.base and build a single initial route.
+          initialRoute: AppRoutes.initialRouteName,
+          onGenerateInitialRoutes: AppRoutes.onGenerateInitialRoutes,
           routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.onGenerateRoute,
           builder: (context, child) {
