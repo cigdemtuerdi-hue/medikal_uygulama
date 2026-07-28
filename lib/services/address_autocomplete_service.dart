@@ -42,7 +42,10 @@ class AddressAutocompleteService {
         );
       }
 
-      final remote = await _lookup.search(query);
+      final remote = await _lookup.search(query).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => const <UsAddressSuggestion>[],
+      );
       final merged = _mergeSuggestions(offline, remote);
       return AddressSearchResult(
         suggestions: UsAddressFilter.onlyUnitedStates(merged),
@@ -85,7 +88,10 @@ class AddressAutocompleteService {
         timeout: const Duration(seconds: 5),
       );
       if (!ready) return null;
-      final remote = await _lookup.findByZip(zip);
+      final remote = await _lookup.findByZip(zip).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => null,
+      );
       if (remote == null || !UsAddressFilter.matches(remote)) {
         return null;
       }

@@ -55,10 +55,24 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) return const [];
 
+    try {
+      return await _lookupSuggestions(trimmed).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => const [],
+      );
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<List<UsAddressSuggestion>> _lookupSuggestions(String trimmed) async {
     if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
       final zipMatch =
           await AddressAutocompleteService.instance.findByZip(trimmed);
       if (zipMatch != null) return [zipMatch];
+      // ZIP path already exhausted offline + Zippopotam + Google; avoid
+      // falling through to Places search which re-enters findByZip.
+      return const [];
     }
 
     final result = await AddressAutocompleteService.instance.search(trimmed);
