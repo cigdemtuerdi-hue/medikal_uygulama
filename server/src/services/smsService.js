@@ -51,8 +51,12 @@ async function sendPasswordResetSms({ to, code }) {
   const provider = (process.env.SMS_PROVIDER || 'console').toLowerCase();
 
   if (provider === 'console') {
-    console.info('[sms] to=', to, 'body=', body);
-    return { provider: 'console', to };
+    const err = new Error(
+      'SMS_PROVIDER=console. Production için SMS_PROVIDER=twilio ve Twilio anahtarlarını ayarlayın.',
+    );
+    err.code = 'SMS_CONFIG_MISSING';
+    err.status = 503;
+    throw err;
   }
 
   if (provider === 'twilio') {
@@ -85,11 +89,18 @@ async function sendPasswordResetSms({ to, code }) {
       return { provider: 'twilio', sid: msg.sid };
     } catch (cause) {
       console.error('[sms] Twilio send failed:', cause);
+      const twilioCode = cause?.code;
+      const fromInvalid =
+        twilioCode === 21212 ||
+        twilioCode === 21606 ||
+        /from/i.test(String(cause?.message || ''));
       const err = new Error(
-        'SMS gönderilemedi. Lütfen daha sonra tekrar deneyin.',
+        fromInvalid
+          ? 'Twilio gönderen numarası bu hesapta yok. Twilio’da bir numara satın alıp TWILIO_FROM_NUMBER olarak ayarlayın.'
+          : 'SMS gönderilemedi. Lütfen daha sonra tekrar deneyin.',
       );
-      err.code = 'SMS_SEND_FAILED';
-      err.status = 502;
+      err.code = fromInvalid ? 'SMS_FROM_INVALID' : 'SMS_SEND_FAILED';
+      err.status = fromInvalid ? 503 : 502;
       err.cause = cause;
       throw err;
     }

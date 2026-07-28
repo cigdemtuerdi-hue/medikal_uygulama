@@ -46,12 +46,39 @@ app.get('/api/health', (_req, res) => {
   } catch (_) {
     db = 'starting';
   }
+
+  const emailPassSet = Boolean((process.env.EMAIL_PASS || '').trim());
+  const twilioSidSet = Boolean((process.env.TWILIO_ACCOUNT_SID || '').trim());
+  const twilioTokenSet = Boolean((process.env.TWILIO_AUTH_TOKEN || '').trim());
+  const twilioKeyPairSet = Boolean(
+    (process.env.TWILIO_API_KEY || '').trim() &&
+      (process.env.TWILIO_API_SECRET || '').trim(),
+  );
+  const twilioFromSet = Boolean((process.env.TWILIO_FROM_NUMBER || '').trim());
+  const smsProvider = (process.env.SMS_PROVIDER || 'console').toLowerCase();
+
   res.json({
     ok: true,
     service: 'medgift-us-api',
     db,
     emailDryRun:
       String(process.env.EMAIL_DRY_RUN || '').toLowerCase() === 'true',
+    smsDryRun: String(process.env.SMS_DRY_RUN || '').toLowerCase() === 'true',
+    messaging: {
+      emailConfigured: Boolean(
+        (process.env.EMAIL_HOST || '').trim() &&
+          (process.env.EMAIL_USER || '').trim() &&
+          emailPassSet,
+      ),
+      emailHost: (process.env.EMAIL_HOST || '').trim() || null,
+      smsProvider,
+      twilioConfigured: Boolean(
+        smsProvider === 'twilio' &&
+          twilioSidSet &&
+          twilioFromSet &&
+          (twilioTokenSet || twilioKeyPairSet),
+      ),
+    },
   });
 });
 

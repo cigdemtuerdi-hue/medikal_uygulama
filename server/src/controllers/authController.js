@@ -209,10 +209,12 @@ async function forgotPasswordViaEmail(user, res) {
       console.error('[forgot-password] Failed to clear reset token:', clearErr);
     }
     console.error('[forgot-password] Email send failed:', emailErr);
-    return res.status(502).json({
+    return res.status(emailErr.status || 502).json({
       success: false,
-      message: 'İstek işlenemedi. Lütfen daha sonra tekrar deneyin.',
-      code: 'REQUEST_FAILED',
+      message:
+        emailErr.message ||
+        'İstek işlenemedi. Lütfen daha sonra tekrar deneyin.',
+      code: emailErr.code || 'REQUEST_FAILED',
     });
   }
 
@@ -254,10 +256,12 @@ async function forgotPasswordViaSms(user, deliveryPhone, res) {
       console.error('[forgot-password] Failed to clear SMS code:', clearErr);
     }
     console.error('[forgot-password] SMS send failed:', smsErr);
-    return res.status(502).json({
+    return res.status(smsErr.status || 502).json({
       success: false,
-      message: 'İstek işlenemedi. Lütfen daha sonra tekrar deneyin.',
-      code: 'REQUEST_FAILED',
+      message:
+        smsErr.message ||
+        'İstek işlenemedi. Lütfen daha sonra tekrar deneyin.',
+      code: smsErr.code || 'REQUEST_FAILED',
     });
   }
 

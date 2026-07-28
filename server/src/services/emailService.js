@@ -121,11 +121,19 @@ async function sendPasswordResetEmail({ to, resetUrl }) {
   } catch (cause) {
     console.error('[email] Password-reset send failed:', cause);
 
+    const responseCode = cause?.responseCode;
+    const isAuth =
+      cause?.code === 'EAUTH' ||
+      responseCode === 535 ||
+      /auth/i.test(String(cause?.message || ''));
+
     const err = new Error(
-      'Şifre sıfırlama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.',
+      isAuth
+        ? 'E-posta sunucusu şifreyi reddetti. info@medgift.us SMTP şifresini güncelleyin.'
+        : 'Şifre sıfırlama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.',
     );
-    err.code = 'EMAIL_SEND_FAILED';
-    err.status = 502;
+    err.code = isAuth ? 'EMAIL_AUTH_FAILED' : 'EMAIL_SEND_FAILED';
+    err.status = isAuth ? 503 : 502;
     err.cause = cause;
     throw err;
   }
