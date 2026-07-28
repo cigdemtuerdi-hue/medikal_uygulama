@@ -3,6 +3,7 @@ import '../models/us_address_models.dart';
 import 'us_address_filter.dart';
 import 'us_address_lookup.dart';
 import 'us_offline_address_catalog.dart';
+import 'us_zip_lookup_service.dart';
 
 /// US-wide address autocomplete — offline catalog + Google Places.
 class AddressAutocompleteService {
@@ -14,7 +15,16 @@ class AddressAutocompleteService {
   PlatformAddressLookup get _lookup => PlatformAddressLookup.instance;
 
   Future<AddressSearchResult> search(String query) async {
-    final offline = UsOfflineAddressCatalog.search(query);
+    final trimmed = query.trim();
+
+    if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
+      final zipMatch = await findByZip(trimmed);
+      if (zipMatch != null) {
+        return AddressSearchResult(suggestions: [zipMatch]);
+      }
+    }
+
+    final offline = UsOfflineAddressCatalog.search(trimmed);
 
     if (!_lookup.isAvailable) {
       return AddressSearchResult(
@@ -64,6 +74,9 @@ class AddressAutocompleteService {
   Future<UsAddressSuggestion?> findByZip(String zip) async {
     final offline = UsOfflineAddressCatalog.findByZip(zip);
     if (offline != null) return offline;
+
+    final fromApi = await UsZipLookupService.instance.lookup(zip);
+    if (fromApi != null) return fromApi;
 
     if (!_lookup.isAvailable) return null;
 

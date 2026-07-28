@@ -55,17 +55,14 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) return const [];
 
-    final result = await AddressAutocompleteService.instance.search(trimmed);
-    if (result.suggestions.isNotEmpty) {
-      return result.suggestions;
+    if (trimmed.length == 5 && int.tryParse(trimmed) != null) {
+      final zipMatch =
+          await AddressAutocompleteService.instance.findByZip(trimmed);
+      if (zipMatch != null) return [zipMatch];
     }
 
-    if (result.manualFallback) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _activateManualFallback();
-      });
-    }
-    return const [];
+    final result = await AddressAutocompleteService.instance.search(trimmed);
+    return result.suggestions;
   }
 
   @override
@@ -172,15 +169,10 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
             padding: const EdgeInsets.all(16),
             child: Text(AppLocalizations.of(context).t('empty.addressTitle')),
           ),
-          errorBuilder: (context, error) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _activateManualFallback();
-            });
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(AddressAutocompleteMessages.apiUnavailable),
-            );
-          },
+          errorBuilder: (context, error) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(AppLocalizations.of(context).t('empty.addressTitle')),
+          ),
         );
       },
     );

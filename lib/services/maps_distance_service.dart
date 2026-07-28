@@ -7,6 +7,7 @@ import '../models/map_distance_result.dart';
 import '../models/profile_address.dart';
 import 'maps_distance_lookup.dart';
 import 'proximity_matching_service.dart';
+import 'us_zip_lookup_service.dart';
 
 /// Distance + geocoding backed by a platform-specific lookup:
 /// the Maps JavaScript API on web (avoids CORS) and Google Maps
@@ -50,6 +51,10 @@ class MapsDistanceService {
               await _lookup.geocodeAddress('$donorZipCode, USA');
         }
       }
+
+      recipientLatLng ??=
+          await _latLngFromZipLookup(recipient.zipCode);
+      donorAreaCenter ??= await _latLngFromZipLookup(donorZipCode);
 
       recipientLatLng ??= _proximity.latLngForZip(recipient.zipCode);
       donorAreaCenter ??= _proximity.latLngForZip(donorZipCode);
@@ -112,6 +117,10 @@ class MapsDistanceService {
         }
       }
 
+      originLatLng ??= await _latLngFromZipLookup(origin.zipCode);
+      destinationLatLng ??=
+          await _latLngFromZipLookup(destination.zipCode);
+
       originLatLng ??= _proximity.latLngForZip(origin.zipCode);
       destinationLatLng ??= _proximity.latLngForZip(destination.zipCode);
 
@@ -157,6 +166,12 @@ class MapsDistanceService {
   }
 
   double _toRadians(double degrees) => degrees * math.pi / 180;
+
+  Future<LatLng?> _latLngFromZipLookup(String zip) async {
+    final coords = await UsZipLookupService.instance.latLngForZip(zip);
+    if (coords == null) return null;
+    return LatLng(coords.$1, coords.$2);
+  }
 
   String _formatItemDistanceLabel(double miles) {
     if (miles < 0.1) {

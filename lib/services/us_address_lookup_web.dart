@@ -5,6 +5,7 @@ import 'dart:js_interop_unsafe';
 import '../config/united_states_bounds.dart';
 import '../config/app_config.dart';
 import '../models/us_address_models.dart';
+import 'google_maps_js_helpers_web.dart';
 import 'google_maps_ready.dart';
 import 'us_address_filter.dart';
 
@@ -72,35 +73,42 @@ class PlatformAddressLookup {
           west: UnitedStatesBounds.minLng,
         ),
       ),
-      ((JSArray<_Prediction>? predictions, JSString status) {
-        final statusValue = status.toDart;
-        if (statusValue == 'ZERO_RESULTS' || predictions == null) {
-          completer.complete(const []);
-          return;
-        }
-        if (statusValue != 'OK') {
-          completer.completeError(
-            Exception('Places autocomplete failed: $statusValue'),
+      ((JSAny? predictions, JSAny? status) {
+        try {
+          final statusValue = readGoogleMapsStatus(status);
+          if (statusValue == 'ZERO_RESULTS' || predictions == null) {
+            completer.complete(const []);
+            return;
+          }
+          if (statusValue != 'OK') {
+            completer.complete(const []);
+            return;
+          }
+
+          final list = (predictions as JSArray).toDart;
+          completer.complete(
+            UsAddressFilter.onlyUnitedStates(
+              list
+                  .map(
+                    (prediction) {
+                      final row = prediction as _Prediction;
+                      return UsAddressSuggestion(
+                        zipCode: '',
+                        city: '',
+                        state: '',
+                        streetAddress: row.description,
+                        placeId: row.placeId,
+                        needsResolution: true,
+                      );
+                    },
+                  )
+                  .where((suggestion) => suggestion.primaryLine.isNotEmpty)
+                  .toList(),
+            ),
           );
-          return;
+        } catch (_) {
+          if (!completer.isCompleted) completer.complete(const []);
         }
-        completer.complete(
-          UsAddressFilter.onlyUnitedStates(
-            predictions.toDart
-                .map(
-                  (prediction) => UsAddressSuggestion(
-                    zipCode: '',
-                    city: '',
-                    state: '',
-                    streetAddress: prediction.description,
-                    placeId: prediction.placeId,
-                    needsResolution: true,
-                  ),
-                )
-                .where((suggestion) => suggestion.primaryLine.isNotEmpty)
-                .toList(),
-          ),
-        );
       }).toJS,
     );
 
@@ -142,17 +150,26 @@ class PlatformAddressLookup {
 
     _geocoderService.geocode(
       request,
-      ((JSArray<_GeocoderResult>? results, JSString status) {
-        final statusValue = status.toDart;
-        if (statusValue == 'ZERO_RESULTS' || results == null) {
-          completer.complete(const []);
-          return;
+      ((JSAny? results, JSAny? status) {
+        try {
+          final statusValue = readGoogleMapsStatus(status);
+          if (statusValue == 'ZERO_RESULTS' || results == null) {
+            completer.complete(const []);
+            return;
+          }
+          if (statusValue != 'OK') {
+            completer.complete(const []);
+            return;
+          }
+          completer.complete(
+            (results as JSArray)
+                .toDart
+                .map((result) => result as _GeocoderResult)
+                .toList(),
+          );
+        } catch (_) {
+          if (!completer.isCompleted) completer.complete(const []);
         }
-        if (statusValue != 'OK') {
-          completer.completeError(Exception('Geocoding failed: $statusValue'));
-          return;
-        }
-        completer.complete(results.toDart);
       }).toJS,
     );
 
