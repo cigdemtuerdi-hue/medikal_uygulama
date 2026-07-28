@@ -1,73 +1,62 @@
 import '../models/us_address_models.dart';
 
-/// Offline US ZIP / city lookup used when Google Places is unavailable
-/// (missing key, referrer restrictions, billing, etc.).
+/// Offline US ZIP / city lookup when Google Places is unavailable.
 class UsOfflineAddressCatalog {
   UsOfflineAddressCatalog._();
 
   static const List<UsAddressSuggestion> entries = [
+    // California
     UsAddressSuggestion(zipCode: '92880', city: 'Eastvale', state: 'CA'),
-    UsAddressSuggestion(
-      zipCode: '92880',
-      city: 'Eastvale',
-      state: 'CA',
-      streetAddress: '12300 Limonite Ave',
-    ),
-    UsAddressSuggestion(zipCode: '94102', city: 'San Francisco', state: 'CA'),
-    UsAddressSuggestion(
-      zipCode: '94102',
-      city: 'San Francisco',
-      state: 'CA',
-      streetAddress: '1355 Market St',
-    ),
     UsAddressSuggestion(zipCode: '90012', city: 'Los Angeles', state: 'CA'),
-    UsAddressSuggestion(
-      zipCode: '90210',
-      city: 'Beverly Hills',
-      state: 'CA',
-    ),
+    UsAddressSuggestion(zipCode: '90210', city: 'Beverly Hills', state: 'CA'),
+    UsAddressSuggestion(zipCode: '94102', city: 'San Francisco', state: 'CA'),
     UsAddressSuggestion(zipCode: '92101', city: 'San Diego', state: 'CA'),
     UsAddressSuggestion(zipCode: '95814', city: 'Sacramento', state: 'CA'),
-    UsAddressSuggestion(zipCode: '89101', city: 'Las Vegas', state: 'NV'),
-    UsAddressSuggestion(zipCode: '85004', city: 'Phoenix', state: 'AZ'),
-    UsAddressSuggestion(zipCode: '78701', city: 'Austin', state: 'TX'),
+    UsAddressSuggestion(zipCode: '95110', city: 'San Jose', state: 'CA'),
+    // New York
+    UsAddressSuggestion(zipCode: '10001', city: 'New York', state: 'NY'),
+    UsAddressSuggestion(zipCode: '11201', city: 'Brooklyn', state: 'NY'),
+    UsAddressSuggestion(zipCode: '14201', city: 'Buffalo', state: 'NY'),
+    // Texas
     UsAddressSuggestion(zipCode: '77002', city: 'Houston', state: 'TX'),
     UsAddressSuggestion(zipCode: '75201', city: 'Dallas', state: 'TX'),
-    UsAddressSuggestion(zipCode: '60601', city: 'Chicago', state: 'IL'),
-    UsAddressSuggestion(
-      zipCode: '60601',
-      city: 'Chicago',
-      state: 'IL',
-      streetAddress: '233 S Wacker Dr',
-    ),
-    UsAddressSuggestion(zipCode: '10001', city: 'New York', state: 'NY'),
-    UsAddressSuggestion(
-      zipCode: '10001',
-      city: 'New York',
-      state: 'NY',
-      streetAddress: '350 5th Ave',
-    ),
+    UsAddressSuggestion(zipCode: '78701', city: 'Austin', state: 'TX'),
+    UsAddressSuggestion(zipCode: '78205', city: 'San Antonio', state: 'TX'),
+    // Florida
     UsAddressSuggestion(zipCode: '33101', city: 'Miami', state: 'FL'),
-    UsAddressSuggestion(zipCode: '30303', city: 'Atlanta', state: 'GA'),
-    UsAddressSuggestion(zipCode: '98101', city: 'Seattle', state: 'WA'),
-    UsAddressSuggestion(zipCode: '80202', city: 'Denver', state: 'CO'),
-    UsAddressSuggestion(zipCode: '19103', city: 'Philadelphia', state: 'PA'),
-    UsAddressSuggestion(zipCode: '02108', city: 'Boston', state: 'MA'),
+    UsAddressSuggestion(zipCode: '32801', city: 'Orlando', state: 'FL'),
+    UsAddressSuggestion(zipCode: '33602', city: 'Tampa', state: 'FL'),
+    // Illinois / Midwest
+    UsAddressSuggestion(zipCode: '60601', city: 'Chicago', state: 'IL'),
     UsAddressSuggestion(zipCode: '48226', city: 'Detroit', state: 'MI'),
     UsAddressSuggestion(zipCode: '55401', city: 'Minneapolis', state: 'MN'),
-    UsAddressSuggestion(zipCode: '97201', city: 'Portland', state: 'OR'),
+    UsAddressSuggestion(zipCode: '64106', city: 'Kansas City', state: 'MO'),
+    // Southeast
+    UsAddressSuggestion(zipCode: '30303', city: 'Atlanta', state: 'GA'),
+    UsAddressSuggestion(zipCode: '28202', city: 'Charlotte', state: 'NC'),
     UsAddressSuggestion(zipCode: '37203', city: 'Nashville', state: 'TN'),
     UsAddressSuggestion(zipCode: '70112', city: 'New Orleans', state: 'LA'),
-    UsAddressSuggestion(zipCode: '64106', city: 'Kansas City', state: 'MO'),
+    // Mountain / Southwest
+    UsAddressSuggestion(zipCode: '85004', city: 'Phoenix', state: 'AZ'),
+    UsAddressSuggestion(zipCode: '89101', city: 'Las Vegas', state: 'NV'),
+    UsAddressSuggestion(zipCode: '80202', city: 'Denver', state: 'CO'),
+    UsAddressSuggestion(zipCode: '87102', city: 'Albuquerque', state: 'NM'),
+    // Pacific Northwest
+    UsAddressSuggestion(zipCode: '98101', city: 'Seattle', state: 'WA'),
+    UsAddressSuggestion(zipCode: '97201', city: 'Portland', state: 'OR'),
+    // Northeast
+    UsAddressSuggestion(zipCode: '02108', city: 'Boston', state: 'MA'),
+    UsAddressSuggestion(zipCode: '19103', city: 'Philadelphia', state: 'PA'),
+    UsAddressSuggestion(zipCode: '21201', city: 'Baltimore', state: 'MD'),
+    // Other
     UsAddressSuggestion(zipCode: '43215', city: 'Columbus', state: 'OH'),
-    UsAddressSuggestion(zipCode: '28202', city: 'Charlotte', state: 'NC'),
-    UsAddressSuggestion(zipCode: '89109', city: 'Las Vegas', state: 'NV'),
-    UsAddressSuggestion(zipCode: '91761', city: 'Ontario', state: 'CA'),
-    UsAddressSuggestion(zipCode: '92335', city: 'Fontana', state: 'CA'),
-    UsAddressSuggestion(zipCode: '92553', city: 'Moreno Valley', state: 'CA'),
+    UsAddressSuggestion(zipCode: '73102', city: 'Oklahoma City', state: 'OK'),
+    UsAddressSuggestion(zipCode: '84101', city: 'Salt Lake City', state: 'UT'),
+    UsAddressSuggestion(zipCode: '96813', city: 'Honolulu', state: 'HI'),
+    UsAddressSuggestion(zipCode: '99501', city: 'Anchorage', state: 'AK'),
   ];
 
-  static List<UsAddressSuggestion> search(String query, {int limit = 8}) {
+  static List<UsAddressSuggestion> search(String query, {int limit = 12}) {
     final normalized = query.trim().toLowerCase();
     if (normalized.isEmpty) return const [];
 
@@ -93,6 +82,7 @@ class UsOfflineAddressCatalog {
     if (entry.zipCode.startsWith(normalized)) return true;
     if (entry.city.toLowerCase().contains(normalized)) return true;
     if (entry.state.toLowerCase().startsWith(normalized)) return true;
+    if (normalized == 'usa' || normalized == 'united states') return true;
     if (entry.streetAddress?.toLowerCase().contains(normalized) ?? false) {
       return true;
     }

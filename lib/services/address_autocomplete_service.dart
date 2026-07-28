@@ -1,9 +1,10 @@
 import '../models/address_search_result.dart';
 import '../models/us_address_models.dart';
+import 'us_address_filter.dart';
 import 'us_address_lookup.dart';
 import 'us_offline_address_catalog.dart';
 
-/// US address autocomplete — offline catalog first, Google Places when available.
+/// US-wide address autocomplete — offline catalog + Google Places.
 class AddressAutocompleteService {
   AddressAutocompleteService._();
 
@@ -12,28 +13,34 @@ class AddressAutocompleteService {
 
   PlatformAddressLookup get _lookup => PlatformAddressLookup.instance;
 
-  Future<bool> _ensureReady() => _lookup.waitUntilReady();
-
   Future<AddressSearchResult> search(String query) async {
     final offline = UsOfflineAddressCatalog.search(query);
 
-    if (offline.isNotEmpty || !_lookup.isAvailable) {
-      return AddressSearchResult(suggestions: offline);
+    if (!_lookup.isAvailable) {
+      return AddressSearchResult(
+        suggestions: UsAddressFilter.onlyUnitedStates(offline),
+      );
     }
 
     try {
       final ready = await _lookup.waitUntilReady(
-        timeout: const Duration(seconds: 4),
+        timeout: const Duration(seconds: 5),
       );
       if (!ready) {
-        return AddressSearchResult(suggestions: offline);
+        return AddressSearchResult(
+          suggestions: UsAddressFilter.onlyUnitedStates(offline),
+        );
       }
+
       final remote = await _lookup.search(query);
+      final merged = _mergeSuggestions(offline, remote);
       return AddressSearchResult(
-        suggestions: _mergeSuggestions(offline, remote),
+        suggestions: UsAddressFilter.onlyUnitedStates(merged),
       );
     } catch (_) {
-      return AddressSearchResult(suggestions: offline);
+      return AddressSearchResult(
+        suggestions: UsAddressFilter.onlyUnitedStates(offline),
+      );
     }
   }
 
@@ -42,8 +49,13 @@ class AddressAutocompleteService {
     if (!_lookup.isAvailable) return suggestion;
 
     try {
-      if (!await _ensureReady()) return suggestion;
-      return await _lookup.resolve(suggestion);
+      final ready = await _lookup.waitUntilReady(
+        timeout: const Duration(seconds: 5),
+      );
+      if (!ready) return suggestion;
+      final resolved = await _lookup.resolve(suggestion);
+      if (!UsAddressFilter.matches(resolved)) return null;
+      return resolved;
     } catch (_) {
       return suggestion;
     }
@@ -56,8 +68,15 @@ class AddressAutocompleteService {
     if (!_lookup.isAvailable) return null;
 
     try {
-      if (!await _ensureReady()) return null;
-      return await _lookup.findByZip(zip);
+      final ready = await _lookup.waitUntilReady(
+        timeout: const Duration(seconds: 5),
+      );
+      if (!ready) return null;
+      final remote = await _lookup.findByZip(zip);
+      if (remote == null || !UsAddressFilter.matches(remote)) {
+        return null;
+      }
+      return remote;
     } catch (_) {
       return null;
     }
@@ -75,7 +94,7 @@ class AddressAutocompleteService {
 
     void add(UsAddressSuggestion suggestion) {
       final key =
-          '${suggestion.zipCode}|${suggestion.city}|${suggestion.state}|${suggestion.streetAddress ?? ''}';
+          '${suggestion.zipCode}|${suggestion.city}|${suggestion.state}|${suggestion.streetAddress ?? suggestion.primaryLine}';
       if (seen.add(key)) merged.add(suggestion);
     }
 

@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
+import '../config/united_states_bounds.dart';
 import '../config/app_config.dart';
 import '../models/us_address_models.dart';
 import 'google_maps_ready.dart';
+import 'us_address_filter.dart';
 
 /// Web lookup — calls the Google Maps JavaScript API that is loaded via the
 /// script tag in `web/index.html`. Requests run inside the Maps JS library,
@@ -62,6 +64,13 @@ class PlatformAddressLookup {
         input: trimmed,
         componentRestrictions: _ComponentRestrictions(country: 'us'),
         types: ['geocode'.toJS].toJS,
+        region: 'us',
+        bounds: _LatLngBoundsLiteral(
+          north: UnitedStatesBounds.maxLat,
+          south: UnitedStatesBounds.minLat,
+          east: UnitedStatesBounds.maxLng,
+          west: UnitedStatesBounds.minLng,
+        ),
       ),
       ((JSArray<_Prediction>? predictions, JSString status) {
         final statusValue = status.toDart;
@@ -76,19 +85,21 @@ class PlatformAddressLookup {
           return;
         }
         completer.complete(
-          predictions.toDart
-              .map(
-                (prediction) => UsAddressSuggestion(
-                  zipCode: '',
-                  city: '',
-                  state: '',
-                  streetAddress: prediction.description,
-                  placeId: prediction.placeId,
-                  needsResolution: true,
-                ),
-              )
-              .where((suggestion) => suggestion.primaryLine.isNotEmpty)
-              .toList(),
+          UsAddressFilter.onlyUnitedStates(
+            predictions.toDart
+                .map(
+                  (prediction) => UsAddressSuggestion(
+                    zipCode: '',
+                    city: '',
+                    state: '',
+                    streetAddress: prediction.description,
+                    placeId: prediction.placeId,
+                    needsResolution: true,
+                  ),
+                )
+                .where((suggestion) => suggestion.primaryLine.isNotEmpty)
+                .toList(),
+          ),
         );
       }).toJS,
     );
@@ -208,6 +219,17 @@ extension type _AutocompleteRequest._(JSObject _) implements JSObject {
     required String input,
     _ComponentRestrictions? componentRestrictions,
     JSArray<JSString>? types,
+    String? region,
+    _LatLngBoundsLiteral? bounds,
+  });
+}
+
+extension type _LatLngBoundsLiteral._(JSObject _) implements JSObject {
+  external factory _LatLngBoundsLiteral({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
   });
 }
 

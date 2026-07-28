@@ -3,6 +3,7 @@ import 'package:google_maps_webservice/places.dart';
 
 import '../config/app_config.dart';
 import '../models/us_address_models.dart';
+import 'us_address_filter.dart';
 
 /// Live US address autocomplete via Google Maps Web Services (Places + Geocoding).
 class GooglePlacesAddressService {
@@ -55,10 +56,12 @@ class GooglePlacesAddressService {
       throw Exception(response.errorMessage ?? response.status);
     }
 
-    return response.predictions
-        .map(_fromPrediction)
-        .where((suggestion) => suggestion.primaryLine.isNotEmpty)
-        .toList();
+    return UsAddressFilter.onlyUnitedStates(
+      response.predictions
+          .map(_fromPrediction)
+          .where((suggestion) => suggestion.primaryLine.isNotEmpty)
+          .toList(),
+    );
   }
 
   Future<UsAddressSuggestion> resolve(UsAddressSuggestion suggestion) async {
