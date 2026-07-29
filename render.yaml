@@ -12,10 +12,13 @@ services:
         value: production
       - key: PORT
         value: 3001
+      # Set in Render Dashboard → Environment (do not commit the real URI):
+      #   MONGODB_URI=mongodb+srv://USER:PASS@cluster.../medgift_us
+      #   USE_MEMORY_DB=false
       - key: MONGODB_URI
-        value: memory
+        sync: false
       - key: USE_MEMORY_DB
-        value: "true"
+        value: "false"
       - key: APP_ORIGIN
         value: https://medgift.us
       - key: EMAIL_DRY_RUN

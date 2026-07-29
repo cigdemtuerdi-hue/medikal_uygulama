@@ -14,13 +14,35 @@ Owner console: `https://medgift.us/admin`
 - Public site reads `GET /api/settings/public`
 
 **Persistence:** On Render free tier with `MONGODB_URI=memory`, CMS saves are lost on restart.
-For permanent control:
+For permanent control, set MongoDB Atlas (≈5 minutes):
 
-1. Create a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
-2. Copy the connection string into Render → `medgift-us-api` → Environment:
-   - `MONGODB_URI=mongodb+srv://...`
-   - `USE_MEMORY_DB=false`
-3. Redeploy the API
+### MongoDB Atlas + Render (kalıcı CMS)
+
+1. Open https://www.mongodb.com/cloud/atlas → **Sign up / Log in** (Google ile olabilir).
+2. **Build a Database** → **M0 Free** → Provider/Region (örn. AWS / closest) → **Create**.
+3. **Database Access** → **Add New Database User**
+   - Authentication: Password
+   - Username: `medgift`
+   - Password: güçlü bir şifre oluştur (kaydet)
+   - Role: **Atlas admin** veya **Read and write to any database**
+4. **Network Access** → **Add IP Address** → **Allow Access from Anywhere** (`0.0.0.0/0`)  
+   (Render’ın IP’si değiştiği için gerekli)
+5. **Database** → **Connect** → **Drivers** → copy connection string:  
+   `mongodb+srv://medgift:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`  
+   - `<password>` yerine gerçek şifreyi yaz  
+   - Sonuna DB adı ekle: `...mongodb.net/medgift_us?retryWrites=true&w=majority`
+6. Open https://dashboard.render.com → service **medgift-us-api** → **Environment**:
+
+   | Key | Value |
+   |-----|--------|
+   | `MONGODB_URI` | `mongodb+srv://medgift:SIFRE@cluster.../medgift_us?retryWrites=true&w=majority` |
+   | `USE_MEMORY_DB` | `false` |
+   | `ADMIN_PASSWORD` | (admin paneli şifren) |
+
+7. **Manual Deploy** → **Deploy latest commit** (veya Save Environment → otomatik restart).
+8. Kontrol: https://medgift-us-api.onrender.com/api/health  
+   `"db":"mongo"` görünmeli (artık `"memory"` olmamalı).
+9. Admin’de bir metin kaydet → Render restart sonrası da durmalı.
 
 Also set `ADMIN_PASSWORD` on Render (and keep GitHub secret in sync).
 
