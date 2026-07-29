@@ -125,21 +125,39 @@ async function seedDemoUserIfNeeded() {
   );
 }
 
+function redactMongoUri(uri) {
+  return String(uri || '').replace(
+    /(mongodb(?:\+srv)?:\/\/[^:]+:)([^@]+)(@)/i,
+    '$1***$3',
+  );
+}
+
 async function resolveUserModel() {
   if (USE_MEMORY) {
     console.info('[db] Using in-memory store (USE_MEMORY_DB / MONGODB_URI=memory)');
     return MemoryUserModel;
   }
 
+  if (!MONGODB_URI || MONGODB_URI === 'memory') {
+    console.warn('[db] MONGODB_URI missing — using in-memory store.');
+    return MemoryUserModel;
+  }
+
   try {
+    console.info('[db] Connecting to', redactMongoUri(MONGODB_URI));
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 2500,
+      // Atlas from Render free tier can be slow on cold start.
+      serverSelectionTimeoutMS: 20000,
+      connectTimeoutMS: 20000,
     });
-    console.info('[db] Connected:', MONGODB_URI);
+    console.info('[db] Connected:', redactMongoUri(MONGODB_URI));
     return MongoUser;
   } catch (err) {
     console.warn('[db] Mongo unavailable — falling back to in-memory store.');
-    console.warn('[db]', err.message);
+    console.warn('[db] reason:', err?.name || 'Error', '-', err?.message || err);
+    if (err?.reason?.type) {
+      console.warn('[db] topology:', err.reason.type);
+    }
     return MemoryUserModel;
   }
 }
