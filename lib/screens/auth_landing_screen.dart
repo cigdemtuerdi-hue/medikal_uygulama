@@ -72,10 +72,7 @@ class AuthLandingScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Center(
-                        child: MedGiftBrand(
-                          showLabel: true,
-                          logoSize: 72,
-                        ),
+                        child: _AdminEntryLogo(),
                       ),
                       const SizedBox(height: 28),
                       Text(
@@ -147,6 +144,24 @@ class AuthLandingScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Long-press logo → owner CMS (hidden from casual users).
+class _AdminEntryLogo extends StatelessWidget {
+  const _AdminEntryLogo();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPress: () {
+        Navigator.of(context).pushNamed(AppRoutes.admin);
+      },
+      child: const MedGiftBrand(
+        showLabel: true,
+        logoSize: 72,
+      ),
     );
   }
 }

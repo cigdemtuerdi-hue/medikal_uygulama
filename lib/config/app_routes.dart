@@ -157,9 +157,21 @@ class AppRoutes {
 
   /// Browser path for web deep links (`/forgot-password`, `/reset-password/:token`).
   static String get initialRouteName {
-    final path = Uri.base.path;
+    final uri = Uri.base;
+    final path = uri.path;
+    final q = uri.queryParameters;
+
+    // Explicit CMS entry: /admin, /admin/, ?admin=1, #/admin
+    if (path == admin ||
+        path == '$admin/' ||
+        q['admin'] == '1' ||
+        q['cms'] == '1' ||
+        uri.fragment == 'admin' ||
+        uri.fragment == '/admin') {
+      return admin;
+    }
+
     if (path.isEmpty || path == '/') return entry;
-    if (path == '/admin' || path == '/admin/') return admin;
     return path.endsWith('/') ? path.substring(0, path.length - 1) : path;
   }
 
@@ -173,8 +185,12 @@ class AppRoutes {
   /// Single-route bootstrap so deep links are not buried under `/`.
   static List<Route<dynamic>> onGenerateInitialRoutes(String initialRoute) {
     final raw = initialRoute.isEmpty ? entry : initialRoute;
-    final path = Uri.tryParse(raw)?.path ?? raw;
-    final name = path.isEmpty ? entry : path;
+    // Prefer live browser location (fixes GH Pages 404.html deep links).
+    final live = initialRouteName;
+    final candidate = (live == admin || live.startsWith('/')) ? live : raw;
+    final path = Uri.tryParse(candidate)?.path ?? candidate;
+    var name = path.isEmpty ? entry : path;
+    if (name == '$admin/') name = admin;
 
     final settings = RouteSettings(name: name);
     final generated = onGenerateRoute(settings);
@@ -207,6 +223,13 @@ class AppRoutes {
   /// Resolves `/reset-password/:token` deep links from email.
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final name = settings.name ?? '';
+
+    if (name == admin || name == '$admin/') {
+      return MaterialPageRoute<void>(
+        settings: const RouteSettings(name: admin),
+        builder: (_) => const AdminConsoleScreen(),
+      );
+    }
 
     final resetMatch =
         RegExp(r'^/reset-password/([^/]+)/?$').firstMatch(name);
