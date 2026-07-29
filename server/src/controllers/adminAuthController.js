@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 
 /**
  * Owner-only admin auth (email + password from env).
@@ -9,8 +10,13 @@ const sessions = new Map();
 
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
+/** Fallback when Render ADMIN_PASSWORD secret is not set yet (owner bootstrap). */
+const BOOTSTRAP_ADMIN_EMAIL = 'info@medgift.us';
+const BOOTSTRAP_ADMIN_PASSWORD_HASH =
+  '$2b$10$cNwGob4rQR42hKvHYhhPgu.dRPAokNW2jEsUkd0czQhiDrCpk6sJi';
+
 function adminEmail() {
-  return (process.env.ADMIN_EMAIL || process.env.ADMIN_NOTIFY_EMAIL || '')
+  return (process.env.ADMIN_EMAIL || process.env.ADMIN_NOTIFY_EMAIL || BOOTSTRAP_ADMIN_EMAIL)
     .trim()
     .toLowerCase();
 }
@@ -20,7 +26,8 @@ function adminPassword() {
 }
 
 function isAdminConfigured() {
-  return Boolean(adminEmail() && adminPassword());
+  // Always true: env password OR bootstrap hash for the owner mailbox.
+  return Boolean(adminEmail());
 }
 
 function purgeExpiredSessions() {
@@ -65,20 +72,31 @@ function getValidSession(token) {
   return session;
 }
 
+async function passwordMatches(password, expectedEmail) {
+  const configured = adminPassword();
+  if (configured) {
+    const passBuf = Buffer.from(password);
+    const expectedBuf = Buffer.from(configured);
+    return (
+      passBuf.length === expectedBuf.length &&
+      crypto.timingSafeEqual(passBuf, expectedBuf)
+    );
+  }
+
+  // Bootstrap path: only for the owner mailbox until ADMIN_PASSWORD is set on Render.
+  if (expectedEmail !== BOOTSTRAP_ADMIN_EMAIL) return false;
+  try {
+    return await bcrypt.compare(password, BOOTSTRAP_ADMIN_PASSWORD_HASH);
+  } catch (_) {
+    return false;
+  }
+}
+
 /**
  * POST /api/auth/admin-login
  * Body: { email, password }
  */
-function adminLogin(req, res) {
-  if (!isAdminConfigured()) {
-    return res.status(503).json({
-      success: false,
-      message:
-        'Admin hesabı henüz yapılandırılmadı. ADMIN_EMAIL ve ADMIN_PASSWORD ayarlayın.',
-      code: 'ADMIN_NOT_CONFIGURED',
-    });
-  }
-
+async function adminLogin(req, res) {
   const email = String(req.body?.email || '')
     .trim()
     .toLowerCase();
@@ -93,15 +111,8 @@ function adminLogin(req, res) {
   }
 
   const expectedEmail = adminEmail();
-  const expectedPassword = adminPassword();
-
-  // Constant-time-ish compare for password; email equality is exact.
   const emailOk = email === expectedEmail;
-  const passBuf = Buffer.from(password);
-  const expectedBuf = Buffer.from(expectedPassword);
-  const passOk =
-    passBuf.length === expectedBuf.length &&
-    crypto.timingSafeEqual(passBuf, expectedBuf);
+  const passOk = emailOk ? await passwordMatches(password, expectedEmail) : false;
 
   if (!emailOk || !passOk) {
     return res.status(401).json({
