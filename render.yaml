@@ -36,3 +36,6 @@ services:
         value: donor@medgift.us
       - key: SEED_DEMO_USER_PHONE
         value: "+15551234567"
+      # Demo login for memory-DB deploys (free Render). Change after Mongo is wired.
+      - key: SEED_DEMO_USER_PASSWORD
+        value: MedGiftDemo1!

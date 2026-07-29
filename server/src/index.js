@@ -84,19 +84,38 @@ async function seedDemoUserIfNeeded() {
   if (!email) return;
 
   const phone = (process.env.SEED_DEMO_USER_PHONE || '+15551234567').trim();
+  const seedPassword = (process.env.SEED_DEMO_USER_PASSWORD || '').trim();
+  const bcrypt = require('bcrypt');
   const User = getUserModel();
   const existing = await User.findOne({ email });
+
   if (existing) {
+    let changed = false;
     if (!existing.phone && phone) {
       existing.phone = phone;
+      changed = true;
+    }
+    // Keep demo login working on memory restarts when a seed password is set.
+    if (seedPassword && seedPassword.length >= 8) {
+      existing.passwordHash = await bcrypt.hash(seedPassword, 10);
+      changed = true;
+    }
+    if (changed) {
       await existing.save();
-      console.info(`[seed] Demo user phone updated: ${email} → ${phone}`);
+      console.info(`[seed] Demo user updated: ${email}`);
     }
     return;
   }
 
-  await User.create({ email, phone });
-  console.info(`[seed] Demo user created: ${email} phone=${phone}`);
+  const doc = { email, phone };
+  if (seedPassword && seedPassword.length >= 8) {
+    doc.passwordHash = await bcrypt.hash(seedPassword, 10);
+  }
+  await User.create(doc);
+  console.info(
+    `[seed] Demo user created: ${email} phone=${phone}` +
+      (doc.passwordHash ? ' (password set)' : ' (no password)'),
+  );
 }
 
 async function resolveUserModel() {
