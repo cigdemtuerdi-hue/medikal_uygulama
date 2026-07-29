@@ -15,34 +15,38 @@ class MedGiftLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.skyBlue.withValues(alpha: 0.55),
-            AppTheme.cleanWhite,
-            AppTheme.lightBlue.withValues(alpha: 0.28),
+    return Semantics(
+      label: 'MedGift US',
+      image: true,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.skyBlue.withValues(alpha: 0.55),
+              AppTheme.cleanWhite,
+              AppTheme.lightBlue.withValues(alpha: 0.28),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(size * 0.24),
+          border: Border.all(
+            color: AppTheme.primaryBlue.withValues(alpha: 0.18),
+            width: math.max(1.0, size * 0.02),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryDeepBlue.withValues(alpha: 0.12),
+              blurRadius: size * 0.12,
+              offset: Offset(0, size * 0.04),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(size * 0.24),
-        border: Border.all(
-          color: AppTheme.primaryBlue.withValues(alpha: 0.18),
-          width: math.max(1.0, size * 0.02),
+        child: CustomPaint(
+          painter: _HeartInWheelchairPainter(),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryDeepBlue.withValues(alpha: 0.12),
-            blurRadius: size * 0.12,
-            offset: Offset(0, size * 0.04),
-          ),
-        ],
-      ),
-      child: CustomPaint(
-        painter: _HeartInWheelchairPainter(),
       ),
     );
   }
@@ -63,41 +67,49 @@ class MedGiftBrand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (compact || !showLabel) {
-      return MedGiftLogo(size: logoSize);
+      return Semantics(
+        label: 'MedGift US',
+        header: true,
+        child: ExcludeSemantics(child: MedGiftLogo(size: logoSize)),
+      );
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        MedGiftLogo(size: logoSize),
-        const SizedBox(width: 12),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'MedGift',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryDeepBlue,
-                      letterSpacing: -0.3,
-                      height: 1.1,
-                    ),
-              ),
-              Text(
-                'US',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.primaryBlue,
-                      letterSpacing: 1.2,
-                      height: 1.1,
-                    ),
-              ),
-            ],
+    return Semantics(
+      label: 'MedGift US',
+      header: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ExcludeSemantics(child: MedGiftLogo(size: logoSize)),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'MedGift',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryDeepBlue,
+                        letterSpacing: -0.3,
+                        height: 1.1,
+                      ),
+                ),
+                Text(
+                  'US',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.primaryBlue,
+                        letterSpacing: 1.2,
+                        height: 1.1,
+                      ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

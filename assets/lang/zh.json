@@ -673,5 +673,16 @@
   "profile.saveProfile": "保存资料",
   "profile.editSaved": "资料已更新。",
   "profile.editValidation": "请填写所有必填项。",
-  "profile.editNoProfile": "未找到注册资料。请重新完成注册。"
+  "profile.editNoProfile": "未找到注册资料。请重新完成注册。",
+  "a11y.mainNav": "主导航",
+  "a11y.dismissOverlay": "关闭遮罩",
+  "a11y.sendMessage": "发送消息",
+  "a11y.changeProfilePhoto": "更改头像",
+  "a11y.decreaseQuantity": "减少数量",
+  "a11y.increaseQuantity": "增加数量",
+  "a11y.quantityValue": "数量 {count}",
+  "a11y.clearSearch": "清除搜索",
+  "a11y.addressSuggestionsHint": "输入地址或邮编以查看建议",
+  "a11y.loadingSuggestions": "正在加载地址建议",
+  "a11y.scannedImageAlt": "扫描的设备图片：{name}"
 }

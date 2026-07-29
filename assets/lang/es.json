@@ -673,5 +673,16 @@
   "profile.saveProfile": "Guardar perfil",
   "profile.editSaved": "Tu perfil se actualizó.",
   "profile.editValidation": "Completa todos los campos obligatorios.",
-  "profile.editNoProfile": "No hay perfil de registro. Completa el registro de nuevo."
+  "profile.editNoProfile": "No hay perfil de registro. Completa el registro de nuevo.",
+  "a11y.mainNav": "Navegación principal",
+  "a11y.dismissOverlay": "Cerrar superposición",
+  "a11y.sendMessage": "Enviar mensaje",
+  "a11y.changeProfilePhoto": "Cambiar foto de perfil",
+  "a11y.decreaseQuantity": "Disminuir cantidad",
+  "a11y.increaseQuantity": "Aumentar cantidad",
+  "a11y.quantityValue": "Cantidad {count}",
+  "a11y.clearSearch": "Borrar búsqueda",
+  "a11y.addressSuggestionsHint": "Escriba una dirección o código postal para ver sugerencias",
+  "a11y.loadingSuggestions": "Cargando sugerencias de dirección",
+  "a11y.scannedImageAlt": "Imagen del equipo escaneado: {name}"
 }

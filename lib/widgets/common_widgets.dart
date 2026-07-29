@@ -15,12 +15,14 @@ class ComplianceBanner extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.verified_user_outlined, color: AppTheme.warningAmber),
+            const Icon(Icons.verified_user_outlined, color: AppTheme.warningOnSurface),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 AppLocalizations.of(context).t('compliance.banner'),
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.primaryDeepBlue,
+                    ),
               ),
             ),
           ],

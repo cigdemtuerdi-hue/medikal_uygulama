@@ -406,13 +406,21 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
                       child: Row(
                         children: [
                           IconButton(
+                            tooltip: loc.t('a11y.decreaseQuantity'),
                             onPressed: _quantity > 1
                                 ? () => setState(() => _quantity--)
                                 : null,
                             icon: const Icon(Icons.remove),
                           ),
-                          Text('$_quantity'),
+                          Semantics(
+                            liveRegion: true,
+                            label: loc.t('a11y.quantityValue', {
+                              'count': '$_quantity',
+                            }),
+                            child: Text('$_quantity'),
+                          ),
                           IconButton(
+                            tooltip: loc.t('a11y.increaseQuantity'),
                             onPressed: () => setState(() => _quantity++),
                             icon: const Icon(Icons.add),
                           ),

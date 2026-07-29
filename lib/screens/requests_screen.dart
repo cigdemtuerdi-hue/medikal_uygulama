@@ -94,7 +94,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   _StatusSummaryCard(
                     label: loc.t('requests.statusDelivered'),
                     count: delivered,
-                    color: AppTheme.accentTeal,
+                    color: AppTheme.accentOnSurface,
                     icon: Icons.check_circle_outline,
                     isSelected: _filter == RequestStatus.delivered,
                     onTap: () => setState(() {

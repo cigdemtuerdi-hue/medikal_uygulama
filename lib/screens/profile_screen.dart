@@ -253,15 +253,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Row(
                       children: [
-                        GestureDetector(
-                          onTap: _showImageSourceSheet,
-                          child: CircleAvatar(
-                            radius: 32,
-                            backgroundColor: Colors.white24,
-                            backgroundImage: avatarImage,
-                            child: avatarImage == null
-                                ? const Icon(Icons.person, size: 36, color: Colors.white)
-                                : null,
+                        Semantics(
+                          button: true,
+                          label: loc.t('a11y.changeProfilePhoto'),
+                          child: Tooltip(
+                            message: loc.t('a11y.changeProfilePhoto'),
+                            child: Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: _showImageSourceSheet,
+                                child: CircleAvatar(
+                                  radius: 32,
+                                  backgroundColor: Colors.white24,
+                                  backgroundImage: avatarImage,
+                                  child: avatarImage == null
+                                      ? const Icon(Icons.person,
+                                          size: 36, color: Colors.white)
+                                      : null,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -339,7 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   icon: Icons.savings_outlined,
                                   label: loc.t('profile.statTotalDeductions'),
                                   value: formatUsd(totalDeductions),
-                                  color: AppTheme.accentTeal,
+                                  color: AppTheme.accentOnSurface,
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -366,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Icons.savings_outlined,
                                 label: loc.t('profile.statTotalDeductions'),
                                 value: formatUsd(totalDeductions),
-                                color: AppTheme.accentTeal,
+                                color: AppTheme.accentOnSurface,
                               ),
                               const SizedBox(height: 12),
                               _ProfileStatTile(

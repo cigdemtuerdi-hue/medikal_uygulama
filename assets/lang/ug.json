@@ -673,5 +673,16 @@
   "profile.saveProfile": "پروفىلنى ساقلاش",
   "profile.editSaved": "پروفىلىڭىز يېڭىلاندى.",
   "profile.editValidation": "زۆرۈر سۆز بۆلەكلىرىنى تولدۇرۇڭ.",
-  "profile.editNoProfile": "تىزىملىتىش پروفىلى تېپىلمىدى. قايتا تىزىملىتىڭ."
+  "profile.editNoProfile": "تىزىملىتىش پروفىلى تېپىلمىدى. قايتا تىزىملىتىڭ.",
+  "a11y.mainNav": "ئاساسىي يولباشلاش",
+  "a11y.dismissOverlay": "قاتلامنى تاقاش",
+  "a11y.sendMessage": "ئۇچۇر ئەۋەتىش",
+  "a11y.changeProfilePhoto": "ئارخىپ رەسىمىنى ئۆزگەرتىش",
+  "a11y.decreaseQuantity": "ساننى ئازايتىش",
+  "a11y.increaseQuantity": "ساننى كۆپەيتىش",
+  "a11y.quantityValue": "سانى {count}",
+  "a11y.clearSearch": "ئىزدەشنى تازىلاش",
+  "a11y.addressSuggestionsHint": "تەكلىپلەر ئۈچۈن ئادرېس ياكى پوچتا نومۇرىنى كىرگۈزۈڭ",
+  "a11y.loadingSuggestions": "ئادرېس تەكلىپلىرى يۈكلىنىۋاتىدۇ",
+  "a11y.scannedImageAlt": "سىكانەر قىلىنغان ئۈسكۈنە رەسىمى: {name}"
 }

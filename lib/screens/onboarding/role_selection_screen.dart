@@ -71,7 +71,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     title: loc.t('onboarding.recipientTitle'),
                     subtitle: loc.t('onboarding.role.recipient.desc'),
                     icon: Icons.favorite_outline,
-                    color: AppTheme.accentTeal,
+                    color: AppTheme.accentOnSurface,
                     onTap: () => _selectRole(context, UserRole.recipient),
                   ),
                   const SizedBox(height: 16),
@@ -110,7 +110,10 @@ class _RoleOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      child: Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
@@ -174,6 +177,7 @@ class _RoleOptionCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

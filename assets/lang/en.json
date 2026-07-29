@@ -675,5 +675,16 @@
   "profile.saveProfile": "Save profile",
   "profile.editSaved": "Your profile was updated.",
   "profile.editValidation": "Please complete all required fields.",
-  "profile.editNoProfile": "No signup profile found. Please complete registration again."
+  "profile.editNoProfile": "No signup profile found. Please complete registration again.",
+  "a11y.mainNav": "Main navigation",
+  "a11y.dismissOverlay": "Dismiss overlay",
+  "a11y.sendMessage": "Send message",
+  "a11y.changeProfilePhoto": "Change profile photo",
+  "a11y.decreaseQuantity": "Decrease quantity",
+  "a11y.increaseQuantity": "Increase quantity",
+  "a11y.quantityValue": "Quantity {count}",
+  "a11y.clearSearch": "Clear search",
+  "a11y.addressSuggestionsHint": "Type an address or ZIP code to see suggestions",
+  "a11y.loadingSuggestions": "Loading address suggestions",
+  "a11y.scannedImageAlt": "Scanned equipment image: {name}"
 }

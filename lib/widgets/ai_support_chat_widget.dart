@@ -121,6 +121,7 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
     final media = MediaQuery.of(context);
     final bottomInset = media.padding.bottom;
     final keyboard = media.viewInsets.bottom;
+    final loc = AppLocalizations.of(context);
 
     // Only the FAB (and open panel) participate in hit-testing so AppBar
     // controls like the language picker remain tappable underneath.
@@ -128,11 +129,15 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
       children: [
         if (_open) ...[
           Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => setState(() => _open = false),
-              child: ColoredBox(
-                color: Colors.black.withValues(alpha: 0.28),
+            child: Semantics(
+              label: loc.t('a11y.dismissOverlay'),
+              button: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _open = false),
+                child: ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.28),
+                ),
               ),
             ),
           ),
@@ -142,14 +147,23 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
             bottom: math.max(72, 72 + bottomInset) + keyboard,
             child: Material(
               type: MaterialType.transparency,
-              child: _ChatPanel(
-                messages: _messages,
-                typing: _typing,
-                controller: _controller,
-                scrollController: _scrollController,
-                quickKeys: _quickKeys,
-                onClose: () => setState(() => _open = false),
-                onSend: _send,
+              child: FocusTraversalGroup(
+                policy: OrderedTraversalPolicy(),
+                child: Semantics(
+                  scopesRoute: true,
+                  namesRoute: true,
+                  explicitChildNodes: true,
+                  label: loc.t('aiSupport.title'),
+                  child: _ChatPanel(
+                    messages: _messages,
+                    typing: _typing,
+                    controller: _controller,
+                    scrollController: _scrollController,
+                    quickKeys: _quickKeys,
+                    onClose: () => setState(() => _open = false),
+                    onSend: _send,
+                  ),
+                ),
               ),
             ),
           ),
@@ -157,20 +171,35 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
         Positioned(
           right: 18,
           bottom: 18 + bottomInset,
-          child: Material(
-            elevation: 8,
-            color: AppTheme.primaryDeepBlue,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: () => setState(() => _open = !_open),
-              child: SizedBox(
-                width: 56,
-                height: 56,
-                child: Icon(
-                  _open ? Icons.close : Icons.support_agent,
-                  color: Colors.white,
+          child: Semantics(
+            button: true,
+            label: _open
+                ? loc.t('aiSupport.close')
+                : loc.t('aiSupport.fabTooltip'),
+            expanded: _open,
+            child: Tooltip(
+              message: _open
+                  ? loc.t('aiSupport.close')
+                  : loc.t('aiSupport.fabTooltip'),
+              child: Material(
+                elevation: 8,
+                color: AppTheme.primaryDeepBlue,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => setState(() => _open = !_open),
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Icon(
+                      _open ? Icons.close : Icons.support_agent,
+                      color: Colors.white,
+                      semanticLabel: _open
+                          ? loc.t('aiSupport.close')
+                          : loc.t('aiSupport.fabTooltip'),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -289,6 +318,7 @@ class _ChatPanel extends StatelessWidget {
                         textInputAction: TextInputAction.send,
                         onSubmitted: typing ? null : onSend,
                         decoration: InputDecoration(
+                          labelText: loc.t('aiSupport.inputHint'),
                           hintText: loc.t('aiSupport.inputHint'),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
@@ -303,12 +333,14 @@ class _ChatPanel extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     IconButton.filled(
+                      tooltip: loc.t('a11y.sendMessage'),
                       onPressed:
                           typing ? null : () => onSend(controller.text),
                       icon: const Icon(Icons.send_rounded),
                       style: IconButton.styleFrom(
                         backgroundColor: AppTheme.primaryBlue,
                         foregroundColor: Colors.white,
+                        minimumSize: const Size(48, 48),
                       ),
                     ),
                   ],
@@ -388,6 +420,7 @@ class _Header extends StatelessWidget {
             ),
           ),
           IconButton(
+            tooltip: loc.t('aiSupport.close'),
             onPressed: onClose,
             icon: const Icon(Icons.close, color: Colors.white),
           ),

@@ -270,7 +270,7 @@ class _AssetTile extends StatelessWidget {
               'amount': formatUsd(asset.fairMarketValueUsd),
             }),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.accentTeal,
+                  color: AppTheme.accentOnSurface,
                   fontWeight: FontWeight.bold,
                 ),
           ),

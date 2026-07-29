@@ -28,7 +28,7 @@ class RequestTrackingCard extends StatelessWidget {
     return switch (status) {
       RequestStatus.pending => Colors.orange.shade700,
       RequestStatus.shipped => AppTheme.primaryBlue,
-      RequestStatus.delivered => AppTheme.accentTeal,
+      RequestStatus.delivered => AppTheme.accentOnSurface,
     };
   }
 
@@ -213,7 +213,7 @@ class _TimelineStep extends StatelessWidget {
 
   Color _color() {
     if (_isCurrent) return AppTheme.primaryBlue;
-    if (_isCompleted) return AppTheme.accentTeal;
+    if (_isCompleted) return AppTheme.accentOnSurface;
     return Colors.grey.shade400;
   }
 
@@ -269,7 +269,7 @@ class _TimelineConnector extends StatelessWidget {
       child: Container(
         height: 2,
         width: 24,
-        color: isActive ? AppTheme.accentTeal : Colors.grey.shade300,
+        color: isActive ? AppTheme.accentOnSurface : Colors.grey.shade300,
       ),
     );
   }

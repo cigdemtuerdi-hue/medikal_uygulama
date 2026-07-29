@@ -673,5 +673,16 @@
   "profile.saveProfile": "Сохранить профиль",
   "profile.editSaved": "Профиль обновлён.",
   "profile.editValidation": "Заполните все обязательные поля.",
-  "profile.editNoProfile": "Профиль регистрации не найден. Завершите регистрацию снова."
+  "profile.editNoProfile": "Профиль регистрации не найден. Завершите регистрацию снова.",
+  "a11y.mainNav": "Основная навигация",
+  "a11y.dismissOverlay": "Закрыть оверлей",
+  "a11y.sendMessage": "Отправить сообщение",
+  "a11y.changeProfilePhoto": "Изменить фото профиля",
+  "a11y.decreaseQuantity": "Уменьшить количество",
+  "a11y.increaseQuantity": "Увеличить количество",
+  "a11y.quantityValue": "Количество {count}",
+  "a11y.clearSearch": "Очистить поиск",
+  "a11y.addressSuggestionsHint": "Введите адрес или ZIP-код для подсказок",
+  "a11y.loadingSuggestions": "Загрузка подсказок адреса",
+  "a11y.scannedImageAlt": "Изображение отсканированного оборудования: {name}"
 }

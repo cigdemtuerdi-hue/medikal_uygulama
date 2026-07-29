@@ -87,7 +87,7 @@ class _ExchangeReceiptCardState extends State<ExchangeReceiptCard> {
                     Text(
                       formatUsd(asset.fairMarketValueUsd),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppTheme.accentTeal,
+                            color: AppTheme.accentOnSurface,
                             fontWeight: FontWeight.bold,
                           ),
                     ),

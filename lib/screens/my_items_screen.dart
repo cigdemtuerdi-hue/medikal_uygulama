@@ -310,7 +310,7 @@ class _MyItemCardState extends State<_MyItemCard> {
                   Text(
                     formatUsd(record.taxDeductionUsd),
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppTheme.accentTeal,
+                          color: AppTheme.accentOnSurface,
                           fontWeight: FontWeight.bold,
                         ),
                   ),

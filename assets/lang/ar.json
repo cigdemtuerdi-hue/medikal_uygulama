@@ -673,5 +673,16 @@
   "profile.saveProfile": "حفظ الملف",
   "profile.editSaved": "تم تحديث ملفك.",
   "profile.editValidation": "يرجى إكمال جميع الحقول المطلوبة.",
-  "profile.editNoProfile": "لا يوجد ملف تسجيل. يرجى إكمال التسجيل مجددًا."
+  "profile.editNoProfile": "لا يوجد ملف تسجيل. يرجى إكمال التسجيل مجددًا.",
+  "a11y.mainNav": "التنقل الرئيسي",
+  "a11y.dismissOverlay": "إغلاق الطبقة",
+  "a11y.sendMessage": "إرسال رسالة",
+  "a11y.changeProfilePhoto": "تغيير صورة الملف الشخصي",
+  "a11y.decreaseQuantity": "تقليل الكمية",
+  "a11y.increaseQuantity": "زيادة الكمية",
+  "a11y.quantityValue": "الكمية {count}",
+  "a11y.clearSearch": "مسح البحث",
+  "a11y.addressSuggestionsHint": "اكتب عنوانًا أو رمزًا بريديًا لعرض الاقتراحات",
+  "a11y.loadingSuggestions": "جارٍ تحميل اقتراحات العنوان",
+  "a11y.scannedImageAlt": "صورة المعدات الممسوحة: {name}"
 }

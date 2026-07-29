@@ -74,7 +74,7 @@ class DonationHistoryCard extends StatelessWidget {
                     Text(
                       formatUsd(record.taxDeductionUsd),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppTheme.accentTeal,
+                            color: AppTheme.accentOnSurface,
                             fontWeight: FontWeight.bold,
                           ),
                     ),

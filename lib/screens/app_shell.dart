@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../config/app_routes.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/a11y.dart';
 import '../widgets/async_state_widgets.dart';
 import '../widgets/medgift_logo.dart';
 
@@ -58,87 +59,101 @@ class _AppShellState extends State<AppShell> {
     final showRail = width > AppBreakpoints.medium;
     final isExtended = width > AppBreakpoints.medium;
     final loc = AppLocalizations.of(context);
+    final currentTab = AppTab.fromIndex(_selectedIndex);
+    final mainLabel = loc.t('nav.${currentTab.name}');
 
     return Scaffold(
       body: Row(
         children: [
           if (showRail)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
-                    child: IntrinsicHeight(
-                      child: NavigationRail(
-                        extended: isExtended,
-                        selectedIndex: _selectedIndex,
-                        onDestinationSelected: _onDestinationSelected,
-                        groupAlignment: -1,
-                        minWidth: 72,
-                        leading: Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: isExtended ? 12 : 0,
-                          ),
-                          child: Align(
-                            alignment: isExtended
-                                ? AlignmentDirectional.centerStart
-                                : Alignment.center,
-                            child: MedGiftBrand(
-                              compact: !isExtended,
-                              showLabel: isExtended,
-                              logoSize: isExtended ? 40 : 32,
+            A11y.navigation(
+              label: loc.t('a11y.mainNav'),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: NavigationRail(
+                          extended: isExtended,
+                          selectedIndex: _selectedIndex,
+                          onDestinationSelected: _onDestinationSelected,
+                          groupAlignment: -1,
+                          minWidth: 72,
+                          leading: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: isExtended ? 12 : 0,
+                            ),
+                            child: Align(
+                              alignment: isExtended
+                                  ? AlignmentDirectional.centerStart
+                                  : Alignment.center,
+                              child: MedGiftBrand(
+                                compact: !isExtended,
+                                showLabel: isExtended,
+                                logoSize: isExtended ? 40 : 32,
+                              ),
                             ),
                           ),
+                          // Labels remain available to screen readers / tooltips.
+                          labelType: NavigationRailLabelType.none,
+                          destinations: [
+                            for (final tab in AppTab.values)
+                              NavigationRailDestination(
+                                icon: Icon(tab.icon),
+                                selectedIcon: Icon(tab.selectedIcon),
+                                label: Text(loc.t('nav.${tab.name}')),
+                              ),
+                          ],
                         ),
-                        labelType: NavigationRailLabelType.none,
-                        destinations: [
-                          for (final tab in AppTab.values)
-                            NavigationRailDestination(
-                              icon: Icon(tab.icon),
-                              selectedIcon: Icon(tab.selectedIcon),
-                              label: Text(loc.t('nav.${tab.name}')),
-                            ),
-                        ],
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           if (showRail) const VerticalDivider(width: 1),
-          Expanded(child: AppTab.fromIndex(_selectedIndex).buildScreen()),
+          Expanded(
+            child: A11y.main(
+              label: mainLabel,
+              child: currentTab.buildScreen(),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: showRail
           ? null
-          : NavigationBar(
-              selectedIndex: _bottomNavIndex,
-              onDestinationSelected: (index) =>
-                  _onBottomNavTap(_BottomNavItem.values[index]),
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.home_outlined),
-                  selectedIcon: const Icon(Icons.home),
-                  label: loc.t('nav.home'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.person_pin_outlined),
-                  selectedIcon: const Icon(Icons.person_pin),
-                  label: loc.t('nav.recipient'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.person_outline),
-                  selectedIcon: const Icon(Icons.person),
-                  label: loc.t('nav.profile'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.inventory_2_outlined),
-                  selectedIcon: const Icon(Icons.inventory_2),
-                  label: loc.t('nav.myItems'),
-                ),
-              ],
+          : A11y.navigation(
+              label: loc.t('a11y.mainNav'),
+              child: NavigationBar(
+                selectedIndex: _bottomNavIndex,
+                onDestinationSelected: (index) =>
+                    _onBottomNavTap(_BottomNavItem.values[index]),
+                destinations: [
+                  NavigationDestination(
+                    icon: const Icon(Icons.home_outlined),
+                    selectedIcon: const Icon(Icons.home),
+                    label: loc.t('nav.home'),
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.person_pin_outlined),
+                    selectedIcon: const Icon(Icons.person_pin),
+                    label: loc.t('nav.recipient'),
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.person_outline),
+                    selectedIcon: const Icon(Icons.person),
+                    label: loc.t('nav.profile'),
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.inventory_2_outlined),
+                    selectedIcon: const Icon(Icons.inventory_2),
+                    label: loc.t('nav.myItems'),
+                  ),
+                ],
+              ),
             ),
     );
   }

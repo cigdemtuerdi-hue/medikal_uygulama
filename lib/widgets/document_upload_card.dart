@@ -74,13 +74,13 @@ class DocumentUploadCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: AppTheme.warningAmber
-                                    .withValues(alpha: 0.15),
+                                    .withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 loc.t('common.required'),
                                 style: theme.textTheme.labelSmall?.copyWith(
-                                  color: AppTheme.warningAmber,
+                                  color: AppTheme.warningOnSurface,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -100,12 +100,12 @@ class DocumentUploadCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isUploaded
-                    ? AppTheme.accentTeal.withValues(alpha: 0.08)
+                    ? AppTheme.accentOnSurface.withValues(alpha: 0.08)
                     : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isUploaded
-                      ? AppTheme.accentTeal.withValues(alpha: 0.35)
+                      ? AppTheme.accentOnSurface.withValues(alpha: 0.35)
                       : Colors.grey.shade300,
                 ),
               ),
@@ -116,8 +116,8 @@ class DocumentUploadCard extends StatelessWidget {
                         ? Icons.check_circle_outline
                         : Icons.upload_file_outlined,
                     color: isUploaded
-                        ? AppTheme.accentTeal
-                        : Colors.grey.shade600,
+                        ? AppTheme.accentOnSurface
+                        : AppTheme.mutedIcon,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -125,7 +125,9 @@ class DocumentUploadCard extends StatelessWidget {
                       isUploaded
                           ? (fileName ?? loc.t('common.fileUploaded'))
                           : loc.t('common.noFileSelected'),
-                      style: theme.textTheme.bodyMedium,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.primaryDeepBlue,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -134,7 +136,9 @@ class DocumentUploadCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
+            Semantics(
+              label: title,
+              child: Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
@@ -163,6 +167,7 @@ class DocumentUploadCard extends StatelessWidget {
                     label: Text(loc.t('common.selectVideo')),
                   ),
               ],
+            ),
             ),
           ],
         ),

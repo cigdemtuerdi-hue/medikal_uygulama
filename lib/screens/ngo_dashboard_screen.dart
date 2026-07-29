@@ -4,6 +4,7 @@ import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/ngo_partner_models.dart';
 import '../services/ngo_partner_service.dart';
+import '../widgets/a11y.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/verified_ngo_badge.dart';
 
@@ -31,7 +32,7 @@ class _NgoDashboardScreenState extends State<NgoDashboardScreen> {
     var urgency = 'High';
     var category = 'DME';
 
-    final saved = await showDialog<bool>(
+    final saved = await showAccessibleDialog<bool>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
@@ -94,13 +95,21 @@ class _NgoDashboardScreenState extends State<NgoDashboardScreen> {
                           Text(loc.t('ngo.bulkQtyLabel')),
                           const Spacer(),
                           IconButton(
+                            tooltip: loc.t('a11y.decreaseQuantity'),
                             onPressed: quantity > 1
                                 ? () => setLocal(() => quantity--)
                                 : null,
                             icon: const Icon(Icons.remove),
                           ),
-                          Text('$quantity'),
+                          Semantics(
+                            liveRegion: true,
+                            label: loc.t('a11y.quantityValue', {
+                              'count': '$quantity',
+                            }),
+                            child: Text('$quantity'),
+                          ),
                           IconButton(
+                            tooltip: loc.t('a11y.increaseQuantity'),
                             onPressed: () => setLocal(() => quantity++),
                             icon: const Icon(Icons.add),
                           ),
@@ -196,7 +205,7 @@ class _NgoDashboardScreenState extends State<NgoDashboardScreen> {
                     _StatTile(
                       label: loc.t('ngo.statDirect'),
                       value: '${inbound.length}',
-                      color: AppTheme.accentTeal,
+                      color: AppTheme.accentOnSurface,
                       icon: Icons.local_shipping_outlined,
                     ),
                     _StatTile(
@@ -259,7 +268,7 @@ class _NgoDashboardScreenState extends State<NgoDashboardScreen> {
                               AppTheme.accentTeal.withValues(alpha: 0.15),
                           child: const Icon(
                             Icons.volunteer_activism,
-                            color: AppTheme.accentTeal,
+                            color: AppTheme.accentOnSurface,
                           ),
                         ),
                         title: Text(item.title),

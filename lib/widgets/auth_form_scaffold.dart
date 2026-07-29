@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../widgets/a11y.dart';
 import '../widgets/async_state_widgets.dart';
 import '../widgets/language_menu_button.dart';
 import '../widgets/medgift_logo.dart';
@@ -42,35 +43,38 @@ class AuthFormScaffold extends StatelessWidget {
         actions: const [LanguageMenuButton()],
       ),
       body: SafeArea(
-        child: Center(
-          child: ContentConstrained(
-            maxWidth: AppBreakpoints.authMax,
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Center(
-                    child: MedGiftBrand(showLabel: true, logoSize: 64),
-                  ),
-                  const SizedBox(height: 28),
-                  Text(
-                    title,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryDeepBlue,
+        child: A11y.main(
+          label: title,
+          child: Center(
+            child: ContentConstrained(
+              maxWidth: AppBreakpoints.authMax,
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(
+                      child: MedGiftBrand(showLabel: true, logoSize: 64),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 28),
-                  child,
-                ],
+                    const SizedBox(height: 28),
+                    Text(
+                      title,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryDeepBlue,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    child,
+                  ],
+                ),
               ),
             ),
           ),
@@ -104,6 +108,7 @@ class AuthStatusBanner extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       container: true,
+      label: message,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: bg,

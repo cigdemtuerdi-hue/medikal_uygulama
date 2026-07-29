@@ -675,5 +675,16 @@
   "profile.saveProfile": "Profili kaydet",
   "profile.editSaved": "Profiliniz güncellendi.",
   "profile.editValidation": "Lütfen zorunlu alanları doldurun.",
-  "profile.editNoProfile": "Kayıt profili bulunamadı. Lütfen kaydı tekrar tamamlayın."
+  "profile.editNoProfile": "Kayıt profili bulunamadı. Lütfen kaydı tekrar tamamlayın.",
+  "a11y.mainNav": "Ana gezinme",
+  "a11y.dismissOverlay": "Katmanı kapat",
+  "a11y.sendMessage": "Mesaj gönder",
+  "a11y.changeProfilePhoto": "Profil fotoğrafını değiştir",
+  "a11y.decreaseQuantity": "Miktarı azalt",
+  "a11y.increaseQuantity": "Miktarı artır",
+  "a11y.quantityValue": "Miktar {count}",
+  "a11y.clearSearch": "Aramayı temizle",
+  "a11y.addressSuggestionsHint": "Öneriler için adres veya posta kodu yazın",
+  "a11y.loadingSuggestions": "Adres önerileri yükleniyor",
+  "a11y.scannedImageAlt": "Taranan ekipman görseli: {name}"
 }

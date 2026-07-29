@@ -282,6 +282,7 @@ class _RecipientProfileScreenState extends State<RecipientProfileScreen> {
                     suffixIcon: _searchController.text.isEmpty
                         ? null
                         : IconButton(
+                            tooltip: loc.t('a11y.clearSearch'),
                             onPressed: () => _searchController.clear(),
                             icon: const Icon(Icons.clear),
                           ),

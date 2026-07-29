@@ -157,12 +157,12 @@ class AiScanResultCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.payments_outlined, color: AppTheme.accentTeal),
+                          const Icon(Icons.payments_outlined, color: AppTheme.accentOnSurface),
                           const SizedBox(width: 8),
                           Text(
                             loc.t('aiScan.estimatedValue'),
                             style: theme.textTheme.titleSmall?.copyWith(
-                              color: AppTheme.accentTeal,
+                              color: AppTheme.accentOnSurface,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

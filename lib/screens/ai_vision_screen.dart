@@ -36,7 +36,7 @@ class _AiVisionScreenState extends State<AiVisionScreen> {
     (
       preset: AiScanPreset.driveRollator,
       icon: Icons.directions_walk,
-      color: AppTheme.accentTeal,
+      color: AppTheme.accentOnSurface,
     ),
     (
       preset: AiScanPreset.woundDressingKit,
@@ -407,7 +407,14 @@ class _ImagePreview extends StatelessWidget {
         else
           ClipRRect(
             borderRadius: BorderRadius.circular(15),
-            child: Image.memory(imageBytes, fit: BoxFit.cover),
+            child: Image.memory(
+              imageBytes,
+              fit: BoxFit.cover,
+              semanticLabel: AppLocalizations.of(context).t(
+                'a11y.scannedImageAlt',
+                {'name': fileName ?? 'uploaded_image.jpg'},
+              ),
+            ),
           ),
         Positioned(
           left: 12,

@@ -97,10 +97,15 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
             ),
             textCapitalization: TextCapitalization.words,
             onChanged: field.didChange,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           );
         }
 
-        return TypeAheadField<UsAddressSuggestion>(
+        return Semantics(
+          textField: true,
+          label: widget.labelText,
+          hint: widget.hintText,
+          child: TypeAheadField<UsAddressSuggestion>(
           controller: widget.controller,
           debounceDuration: const Duration(milliseconds: 250),
           hideOnEmpty: false,
@@ -134,6 +139,8 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
                 hintText: widget.hintText,
                 prefixIcon: const Icon(Icons.location_on_outlined),
                 errorText: field.errorText,
+                helperText: AppLocalizations.of(context)
+                    .t('a11y.addressSuggestionsHint'),
               ),
               textCapitalization: TextCapitalization.words,
               keyboardType: TextInputType.streetAddress,
@@ -157,13 +164,17 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
               subtitle: Text(suggestion.secondaryLine),
             );
           },
-          loadingBuilder: (context) => const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(
-              child: SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
+          loadingBuilder: (context) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Semantics(
+              liveRegion: true,
+              label: AppLocalizations.of(context).t('a11y.loadingSuggestions'),
+              child: const Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
               ),
             ),
           ),
@@ -175,6 +186,7 @@ class _UsAddressAutocompleteFieldState extends State<UsAddressAutocompleteField>
             padding: const EdgeInsets.all(16),
             child: Text(AppLocalizations.of(context).t('empty.addressTitle')),
           ),
+        ),
         );
       },
     );
