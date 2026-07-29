@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../l10n/localized_labels.dart';
 import '../models/contact_inquiry.dart';
 import '../services/contact_inquiry_service.dart';
+import '../services/site_settings_service.dart';
 
 /// Opens the Contact Us / Sponsorship inquiry bottom sheet.
 void openPartnershipInquiry(BuildContext context) {
@@ -23,8 +24,22 @@ class PartnershipFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
 
-    return Container(
+    return ListenableBuilder(
+      listenable: cms,
+      builder: (context, _) {
+        final s = cms.settings.partner;
+        final title = cms.text(s.title, loc.t('partner.title'));
+        final subtitle = cms.text(s.subtitle, loc.t('partner.subtitle'));
+        final button =
+            cms.text(s.contactButton, loc.t('partner.contactButton'));
+        final line = cms.text(
+          s.contactLine,
+          'MedGift US · ${s.contactEmail}',
+        );
+
+        return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 40),
       padding: const EdgeInsets.fromLTRB(28, 36, 28, 32),
@@ -44,7 +59,7 @@ class PartnershipFooter extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            loc.t('partner.title'),
+            title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -52,7 +67,7 @@ class PartnershipFooter extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            loc.t('partner.subtitle'),
+            subtitle,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Colors.white.withValues(alpha: 0.92),
                   height: 1.45,
@@ -67,17 +82,19 @@ class PartnershipFooter extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             ),
             icon: const Icon(Icons.handshake_outlined),
-            label: Text(loc.t('partner.contactButton')),
+            label: Text(button),
           ),
           const SizedBox(height: 20),
           Text(
-            'MedGift US · partnerships@medgift.us',
+            line,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: Colors.white70,
                 ),
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

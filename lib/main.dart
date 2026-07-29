@@ -11,6 +11,7 @@ import 'l10n/app_localizations.dart';
 import 'l10n/locale_controller.dart';
 import 'services/emergency_mode_service.dart';
 import 'services/item_lifecycle_service.dart';
+import 'services/site_settings_service.dart';
 import 'widgets/disaster_emergency_widgets.dart';
 
 Future<void> main() async {
@@ -24,6 +25,7 @@ Future<void> main() async {
   ItemLifecycleService.instance;
   // ignore: unnecessary_statements
   EmergencyModeService.instance;
+  await SiteSettingsService.instance.ensureLoaded();
 
   if (!AppConfig.hasGoogleMapsApiKey) {
     debugPrint('WARNING: ${AppConfig.missingApiKeyMessage}');

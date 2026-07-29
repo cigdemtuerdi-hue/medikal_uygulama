@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../l10n/localized_labels.dart';
 import '../models/donation_models.dart';
 import '../services/donation_service.dart';
+import '../services/site_settings_service.dart';
 import '../widgets/browse_equipment_entry_card.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/corporate_esg_badge_cards.dart';
@@ -19,8 +20,16 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
 
-    return Scaffold(
+    return ListenableBuilder(
+      listenable: cms,
+      builder: (context, _) {
+        final s = cms.settings;
+        final title = cms.text(s.home.title, loc.t('home.title'));
+        final subtitle = cms.text(s.home.subtitle, loc.t('home.subtitle'));
+
+        return Scaffold(
       appBar: AppBar(
         title: Text(loc.t('app.title')),
         actions: [
@@ -38,14 +47,14 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              loc.t('home.title'),
+              title,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              loc.t('home.subtitle'),
+              subtitle,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
@@ -165,10 +174,12 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             const CorporateSponsorsSection(),
-            const PartnershipFooter(),
+            if (s.flags.showPartnershipFooter) const PartnershipFooter(),
           ],
         ),
       ),
+    );
+      },
     );
   }
 }

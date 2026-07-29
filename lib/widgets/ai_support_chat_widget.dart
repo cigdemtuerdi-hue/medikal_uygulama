@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ai_support_agent_service.dart';
+import '../services/site_settings_service.dart';
 
 /// Wraps a routed screen so the AI chat lives under the Navigator [Overlay].
 class AiSupportHost extends StatelessWidget {
@@ -14,12 +15,19 @@ class AiSupportHost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        child,
-        const AiSupportChatOverlay(),
-      ],
+    return ListenableBuilder(
+      listenable: SiteSettingsService.instance,
+      builder: (context, _) {
+        final showChat =
+            SiteSettingsService.instance.settings.flags.showAiChat;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            child,
+            if (showChat) const AiSupportChatOverlay(),
+          ],
+        );
+      },
     );
   }
 }

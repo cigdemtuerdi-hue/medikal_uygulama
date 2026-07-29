@@ -37,7 +37,7 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }),
 );
-app.use(express.json({ limit: '32kb' }));
+app.use(express.json({ limit: '128kb' }));
 
 app.get('/api/health', (_req, res) => {
   let db = 'unknown';
@@ -70,6 +70,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/settings', require('./routes/settings'));
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
@@ -153,6 +154,8 @@ async function start() {
     console.info('[api] POST /api/auth/reset-password/:token');
     console.info('[api] POST /api/auth/register');
     console.info('[api] POST /api/auth/login');
+    console.info('[api] GET  /api/settings/public');
+    console.info('[api] PUT  /api/settings/admin');
   });
 }
 

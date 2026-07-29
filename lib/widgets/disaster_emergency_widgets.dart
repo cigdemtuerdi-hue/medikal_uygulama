@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/emergency_mode_service.dart';
+import '../services/site_settings_service.dart';
 
 /// Full-width strip shown when Disaster & Emergency Response Mode is active.
 class EmergencyResponseBanner extends StatelessWidget {
@@ -10,13 +11,29 @@ class EmergencyResponseBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: EmergencyModeService.instance,
+      listenable: Listenable.merge([
+        EmergencyModeService.instance,
+        SiteSettingsService.instance,
+      ]),
       builder: (context, _) {
-        if (!EmergencyModeService.instance.enabled) {
+        final cms = SiteSettingsService.instance;
+        final flags = cms.settings.flags;
+        final emergency = cms.settings.emergency;
+        final enabled = flags.showEmergencyBanner &&
+            (emergency.enabled || EmergencyModeService.instance.enabled);
+        if (!enabled) {
           return const SizedBox.shrink();
         }
 
         final loc = AppLocalizations.of(context);
+        final title = cms.text(
+          emergency.bannerTitle,
+          loc.t('disaster.bannerTitle'),
+        );
+        final body = cms.text(
+          emergency.bannerBody,
+          loc.t('disaster.bannerBody'),
+        );
         return Material(
           color: const Color(0xFFB71C1C),
           elevation: 2,
@@ -44,7 +61,7 @@ class EmergencyResponseBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          loc.t('disaster.bannerTitle'),
+                          title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -54,7 +71,7 @@ class EmergencyResponseBanner extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          loc.t('disaster.bannerBody'),
+                          body,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.92),
                             fontSize: 12,

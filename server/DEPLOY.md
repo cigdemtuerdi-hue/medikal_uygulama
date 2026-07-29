@@ -5,7 +5,25 @@ Default production URL: `https://medgift-us-api.onrender.com`
 
 Password reset is **email link only** (SMS was removed).
 
-## Why email may not arrive
+## Admin CMS (site content control)
+
+Owner console: `https://medgift.us/admin`
+
+- Edit landing/home copy, emergency banner, partnership footer, feature flags
+- Save writes to `PUT /api/settings/admin` (requires admin login)
+- Public site reads `GET /api/settings/public`
+
+**Persistence:** On Render free tier with `MONGODB_URI=memory`, CMS saves are lost on restart.
+For permanent control:
+
+1. Create a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
+2. Copy the connection string into Render → `medgift-us-api` → Environment:
+   - `MONGODB_URI=mongodb+srv://...`
+   - `USE_MEMORY_DB=false`
+3. Redeploy the API
+
+Also set `ADMIN_PASSWORD` on Render (and keep GitHub secret in sync).
+
 
 Diagnose locally (never prints secrets):
 
