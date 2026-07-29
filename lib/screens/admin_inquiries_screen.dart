@@ -18,8 +18,6 @@ class AdminInquiriesScreen extends StatefulWidget {
 class _AdminInquiriesScreenState extends State<AdminInquiriesScreen> {
   final _access = AdminAccessService.instance;
   final _service = ContactInquiryService.instance;
-  final _pinController = TextEditingController();
-  String? _pinError;
   InquiryStatus? _filter;
 
   @override
@@ -33,7 +31,6 @@ class _AdminInquiriesScreenState extends State<AdminInquiriesScreen> {
   void dispose() {
     _access.removeListener(_onChanged);
     _service.removeListener(_onChanged);
-    _pinController.dispose();
     super.dispose();
   }
 
@@ -41,21 +38,58 @@ class _AdminInquiriesScreenState extends State<AdminInquiriesScreen> {
     if (mounted) setState(() {});
   }
 
-  void _tryUnlock() {
-    final ok = _access.unlock(_pinController.text);
-    setState(() {
-      _pinError = ok ? null : 'Incorrect admin PIN';
-      if (ok) _pinController.clear();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_access.isRestoring) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (!_access.isAuthenticated) {
-      return _AdminGate(
-        controller: _pinController,
-        error: _pinError,
-        onSubmit: _tryUnlock,
+      return Scaffold(
+        appBar: AppBar(title: const Text('Admin Inquiries / Messages')),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Icon(Icons.admin_panel_settings_outlined,
+                        size: 40, color: AppTheme.primaryBlue),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Admin sign-in required',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryDeepBlue,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Open the Admin Console with your owner email and password '
+                      'to manage inquiries.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacementNamed('/admin');
+                      },
+                      child: const Text('Go to Admin Console'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       );
     }
 
@@ -80,7 +114,7 @@ class _AdminInquiriesScreenState extends State<AdminInquiriesScreen> {
             ),
           IconButton(
             tooltip: 'Lock admin panel',
-            onPressed: _access.lock,
+            onPressed: () => _access.lock(),
             icon: const Icon(Icons.lock_outline),
           ),
         ],
@@ -184,75 +218,6 @@ class _AdminInquiriesScreenState extends State<AdminInquiriesScreen> {
                   ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AdminGate extends StatelessWidget {
-  const _AdminGate({
-    required this.controller,
-    required this.error,
-    required this.onSubmit,
-  });
-
-  final TextEditingController controller;
-  final String? error;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Admin Inquiries / Messages')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Icon(Icons.admin_panel_settings_outlined,
-                      size: 40, color: AppTheme.primaryBlue),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Admin access only',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryDeepBlue,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Enter the admin PIN to view Contact Us / Sponsorship '
-                    'messages. Default demo PIN: medgift',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: controller,
-                    obscureText: true,
-                    onSubmitted: (_) => onSubmit(),
-                    decoration: InputDecoration(
-                      labelText: 'Admin PIN',
-                      errorText: error,
-                      prefixIcon: const Icon(Icons.lock_outline),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: onSubmit,
-                    child: const Text('Unlock Inbox'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

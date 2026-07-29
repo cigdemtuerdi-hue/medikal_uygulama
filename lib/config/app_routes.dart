@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../screens/admin_console_screen.dart';
 import '../screens/ai_vision_screen.dart';
 import '../screens/app_entry_screen.dart';
 import '../screens/app_shell.dart';
@@ -144,6 +145,7 @@ class AppRoutes {
   static const roleSelection = '/onboarding/role';
   static const profileCreation = '/onboarding/profile';
   static const login = '/login';
+  static const admin = '/admin';
   static const forgotPassword = '/forgot-password';
   static const resetPasswordPrefix = '/reset-password';
 
@@ -157,6 +159,7 @@ class AppRoutes {
   static String get initialRouteName {
     final path = Uri.base.path;
     if (path.isEmpty || path == '/') return entry;
+    if (path == '/admin' || path == '/admin/') return admin;
     return path.endsWith('/') ? path.substring(0, path.length - 1) : path;
   }
 
@@ -193,6 +196,7 @@ class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
         AppRoutes.entry: (_) => const AppEntryScreen(),
         AppRoutes.login: (_) => const LoginHost(),
+        AppRoutes.admin: (_) => const AdminConsoleScreen(),
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),
         AppRoutes.forgotPassword: (_) => const ForgotPasswordHost(),

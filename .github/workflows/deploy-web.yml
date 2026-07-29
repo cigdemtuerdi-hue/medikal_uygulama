@@ -64,21 +64,25 @@ jobs:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           ADMIN_NOTIFY_EMAIL: ${{ secrets.ADMIN_NOTIFY_EMAIL }}
           ADMIN_EMAIL_ENDPOINT: ${{ secrets.ADMIN_EMAIL_ENDPOINT }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PIN: ${{ secrets.ADMIN_PIN }}
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
           # Default matches render.yaml service name when secret is empty.
           API_BASE_URL="${API_BASE_URL:-https://medgift-us-api.onrender.com}"
+          # Do NOT bake ADMIN_PASSWORD into the web bundle — verify on the API only.
           cat > .env << EOF
           GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
           ADMIN_NOTIFY_EMAIL=${ADMIN_NOTIFY_EMAIL}
           ADMIN_EMAIL_ENDPOINT=${ADMIN_EMAIL_ENDPOINT}
+          ADMIN_EMAIL=${ADMIN_EMAIL}
           ADMIN_PIN=${ADMIN_PIN}
           API_BASE_URL=${API_BASE_URL}
           EOF
           sed -i 's/^[[:space:]]*//' .env
           test -s .env || echo "GOOGLE_MAPS_API_KEY=" > .env
           echo "Using API_BASE_URL=${API_BASE_URL}"
+          echo "Admin email configured: $([ -n \"$ADMIN_EMAIL\" ] && echo yes || echo no)"
 
       - name: Inject Google Maps JS key into web/index.html
         env:

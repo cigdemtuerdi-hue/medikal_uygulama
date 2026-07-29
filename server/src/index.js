@@ -48,6 +48,7 @@ app.get('/api/health', (_req, res) => {
   }
 
   const emailPassSet = Boolean((process.env.EMAIL_PASS || '').trim());
+  const { isAdminConfigured } = require('./controllers/adminAuthController');
 
   res.json({
     ok: true,
@@ -55,6 +56,7 @@ app.get('/api/health', (_req, res) => {
     db,
     emailDryRun:
       String(process.env.EMAIL_DRY_RUN || '').toLowerCase() === 'true',
+    adminConfigured: isAdminConfigured(),
     messaging: {
       emailConfigured: Boolean(
         (process.env.EMAIL_HOST || '').trim() &&
@@ -84,7 +86,11 @@ async function seedDemoUserIfNeeded() {
   if (!email) return;
 
   const phone = (process.env.SEED_DEMO_USER_PHONE || '+15551234567').trim();
-  const seedPassword = (process.env.SEED_DEMO_USER_PASSWORD || '').trim();
+  // Memory-DB deploys wipe users on restart; keep a known demo password so login works.
+  const seedPassword = (
+    process.env.SEED_DEMO_USER_PASSWORD ||
+    (USE_MEMORY ? 'MedGiftDemo1!' : '')
+  ).trim();
   const bcrypt = require('bcrypt');
   const User = getUserModel();
   const existing = await User.findOne({ email });

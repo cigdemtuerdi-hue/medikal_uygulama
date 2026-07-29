@@ -12,12 +12,14 @@ class AuthApiResult {
     required this.message,
     this.statusCode,
     this.code,
+    this.token,
   });
 
   final bool success;
   final String message;
   final int? statusCode;
   final String? code;
+  final String? token;
 }
 
 /// HTTP client for MedGift US auth endpoints on the Node API.
@@ -82,6 +84,62 @@ class AuthApiService {
     );
   }
 
+  Future<AuthApiResult> adminLogin({
+    required String email,
+    required String password,
+  }) async {
+    return _postJson(
+      '/api/auth/admin-login',
+      body: {
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      },
+      fallbackSuccessMessage: 'Admin girişi başarılı.',
+      fallbackErrorMessage: 'Admin e-posta veya şifre hatalı.',
+    );
+  }
+
+  Future<bool> validateAdminSession(String token) async {
+    try {
+      final response = await http
+          .get(
+            _uri('/api/auth/admin-session'),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(const Duration(seconds: 12));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final parsed = _tryParseJson(response.body);
+        return parsed?['success'] != false;
+      }
+      return false;
+    } catch (err) {
+      debugPrint('[AuthApiService] admin-session failed: $err');
+      // Keep local session usable offline until explicit logout.
+      return token.startsWith('local-');
+    }
+  }
+
+  Future<void> adminLogout(String token) async {
+    try {
+      await http
+          .post(
+            _uri('/api/auth/admin-logout'),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({'token': token}),
+          )
+          .timeout(const Duration(seconds: 8));
+    } catch (err) {
+      debugPrint('[AuthApiService] admin-logout failed: $err');
+    }
+  }
+
   Future<AuthApiResult> resetPassword({
     required String token,
     required String newPassword,
@@ -119,6 +177,7 @@ class AuthApiService {
       final parsed = _tryParseJson(response.body);
       final message = (parsed?['message'] as String?)?.trim();
       final code = parsed?['code'] as String?;
+      final token = parsed?['token'] as String?;
       final ok = response.statusCode >= 200 &&
           response.statusCode < 300 &&
           (parsed?['success'] != false);
@@ -131,6 +190,7 @@ class AuthApiService {
               : fallbackSuccessMessage,
           statusCode: response.statusCode,
           code: code,
+          token: token,
         );
       }
 
@@ -141,6 +201,7 @@ class AuthApiService {
             : fallbackErrorMessage,
         statusCode: response.statusCode,
         code: code,
+        token: token,
       );
     } catch (err, stack) {
       debugPrint('[AuthApiService] $path failed: $err\n$stack');

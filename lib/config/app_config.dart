@@ -61,7 +61,7 @@ class AppConfig {
     }
   }
 
-  /// PIN required to open the Admin Inquiries / Messages panel.
+  /// PIN required to open the Admin Inquiries / Messages panel (legacy alias).
   static String get adminPin {
     const define = String.fromEnvironment('ADMIN_PIN');
     if (define.isNotEmpty) return define;
@@ -69,8 +69,40 @@ class AppConfig {
       final env = dotenv.maybeGet('ADMIN_PIN')?.trim();
       if (env != null && env.isNotEmpty) return env;
     } catch (_) {}
-    return 'medgift';
+    return adminPassword;
   }
+
+  /// Owner admin console email (only this account can unlock `/admin`).
+  static String get adminEmail {
+    const define = String.fromEnvironment('ADMIN_EMAIL');
+    if (define.isNotEmpty) return define.trim();
+    try {
+      final env = dotenv.maybeGet('ADMIN_EMAIL')?.trim();
+      if (env != null && env.isNotEmpty) return env;
+    } catch (_) {}
+    return adminNotifyEmail;
+  }
+
+  /// Owner admin console password. Prefer server-side ADMIN_PASSWORD on Render.
+  /// Local/build value is only a fallback when the API is unreachable.
+  static String get adminPassword {
+    const define = String.fromEnvironment('ADMIN_PASSWORD');
+    if (define.isNotEmpty) return define;
+    try {
+      final env = dotenv.maybeGet('ADMIN_PASSWORD')?.trim();
+      if (env != null && env.isNotEmpty) return env;
+    } catch (_) {}
+    const pinDefine = String.fromEnvironment('ADMIN_PIN');
+    if (pinDefine.isNotEmpty) return pinDefine;
+    try {
+      final pin = dotenv.maybeGet('ADMIN_PIN')?.trim();
+      if (pin != null && pin.isNotEmpty) return pin;
+    } catch (_) {}
+    return '';
+  }
+
+  static bool get hasLocalAdminCredentials =>
+      adminEmail.trim().isNotEmpty && adminPassword.trim().isNotEmpty;
 
   /// Base URL for the MedGift Node API (forgot / reset password, etc.).
   ///

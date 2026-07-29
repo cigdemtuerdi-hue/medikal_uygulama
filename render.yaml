@@ -39,3 +39,8 @@ services:
       # Demo login for memory-DB deploys (free Render). Change after Mongo is wired.
       - key: SEED_DEMO_USER_PASSWORD
         value: MedGiftDemo1!
+      # Owner admin console — set ADMIN_PASSWORD in Render Dashboard (do not commit).
+      - key: ADMIN_EMAIL
+        value: info@medgift.us
+      - key: ADMIN_PASSWORD
+        sync: false

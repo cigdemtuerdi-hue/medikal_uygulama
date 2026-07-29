@@ -31,7 +31,6 @@ import '../widgets/verified_ngo_badge.dart';
 import '../widgets/wishlist_section_card.dart';
 import '../services/onboarding_service.dart';
 import '../models/user_onboarding_models.dart';
-import 'admin_inquiries_screen.dart';
 import 'dme_product_detail_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -511,11 +510,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle: Text(loc.t('profile.adminInquiriesSubtitle')),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const AdminInquiriesScreen(),
-                        ),
-                      );
+                      Navigator.of(context).pushNamed(AppRoutes.admin);
                     },
                   ),
                 ],

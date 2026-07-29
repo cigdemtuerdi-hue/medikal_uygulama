@@ -31,7 +31,9 @@ Repo zaten GitHub’da: `cigdemtuerdi-hue/medikal_uygulama`
    - `GOOGLE_MAPS_API_KEY` (zorunlu haritalar için)
    - `ADMIN_NOTIFY_EMAIL` (opsiyonel)
    - `ADMIN_EMAIL_ENDPOINT` (opsiyonel)
-   - `ADMIN_PIN` (opsiyonel)
+   - `ADMIN_EMAIL` (owner admin console email, örn. info@medgift.us)
+   - `ADMIN_PASSWORD` (owner admin console password — güçlü tutun)
+   - `ADMIN_PIN` (opsiyonel, eski alias)
 3. `main` / `master` branch’e push edin veya **Actions → Deploy Web → Run workflow**
 4. Yayın adresi:
    - `https://cigdemtuerdi-hue.github.io/medikal_uygulama/`
