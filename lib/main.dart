@@ -13,6 +13,7 @@ import 'services/emergency_mode_service.dart';
 import 'services/item_lifecycle_service.dart';
 import 'services/site_settings_service.dart';
 import 'widgets/disaster_emergency_widgets.dart';
+import 'widgets/session_idle_guard.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,13 +62,15 @@ class MedGiftApp extends StatelessWidget {
           onGenerateRoute: AppRoutes.onGenerateRoute,
           builder: (context, child) {
             final direction = LocaleController.instance.textDirection;
-            return Directionality(
-              textDirection: direction,
-              child: Column(
-                children: [
-                  const EmergencyResponseBanner(),
-                  Expanded(child: child ?? const SizedBox.shrink()),
-                ],
+            return SessionIdleGuard(
+              child: Directionality(
+                textDirection: direction,
+                child: Column(
+                  children: [
+                    const EmergencyResponseBanner(),
+                    Expanded(child: child ?? const SizedBox.shrink()),
+                  ],
+                ),
               ),
             );
           },

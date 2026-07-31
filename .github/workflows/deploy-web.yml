@@ -131,11 +131,16 @@ jobs:
           echo "medgift.us" > build/web/CNAME
           # SPA fallback so /forgot-password and /reset-password/:token work on GitHub Pages.
           cp build/web/index.html build/web/404.html
-          # Real folder so /admin and /admin/ return 200 (not only 404.html).
-          mkdir -p build/web/admin
+          # Real folders so SPA deep links return 200 (not only 404.html).
+          mkdir -p build/web/admin \
+            build/web/hipaa-privacy-notice \
+            build/web/privacy-policy
           cp build/web/index.html build/web/admin/index.html
+          cp build/web/index.html build/web/hipaa-privacy-notice/index.html
+          cp build/web/index.html build/web/privacy-policy/index.html
           echo "Published CNAME=$(cat build/web/CNAME)"
           echo "Admin deep-link folder ready: build/web/admin/index.html"
+          echo "HIPAA notice deep-link ready: build/web/hipaa-privacy-notice/index.html"
 
       - name: Deploy to GitHub Pages (gh-pages)
         if: ${{ github.event.inputs.target != 'firebase' }}

@@ -19,6 +19,8 @@ import '../screens/reset_password_screen.dart';
 import '../screens/urgent_wishlist_screen.dart';
 import '../screens/wound_care_donate_screen.dart';
 import '../widgets/ai_support_chat_widget.dart';
+import '../widgets/hipaa_consent_widgets.dart';
+import '../widgets/phi_access_gate.dart';
 
 enum AppTab {
   home(
@@ -121,7 +123,9 @@ enum AppTab {
       AppTab.requests => const RequestsScreen(),
       AppTab.urgentWishlist => const UrgentWishlistScreen(),
       AppTab.exchange => const ExchangeScreen(),
-      AppTab.recipient => const RecipientProfileScreen(),
+      AppTab.recipient => const PhiAccessGate(
+          child: RecipientProfileScreen(),
+        ),
       AppTab.myItems => const MyItemsScreen(),
       AppTab.ngoPortal => const NgoDashboardScreen(),
       AppTab.profile => const ProfileScreen(),
@@ -148,6 +152,8 @@ class AppRoutes {
   static const admin = '/admin';
   static const forgotPassword = '/forgot-password';
   static const resetPasswordPrefix = '/reset-password';
+  static const hipaaPrivacyNotice = '/hipaa-privacy-notice';
+  static const privacyPolicy = '/privacy-policy';
 
   /// Named route for reset screen when token is passed via [RouteSettings.arguments].
   static const resetPassword = '/reset-password';
@@ -169,6 +175,13 @@ class AppRoutes {
         uri.fragment == 'admin' ||
         uri.fragment == '/admin') {
       return admin;
+    }
+
+    if (path == hipaaPrivacyNotice || path == '$hipaaPrivacyNotice/') {
+      return hipaaPrivacyNotice;
+    }
+    if (path == privacyPolicy || path == '$privacyPolicy/') {
+      return privacyPolicy;
     }
 
     if (path.isEmpty || path == '/') return entry;
@@ -216,6 +229,8 @@ class AppRoutes {
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),
         AppRoutes.forgotPassword: (_) => const ForgotPasswordHost(),
+        AppRoutes.hipaaPrivacyNotice: (_) => const HipaaPrivacyNoticeScreen(),
+        AppRoutes.privacyPolicy: (_) => const PrivacyPolicyScreen(),
         for (final tab in AppTab.values)
           tab.route: (_) => AiSupportHost(child: AppShell(initialTab: tab)),
       };

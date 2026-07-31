@@ -15,6 +15,13 @@ const USE_MEMORY =
   String(process.env.USE_MEMORY_DB || '').toLowerCase() === 'true' ||
   MONGODB_URI === 'memory';
 
+/** Safe boot diagnostics for /api/health (never includes secrets). */
+let dbStatus = {
+  mode: 'starting',
+  reason: 'booting',
+  detail: null,
+};
+
 const app = express();
 
 /**
@@ -39,6 +46,9 @@ app.use(
 );
 app.use(express.json({ limit: '128kb' }));
 
+const { enforceTls } = require('./middleware/tls');
+app.use(enforceTls);
+
 app.get('/api/health', (_req, res) => {
   let db = 'unknown';
   try {
@@ -54,9 +64,24 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     service: 'medgift-us-api',
     db,
+    dbReason: dbStatus.reason,
+    dbDetail: dbStatus.detail,
+    useMemoryEnv:
+      String(process.env.USE_MEMORY_DB || '').toLowerCase() === 'true',
+    mongoUriSet: Boolean(
+      (process.env.MONGODB_URI || '').trim() &&
+        process.env.MONGODB_URI !== 'memory',
+    ),
     emailDryRun:
       String(process.env.EMAIL_DRY_RUN || '').toLowerCase() === 'true',
     adminConfigured: isAdminConfigured(),
+    compliance: {
+      phiEncryption: 'aes-256-gcm',
+      tlsEnforced:
+        String(process.env.NODE_ENV || '').toLowerCase() === 'production',
+      hipaaNoticeVersion: 'hipaa-npp-2026.07',
+      sessionIdleMinutes: 15,
+    },
     messaging: {
       emailConfigured: Boolean(
         (process.env.EMAIL_HOST || '').trim() &&
@@ -71,10 +96,13 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/compliance', require('./routes/compliance'));
+app.use('/api/health-records', require('./routes/healthRecords'));
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
-  console.error('[api]', err);
+  // Never dump request bodies (may contain PHI) into logs.
+  console.error('[api]', err?.name || 'Error', err?.message || err);
   const isCors = String(err.message || '').startsWith('CORS blocked');
   res.status(isCors ? 403 : err.status || 500).json({
     success: false,
@@ -109,18 +137,18 @@ async function seedDemoUserIfNeeded() {
     }
     if (changed) {
       await existing.save();
-      console.info(`[seed] Demo user updated: ${email}`);
+      console.info('[seed] Demo user updated (email redacted)');
     }
     return;
   }
 
-  const doc = { email, phone };
+  const doc = { email, phone, role: 'donor' };
   if (seedPassword && seedPassword.length >= 8) {
     doc.passwordHash = await bcrypt.hash(seedPassword, 10);
   }
   await User.create(doc);
   console.info(
-    `[seed] Demo user created: ${email} phone=${phone}` +
+    `[seed] Demo user created` +
       (doc.passwordHash ? ' (password set)' : ' (no password)'),
   );
 }
@@ -134,11 +162,21 @@ function redactMongoUri(uri) {
 
 async function resolveUserModel() {
   if (USE_MEMORY) {
+    dbStatus = {
+      mode: 'memory',
+      reason: 'use_memory_flag',
+      detail: 'USE_MEMORY_DB=true or MONGODB_URI=memory',
+    };
     console.info('[db] Using in-memory store (USE_MEMORY_DB / MONGODB_URI=memory)');
     return MemoryUserModel;
   }
 
   if (!MONGODB_URI || MONGODB_URI === 'memory') {
+    dbStatus = {
+      mode: 'memory',
+      reason: 'missing_uri',
+      detail: 'MONGODB_URI is empty',
+    };
     console.warn('[db] MONGODB_URI missing — using in-memory store.');
     return MemoryUserModel;
   }
@@ -150,9 +188,20 @@ async function resolveUserModel() {
       serverSelectionTimeoutMS: 20000,
       connectTimeoutMS: 20000,
     });
+    dbStatus = {
+      mode: 'mongo',
+      reason: 'connected',
+      detail: null,
+    };
     console.info('[db] Connected:', redactMongoUri(MONGODB_URI));
     return MongoUser;
   } catch (err) {
+    const detail = String(err?.message || err).slice(0, 180);
+    dbStatus = {
+      mode: 'memory',
+      reason: 'connect_failed',
+      detail,
+    };
     console.warn('[db] Mongo unavailable — falling back to in-memory store.');
     console.warn('[db] reason:', err?.name || 'Error', '-', err?.message || err);
     if (err?.reason?.type) {
@@ -174,6 +223,9 @@ async function start() {
     console.info('[api] POST /api/auth/login');
     console.info('[api] GET  /api/settings/public');
     console.info('[api] PUT  /api/settings/admin');
+    console.info('[api] POST /api/compliance/consent');
+    console.info('[api] POST /api/compliance/audit');
+    console.info('[api] /api/health-records (RBAC + AES-256)');
   });
 }
 

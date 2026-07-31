@@ -53,10 +53,17 @@ class AuthApiService {
     required String email,
     required String password,
     String? phone,
+    String? role,
+    bool hipaaConsentAccepted = false,
+    String? hipaaConsentVersion,
   }) async {
     final body = <String, dynamic>{
       'email': email.trim().toLowerCase(),
       'password': password,
+      'hipaaConsentAccepted': hipaaConsentAccepted,
+      if (hipaaConsentVersion != null)
+        'hipaaConsentVersion': hipaaConsentVersion,
+      if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
     };
     final trimmedPhone = phone?.trim() ?? '';
     if (trimmedPhone.isNotEmpty) body['phone'] = trimmedPhone;

@@ -493,7 +493,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: Text(loc.t('profile.hipaaTitle')),
                     subtitle: Text(loc.t('profile.hipaaSubtitle')),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context)
+                          .pushNamed(AppRoutes.hipaaPrivacyNotice);
+                    },
                   ),
                   const Divider(height: 1),
                   ListTile(

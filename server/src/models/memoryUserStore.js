@@ -4,11 +4,17 @@
 
 const crypto = require('crypto');
 
+const { encryptPhi, decryptPhi, isEncryptedPhi } = require('../utils/phiCrypto');
+
 class MemoryUser {
   constructor(doc = {}) {
     this._id = doc._id || crypto.randomBytes(12).toString('hex');
     this.email = doc.email;
     this.phone = doc.phone ?? null;
+    this.phoneLookupHash = doc.phoneLookupHash ?? null;
+    this.role = doc.role ?? null;
+    this.hipaaConsentVersion = doc.hipaaConsentVersion ?? null;
+    this.hipaaConsentAt = doc.hipaaConsentAt ?? null;
     this.passwordHash = doc.passwordHash ?? null;
     this.resetPasswordToken = doc.resetPasswordToken ?? null;
     this.resetPasswordExpires = doc.resetPasswordExpires ?? null;
@@ -16,9 +22,32 @@ class MemoryUser {
     this.resetSmsExpires = doc.resetSmsExpires ?? null;
     this.createdAt = doc.createdAt || new Date();
     this.updatedAt = doc.updatedAt || new Date();
+    this._encryptPhoneIfNeeded();
+  }
+
+  _encryptPhoneIfNeeded() {
+    if (!this.phone || isEncryptedPhi(this.phone)) return;
+    const digits = String(this.phone).replace(/\D/g, '');
+    if (digits) {
+      this.phoneLookupHash = crypto
+        .createHash('sha256')
+        .update(digits)
+        .digest('hex');
+    }
+    this.phone = encryptPhi(this.phone);
+  }
+
+  getDecryptedPhone() {
+    if (!this.phone) return null;
+    try {
+      return decryptPhi(this.phone);
+    } catch (_) {
+      return null;
+    }
   }
 
   async save() {
+    this._encryptPhoneIfNeeded();
     this.updatedAt = new Date();
     const idx = store.users.findIndex((u) => u._id === this._id);
     if (idx >= 0) {
@@ -76,10 +105,19 @@ const MemoryUserModel = {
   async findOneByPhoneDigits(digits) {
     const target = String(digits || '').replace(/\D/g, '');
     if (!target) return null;
+    const lookup = crypto.createHash('sha256').update(target).digest('hex');
+    const byHash = store.users.find((u) => u.phoneLookupHash === lookup);
+    if (byHash) return byHash;
+    // Legacy plaintext fallback (pre-encryption memory rows).
     return (
-      store.users.find(
-        (u) => String(u.phone || '').replace(/\D/g, '') === target,
-      ) || null
+      store.users.find((u) => {
+        try {
+          const plain = u.getDecryptedPhone?.() || String(u.phone || '');
+          return String(plain).replace(/\D/g, '') === target;
+        } catch (_) {
+          return false;
+        }
+      }) || null
     );
   },
 

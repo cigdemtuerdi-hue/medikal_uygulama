@@ -12,7 +12,9 @@ import '../services/onboarding_service.dart';
 import '../services/profile_address_service.dart';
 import '../widgets/async_state_widgets.dart';
 import '../widgets/document_upload_card.dart';
+import '../widgets/hipaa_consent_widgets.dart';
 import '../widgets/us_address_autocomplete_field.dart';
+import '../services/compliance_api_service.dart';
 
 /// Edit the same personal details collected during signup.
 class EditProfileScreen extends StatefulWidget {
@@ -46,6 +48,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _conditionVideoPath;
   bool _isSubmitting = false;
   bool _manualAddressEntry = false;
+  bool _hipaaConsentAccepted = false;
+  String? _hipaaConsentError;
 
   bool get _isRecipient => widget.initialProfile.role == UserRole.recipient;
   bool get _isNgo => widget.initialProfile.role == UserRole.ngoPartner;
@@ -125,6 +129,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    if (_isRecipient && !_hipaaConsentAccepted) {
+      setState(() => _hipaaConsentError = loc.t('hipaa.requiredError'));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('hipaa.requiredError'))),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     final updated = widget.initialProfile.copyWith(
@@ -151,6 +163,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       email: updated.email,
       role: updated.role,
     );
+
+    if (_isRecipient && _hipaaConsentAccepted) {
+      await ComplianceApiService.instance.recordConsent(
+        email: updated.email,
+        consentType: ComplianceApiService.consentTypeHealthSubmit,
+      );
+      if (_doctorReportPath != null && _doctorReportPath!.isNotEmpty) {
+        await ComplianceApiService.instance.upsertHealthRecord(
+          recordType: 'doctor_report',
+          title: 'Doctor report',
+          fileRef: _documentService.fileLabel(_doctorReportPath),
+        );
+      }
+      if (_conditionVideoPath != null && _conditionVideoPath!.isNotEmpty) {
+        await ComplianceApiService.instance.upsertHealthRecord(
+          recordType: 'condition_video',
+          title: 'Condition introduction video',
+          fileRef: _documentService.fileLabel(_conditionVideoPath),
+        );
+      }
+      await ComplianceApiService.instance.recordAudit(
+        action: 'write',
+        resourceType: 'health_record',
+        details: 'edit_profile_health_docs',
+      );
+    }
 
     final roleLabel = switch (updated.role) {
       UserRole.recipient => 'Recipient',
@@ -404,6 +442,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     isUploaded: _conditionVideoPath != null,
                     fileName: _documentService.fileLabel(_conditionVideoPath),
                     onPickVideo: _pickConditionVideo,
+                  ),
+                  const SizedBox(height: 24),
+                  HipaaConsentCheckbox(
+                    value: _hipaaConsentAccepted,
+                    errorText: _hipaaConsentError,
+                    onChanged: (value) {
+                      setState(() {
+                        _hipaaConsentAccepted = value ?? false;
+                        if (_hipaaConsentAccepted) _hipaaConsentError = null;
+                      });
+                    },
                   ),
                 ],
               ],

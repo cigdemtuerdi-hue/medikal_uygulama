@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const { buildPasswordResetEmail } = require('../templates/passwordResetEmail');
+const { safeInfo, safeError, maskEmail } = require('../utils/safeLog');
 
 /**
  * Nodemailer transport for MedGift US transactional mail.
@@ -10,7 +11,7 @@ const { buildPasswordResetEmail } = require('../templates/passwordResetEmail');
  * Optional:
  *   FROM_EMAIL (default: info@medgift.us)
  *   EMAIL_SECURE ("true" for port 465 / implicit TLS)
- *   EMAIL_DRY_RUN ("true" → log reset URL, skip SMTP — local/dev)
+ *   EMAIL_DRY_RUN ("true" → log redacted metadata, skip SMTP — local/dev)
  */
 
 let cachedTransporter = null;
@@ -84,15 +85,16 @@ async function sendPasswordResetEmail({ to, resetUrl }) {
     recipientEmail: to,
   });
 
-  // Local/dev: skip SMTP and print the link so QA can open it directly.
+  // Local/dev: skip SMTP — never print full email or reset token URL.
   if (isDryRun()) {
-    console.info('[email:dry-run] Password-reset (not sent via SMTP)');
-    console.info('[email:dry-run] to=', to);
-    console.info('[email:dry-run] subject=', subject);
-    console.info('[email:dry-run] resetUrl=', resetUrl);
+    safeInfo('[email:dry-run] Password-reset (not sent via SMTP)', {
+      to,
+      subject,
+      resetUrl,
+    });
     return {
       messageId: `dry-run-${Date.now()}`,
-      accepted: [to],
+      accepted: [maskEmail(to)],
       dryRun: true,
     };
   }
@@ -108,18 +110,14 @@ async function sendPasswordResetEmail({ to, resetUrl }) {
       html,
     });
 
-    console.info(
-      '[email] Password-reset sent',
-      JSON.stringify({
-        to,
-        messageId: info.messageId,
-        accepted: info.accepted,
-      }),
-    );
+    safeInfo('[email] Password-reset sent', {
+      to,
+      messageId: info.messageId,
+    });
 
     return info;
   } catch (cause) {
-    console.error('[email] Password-reset send failed:', cause);
+    safeError('[email] Password-reset send failed:', cause);
 
     const responseCode = cause?.responseCode;
     const isAuth =

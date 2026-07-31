@@ -47,3 +47,6 @@ services:
         value: info@medgift.us
       - key: ADMIN_PASSWORD
         sync: false
+      # 64 hex chars (32 bytes) for AES-256-GCM PHI encryption. Generate once and keep secret.
+      - key: PHI_ENCRYPTION_KEY
+        sync: false

@@ -14,6 +14,8 @@ import '../../widgets/async_state_widgets.dart';
 import '../../widgets/document_upload_card.dart';
 import '../../widgets/us_address_autocomplete_field.dart';
 import '../../widgets/ai_support_chat_widget.dart';
+import '../../widgets/hipaa_consent_widgets.dart';
+import '../../services/compliance_api_service.dart';
 import '../app_shell.dart';
 import '../reset_password_screen.dart' show kMinPasswordLength;
 
@@ -54,6 +56,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   bool _manualAddressEntry = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _hipaaConsentAccepted = false;
+  String? _hipaaConsentError;
 
   bool get _isRecipient => widget.role == UserRole.recipient;
   bool get _isNgo => widget.role == UserRole.ngoPartner;
@@ -102,6 +106,15 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       return;
     }
 
+    if (!_hipaaConsentAccepted) {
+      setState(() {
+        _hipaaConsentError =
+            AppLocalizations.of(context).t('hipaa.requiredError');
+      });
+      _showMessage(AppLocalizations.of(context).t('hipaa.requiredError'));
+      return;
+    }
+
     if (_idDocumentPath == null) {
       _showMessage('ID upload is required.');
       return;
@@ -139,6 +152,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       email: email,
       password: password,
       phone: phone,
+      role: widget.role.name,
+      hipaaConsentAccepted: true,
+      hipaaConsentVersion: ComplianceApiService.hipaaNoticeVersion,
     );
 
     if (!mounted) return;
@@ -148,6 +164,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       _showMessage(registerResult.message);
       return;
     }
+
+    await ComplianceApiService.instance.recordConsent(
+      email: email,
+      consentType: ComplianceApiService.consentTypeHipaa,
+      version: ComplianceApiService.hipaaNoticeVersion,
+    );
 
     final profile = UserOnboardingProfile(
       role: widget.role,
@@ -170,6 +192,33 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       email: email,
       role: widget.role,
     );
+
+    if (_isRecipient) {
+      await ComplianceApiService.instance.recordConsent(
+        email: email,
+        consentType: ComplianceApiService.consentTypeHealthSubmit,
+      );
+      if (_doctorReportPath != null) {
+        await ComplianceApiService.instance.upsertHealthRecord(
+          recordType: 'doctor_report',
+          title: 'Doctor report',
+          fileRef: _documentService.fileLabel(_doctorReportPath),
+        );
+      }
+      if (_conditionVideoPath != null) {
+        await ComplianceApiService.instance.upsertHealthRecord(
+          recordType: 'condition_video',
+          title: 'Condition introduction video',
+          fileRef: _documentService.fileLabel(_conditionVideoPath),
+        );
+      }
+      await ComplianceApiService.instance.recordAudit(
+        action: 'write',
+        resourceType: 'health_record',
+        details: 'onboarding_recipient_docs',
+      );
+    }
+
     if (_isNgo) {
       NgoPartnerService.instance.activateSessionFromProfile(profile);
     }
@@ -520,6 +569,17 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                     onPickVideo: _pickConditionVideo,
                   ),
                 ],
+                const SizedBox(height: 28),
+                HipaaConsentCheckbox(
+                  value: _hipaaConsentAccepted,
+                  errorText: _hipaaConsentError,
+                  onChanged: (value) {
+                    setState(() {
+                      _hipaaConsentAccepted = value ?? false;
+                      if (_hipaaConsentAccepted) _hipaaConsentError = null;
+                    });
+                  },
+                ),
               ],
             ),
           ),
