@@ -35,6 +35,13 @@ services:
         value: info@medgift.us
       - key: EMAIL_PASS
         sync: false
+      # Preferred on Render (SMTP is often blocked). Create key at https://resend.com
+      - key: RESEND_API_KEY
+        sync: false
+      # After domain verify in Resend, e.g. Medgift LLC <info@medgift.us>
+      # Until then you may use: Medgift LLC <onboarding@resend.dev>
+      - key: RESEND_FROM
+        sync: false
       - key: SEED_DEMO_USER_EMAIL
         value: donor@medgift.us
       - key: SEED_DEMO_USER_PHONE

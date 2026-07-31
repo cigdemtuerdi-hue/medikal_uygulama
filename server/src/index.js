@@ -57,8 +57,11 @@ app.get('/api/health', (_req, res) => {
     db = 'starting';
   }
 
-  const emailPassSet = Boolean((process.env.EMAIL_PASS || '').trim());
   const { isAdminConfigured } = require('./controllers/adminAuthController');
+  const {
+    isEmailConfigured,
+    usesResend,
+  } = require('./services/emailService');
 
   res.json({
     ok: true,
@@ -83,12 +86,15 @@ app.get('/api/health', (_req, res) => {
       sessionIdleMinutes: 15,
     },
     messaging: {
-      emailConfigured: Boolean(
-        (process.env.EMAIL_HOST || '').trim() &&
-          (process.env.EMAIL_USER || '').trim() &&
-          emailPassSet,
-      ),
-      emailHost: (process.env.EMAIL_HOST || '').trim() || null,
+      emailConfigured: isEmailConfigured(),
+      emailProvider: usesResend()
+        ? 'resend'
+        : (process.env.EMAIL_HOST || '').trim()
+          ? 'smtp'
+          : null,
+      emailHost: usesResend()
+        ? 'api.resend.com'
+        : (process.env.EMAIL_HOST || '').trim() || null,
       smsEnabled: false,
     },
   });

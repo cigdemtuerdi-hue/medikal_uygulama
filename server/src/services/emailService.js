@@ -3,15 +3,10 @@ const { buildPasswordResetEmail } = require('../templates/passwordResetEmail');
 const { safeInfo, safeError, maskEmail } = require('../utils/safeLog');
 
 /**
- * Nodemailer transport for MedGift US transactional mail.
- * All SMTP settings come from environment variables — never hard-code secrets.
+ * Transactional mail for MedGift US.
  *
- * Required env (unless EMAIL_DRY_RUN=true):
- *   EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS
- * Optional:
- *   FROM_EMAIL (default: info@medgift.us)
- *   EMAIL_SECURE ("true" for port 465 / implicit TLS)
- *   EMAIL_DRY_RUN ("true" → log redacted metadata, skip SMTP — local/dev)
+ * Preferred on Render: Resend HTTP API (RESEND_API_KEY) — SMTP is often blocked.
+ * Fallback: GoDaddy / generic SMTP via EMAIL_HOST + EMAIL_USER + EMAIL_PASS.
  */
 
 let cachedTransporter = null;
@@ -20,9 +15,33 @@ function isDryRun() {
   return String(process.env.EMAIL_DRY_RUN || '').toLowerCase() === 'true';
 }
 
+function resendApiKey() {
+  return (process.env.RESEND_API_KEY || '').trim();
+}
+
+function usesResend() {
+  return Boolean(resendApiKey());
+}
+
+function isEmailConfigured() {
+  if (isDryRun()) return true;
+  if (usesResend()) return true;
+  return Boolean(
+    (process.env.EMAIL_HOST || '').trim() &&
+      (process.env.EMAIL_USER || '').trim() &&
+      (process.env.EMAIL_PASS || '').trim(),
+  );
+}
+
 function fromAddress() {
-  const from = (process.env.FROM_EMAIL || 'info@medgift.us').trim();
-  return `Medgift LLC <${from}>`;
+  // Resend verified domain or onboarding sandbox sender.
+  const raw = (
+    process.env.RESEND_FROM ||
+    process.env.FROM_EMAIL ||
+    'info@medgift.us'
+  ).trim();
+  if (raw.includes('<')) return raw;
+  return `Medgift LLC <${raw}>`;
 }
 
 function readSmtpConfig() {
@@ -62,9 +81,76 @@ function getTransporter() {
     port,
     secure,
     auth: { user, pass },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
   });
 
   return cachedTransporter;
+}
+
+async function sendViaResend({ to, subject, html, text }) {
+  const key = resendApiKey();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromAddress(),
+        to: [to],
+        subject,
+        html,
+        text,
+      }),
+      signal: controller.signal,
+    });
+
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const msg =
+        body?.message ||
+        body?.error?.message ||
+        `Resend HTTP ${response.status}`;
+      const err = new Error(msg);
+      err.code =
+        response.status === 401 || response.status === 403
+          ? 'EMAIL_AUTH_FAILED'
+          : 'EMAIL_SEND_FAILED';
+      err.status = response.status === 401 || response.status === 403 ? 503 : 502;
+      err.cause = body;
+      throw err;
+    }
+
+    return {
+      messageId: body.id || `resend-${Date.now()}`,
+      accepted: [maskEmail(to)],
+      provider: 'resend',
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sendViaSmtp({ to, subject, html, text }) {
+  const transporter = getTransporter();
+  const info = await transporter.sendMail({
+    from: fromAddress(),
+    to,
+    subject,
+    text,
+    html,
+  });
+  return {
+    messageId: info.messageId,
+    accepted: info.accepted,
+    provider: 'smtp',
+  };
 }
 
 /**
@@ -85,9 +171,8 @@ async function sendPasswordResetEmail({ to, resetUrl }) {
     recipientEmail: to,
   });
 
-  // Local/dev: skip SMTP — never print full email or reset token URL.
   if (isDryRun()) {
-    safeInfo('[email:dry-run] Password-reset (not sent via SMTP)', {
+    safeInfo('[email:dry-run] Password-reset (not sent)', {
       to,
       subject,
       resetUrl,
@@ -99,35 +184,42 @@ async function sendPasswordResetEmail({ to, resetUrl }) {
     };
   }
 
-  const transporter = getTransporter();
+  if (!isEmailConfigured()) {
+    const err = new Error(
+      'E-posta yapılandırması eksik: RESEND_API_KEY veya EMAIL_HOST/USER/PASS.',
+    );
+    err.code = 'EMAIL_CONFIG_MISSING';
+    err.status = 503;
+    throw err;
+  }
 
   try {
-    const info = await transporter.sendMail({
-      from: fromAddress(),
-      to,
-      subject,
-      text,
-      html,
-    });
+    const info = usesResend()
+      ? await sendViaResend({ to, subject, html, text })
+      : await sendViaSmtp({ to, subject, html, text });
 
     safeInfo('[email] Password-reset sent', {
       to,
       messageId: info.messageId,
+      provider: info.provider,
     });
-
     return info;
   } catch (cause) {
     safeError('[email] Password-reset send failed:', cause);
+
+    if (cause?.code === 'EMAIL_AUTH_FAILED' || cause?.code === 'EMAIL_SEND_FAILED') {
+      throw cause;
+    }
 
     const responseCode = cause?.responseCode;
     const isAuth =
       cause?.code === 'EAUTH' ||
       responseCode === 535 ||
-      /auth/i.test(String(cause?.message || ''));
+      /auth|unauthorized|invalid api key/i.test(String(cause?.message || ''));
 
     const err = new Error(
       isAuth
-        ? 'E-posta sunucusu şifreyi reddetti. info@medgift.us SMTP şifresini güncelleyin.'
+        ? 'E-posta kimlik doğrulaması başarısız. RESEND_API_KEY veya SMTP şifresini kontrol edin.'
         : 'Şifre sıfırlama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.',
     );
     err.code = isAuth ? 'EMAIL_AUTH_FAILED' : 'EMAIL_SEND_FAILED';
@@ -142,4 +234,6 @@ module.exports = {
   fromAddress,
   getTransporter,
   isDryRun,
+  usesResend,
+  isEmailConfigured,
 };
