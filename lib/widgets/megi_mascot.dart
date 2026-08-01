@@ -34,7 +34,7 @@ class _MeGiMascotPainter extends CustomPainter {
 
   final bool showShadow;
 
-  static const Color _blush = Color(0xFFFF7A93);
+  static const Color _blush = Color(0xFFFF7EA8);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -48,9 +48,10 @@ class _MeGiMascotPainter extends CustomPainter {
 
     final cx = w * 0.50;
     // No limbs — the logo heart is the whole character, so it fills the box.
-    final heartCenter = Offset(cx, h * 0.474);
-    final hs = w * 0.53;
-    const stretchY = 1.42;
+    // A stretch below 1.0 of its own width keeps the silhouette chubby.
+    final heartCenter = Offset(cx, h * 0.508);
+    final hs = w * 0.52;
+    const stretchY = 1.12;
     final heart = _heartBody(heartCenter, hs, stretchY);
 
     if (showShadow) {
@@ -89,13 +90,13 @@ class _MeGiMascotPainter extends CustomPainter {
 
     // Specular gleam on the upper-left lobe.
     canvas.save();
-    canvas.translate(cx - w * 0.245, h * 0.265);
+    canvas.translate(cx - w * 0.235, h * 0.325);
     canvas.rotate(-0.6);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset.zero,
-        width: w * 0.15,
-        height: w * 0.068,
+        width: w * 0.145,
+        height: w * 0.062,
       ),
       Paint()..color = white.withValues(alpha: 0.6),
     );
@@ -105,11 +106,11 @@ class _MeGiMascotPainter extends CustomPainter {
     for (final dir in const [-1.0, 1.0]) {
       canvas.drawOval(
         Rect.fromCenter(
-          center: Offset(cx + dir * w * 0.19, h * 0.632),
-          width: w * 0.105,
-          height: w * 0.056,
+          center: Offset(cx + dir * w * 0.215, h * 0.60),
+          width: w * 0.128,
+          height: w * 0.07,
         ),
-        Paint()..color = _blush.withValues(alpha: 0.7),
+        Paint()..color = _blush.withValues(alpha: 0.8),
       );
     }
 
@@ -117,68 +118,59 @@ class _MeGiMascotPainter extends CustomPainter {
     for (final dir in const [-1.0, 1.0]) {
       _drawEye(
         canvas,
-        center: Offset(cx + dir * w * 0.165, h * 0.44),
-        radius: w * 0.135,
+        center: Offset(cx + dir * w * 0.155, h * 0.47),
+        rx: w * 0.085,
+        ry: w * 0.10,
         deep: deep,
         white: white,
-        towardCenter: -dir,
       );
     }
 
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(cx, h * 0.578),
-        width: w * 0.062,
-        height: w * 0.046,
+        center: Offset(cx, h * 0.588),
+        width: w * 0.045,
+        height: w * 0.032,
       ),
-      Paint()..color = deep.withValues(alpha: 0.55),
+      Paint()..color = deep.withValues(alpha: 0.4),
     );
 
     final smile = Path()
-      ..moveTo(cx - w * 0.105, h * 0.622)
-      ..quadraticBezierTo(cx, h * 0.716, cx + w * 0.105, h * 0.622);
+      ..moveTo(cx - w * 0.082, h * 0.618)
+      ..quadraticBezierTo(cx, h * 0.688, cx + w * 0.082, h * 0.618);
     canvas.drawPath(
       smile,
       Paint()
         ..color = deep
         ..style = PaintingStyle.stroke
-        ..strokeWidth = w * 0.042
+        ..strokeWidth = w * 0.036
         ..strokeCap = StrokeCap.round,
     );
   }
 
+  /// Solid plush-toy eye. A white sclera around a dark pupil reads as
+  /// bug-eyed at this scale, so the eye is one filled oval plus sparkles.
   void _drawEye(
     Canvas canvas, {
     required Offset center,
-    required double radius,
+    required double rx,
+    required double ry,
     required Color deep,
     required Color white,
-    required double towardCenter,
   }) {
-    canvas.drawCircle(center, radius, Paint()..color = white);
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..color = deep.withValues(alpha: 0.3)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = radius * 0.11,
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: rx * 2, height: ry * 2),
+      Paint()..color = deep,
     );
-
-    final pupil = Offset(
-      center.dx + towardCenter * radius * 0.1,
-      center.dy + radius * 0.08,
-    );
-    canvas.drawCircle(pupil, radius * 0.58, Paint()..color = deep);
     canvas.drawCircle(
-      Offset(pupil.dx - radius * 0.2, pupil.dy - radius * 0.24),
-      radius * 0.24,
+      Offset(center.dx - rx * 0.30, center.dy - ry * 0.34),
+      rx * 0.44,
       Paint()..color = white,
     );
     canvas.drawCircle(
-      Offset(pupil.dx + radius * 0.22, pupil.dy + radius * 0.2),
-      radius * 0.11,
-      Paint()..color = white.withValues(alpha: 0.85),
+      Offset(center.dx + rx * 0.33, center.dy + ry * 0.33),
+      rx * 0.20,
+      Paint()..color = white.withValues(alpha: 0.9),
     );
   }
 
