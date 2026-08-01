@@ -59,12 +59,28 @@ you have them, add to the `Organization` JSON-LD block:
 - `"foundingDate"`
 - `"sameAs"`: array of your Facebook / Instagram / LinkedIn / X / YouTube URLs
 
-### 4. A real logo file
+### 4. Brand icons — done, but regenerate after any logo change
 
-There is no raster logo in the repo — the logo is drawn in Dart
-(`lib/widgets/medgift_logo.dart`). `og:image` and the JSON-LD `logo` currently
-point at `icons/Icon-512.png`. For good link previews, export a proper
-**1200×630** social card and a square logo, then update both references.
+The favicon, PWA icons, iOS app icons and the 1200×630 social card all used to
+be Flutter's default logo, which meant a competitor-neutral blue "F" showed in
+the address bar, on the home screen and in every shared link.
+
+The logo only exists as Dart `CustomPaint` (`lib/widgets/medgift_logo.dart`), so
+the rasters are exported from the widget itself rather than redrawn by hand:
+
+```
+flutter test test/generate_brand_icons_test.dart
+```
+
+That writes `web/favicon.png`, `web/icons/Icon-{192,512}.png`,
+`web/icons/Icon-maskable-{192,512}.png`, `web/icons/social-card.png` and the
+full `ios/Runner/Assets.xcassets/AppIcon.appiconset` set. **Re-run it whenever
+the logo painter changes**, otherwise the shipped icons silently drift from the
+in-app mark.
+
+Two constraints are baked into the generator: iOS icons are re-encoded without
+an alpha channel (App Store Connect rejects them otherwise), and maskable icons
+inset the mark so Android's circular crop does not cut it.
 
 ### 5. Known limitation: no per-language URLs
 

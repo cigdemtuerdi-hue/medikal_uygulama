@@ -35,24 +35,33 @@
   <meta property="og:title" content="MedGift US — Donate &amp; Receive Durable Medical Equipment">
   <meta property="og:description" content="Turn unused wheelchairs, hospital beds and wound care supplies into life-changing mobility for someone who needs them. Secure, tax-ready, nationwide.">
   <meta property="og:url" content="https://medgift.us/">
-  <meta property="og:image" content="https://medgift.us/icons/Icon-512.png">
+  <meta property="og:image" content="https://medgift.us/icons/social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MedGift US logo — a blue heart seated in a wheelchair">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter / X card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MedGift US — Donate &amp; Receive Durable Medical Equipment">
   <meta name="twitter:description" content="Turn unused wheelchairs, hospital beds and wound care supplies into life-changing mobility for someone who needs them.">
-  <meta name="twitter:image" content="https://medgift.us/icons/Icon-512.png">
+  <meta name="twitter:image" content="https://medgift.us/icons/social-card.png">
+  <meta name="twitter:image:alt" content="MedGift US logo — a blue heart seated in a wheelchair">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="MedGift US">
   <meta name="theme-color" content="#1A5FA8">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <!--
+    Favicon. Browsers cache the address-bar icon aggressively, so the query
+    string forces a refetch for anyone who already saw the old default icon.
+  -->
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png?v=2"/>
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png?v=2"/>
 
   <link rel="manifest" href="manifest.json">
 
@@ -157,6 +166,13 @@
       max-width: 720px;
       margin: 0 auto;
     }
+    #seo-logo {
+      display: block;
+      width: 88px;
+      height: 88px;
+      margin: 0 0 20px;
+      border-radius: 20px;
+    }
     #seo-content h1 {
       font-size: 1.9rem;
       line-height: 1.25;
@@ -204,6 +220,8 @@
   -->
   <div id="seo-content">
     <header>
+      <img id="seo-logo" src="icons/Icon-192.png?v=2" width="88" height="88"
+           alt="MedGift US logo — a blue heart seated in a wheelchair">
       <h1>MedGift US — Donate and Receive Durable Medical Equipment</h1>
       <p class="lede">
         We connect surplus medical equipment with people and clinics who need it —
