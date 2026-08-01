@@ -133,14 +133,17 @@ jobs:
           cp build/web/index.html build/web/404.html
           # Real folders so SPA deep links return 200 (not only 404.html).
           mkdir -p build/web/admin \
+            build/web/login \
+            build/web/forgot-password \
             build/web/hipaa-privacy-notice \
             build/web/privacy-policy
           cp build/web/index.html build/web/admin/index.html
+          cp build/web/index.html build/web/login/index.html
+          cp build/web/index.html build/web/forgot-password/index.html
           cp build/web/index.html build/web/hipaa-privacy-notice/index.html
           cp build/web/index.html build/web/privacy-policy/index.html
           echo "Published CNAME=$(cat build/web/CNAME)"
-          echo "Admin deep-link folder ready: build/web/admin/index.html"
-          echo "HIPAA notice deep-link ready: build/web/hipaa-privacy-notice/index.html"
+          echo "Deep-link folders ready: admin, login, forgot-password, hipaa-privacy-notice"
 
       - name: Deploy to GitHub Pages (gh-pages)
         if: ${{ github.event.inputs.target != 'firebase' }}

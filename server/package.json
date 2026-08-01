@@ -19,6 +19,9 @@
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "mongoose": "^8.9.5",
-    "nodemailer": "^6.10.1"
+    "nodemailer": "^9.0.3"
+  },
+  "overrides": {
+    "tar": "^7.5.22"
   }
 }
