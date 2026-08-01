@@ -240,6 +240,7 @@ async function start() {
     console.info('[api] POST /api/auth/reset-password/:token');
     console.info('[api] POST /api/auth/register');
     console.info('[api] POST /api/auth/login');
+    console.info('[api] /api/admin/{overview,users,listings,settings}');
     console.info('[api] GET  /api/settings/public');
     console.info('[api] PUT  /api/settings/admin');
     console.info('[api] POST /api/compliance/consent');

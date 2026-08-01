@@ -11,6 +11,7 @@ Owner console: `https://medgift.us/admin`
 
 - Edit landing/home copy, emergency banner, partnership footer, feature flags
 - Save writes to `PUT /api/settings/admin` (requires admin login)
+  (alias also available: `PUT /api/admin/settings`)
 - Public site reads `GET /api/settings/public`
 
 **Persistence:** On Render free tier with `MONGODB_URI=memory`, CMS saves are lost on restart.

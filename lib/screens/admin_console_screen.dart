@@ -202,7 +202,7 @@ class _AdminConsoleScreenState extends State<AdminConsoleScreen>
           tabs: const [
             Tab(text: 'Kullanıcılar'),
             Tab(text: 'İlanlar'),
-            Tab(text: 'Görünürlük'),
+            Tab(text: 'Genel'),
             Tab(text: 'Karşılama'),
             Tab(text: 'Ana Sayfa'),
             Tab(text: 'Manifesto'),
