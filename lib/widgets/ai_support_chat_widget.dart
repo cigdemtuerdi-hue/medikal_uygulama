@@ -6,6 +6,7 @@ import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ai_support_agent_service.dart';
 import '../services/site_settings_service.dart';
+import 'megi_mascot.dart';
 
 /// Wraps a routed screen so the AI chat lives under the Navigator [Overlay].
 class AiSupportHost extends StatelessWidget {
@@ -61,6 +62,8 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
     'aiSupport.chip.donate',
     'aiSupport.chip.reservation',
     'aiSupport.chip.shipping',
+    'aiSupport.chip.password',
+    'aiSupport.chip.qr',
   ];
 
   @override
@@ -99,13 +102,15 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
     });
     _scrollToEnd();
 
-    await Future<void>.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-
     final reply = AiSupportAgentService.instance.reply(
       userMessage: text,
       loc: loc,
     );
+    // MeGi types like a person — longer answers take a bit longer.
+    final delayMs = AiSupportAgentService.instance.typingDelayMs(reply);
+    await Future<void>.delayed(Duration(milliseconds: delayMs));
+    if (!mounted) return;
+
     setState(() {
       _typing = false;
       _messages.add(_ChatMessage(text: reply, isUser: false));
@@ -198,15 +203,29 @@ class _AiSupportChatOverlayState extends State<AiSupportChatOverlay> {
                   customBorder: const CircleBorder(),
                   onTap: () => setState(() => _open = !_open),
                   child: SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: Icon(
-                      _open ? Icons.close : Icons.support_agent,
-                      color: Colors.white,
-                      semanticLabel: _open
-                          ? loc.t('aiSupport.close')
-                          : loc.t('aiSupport.fabTooltip'),
-                    ),
+                    width: 58,
+                    height: 58,
+                    child: _open
+                        ? Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            semanticLabel: loc.t('aiSupport.close'),
+                          )
+                        : Center(
+                            child: Container(
+                              width: 46,
+                              height: 46,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(3),
+                              child: const MeGiMascot(
+                                size: 40,
+                                showShadow: false,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -268,7 +287,11 @@ class _ChatPanel extends StatelessWidget {
           height: panelHeight,
           child: Column(
             children: [
-              _Header(title: loc.t('aiSupport.title'), onClose: onClose),
+              _Header(
+                title: loc.t('aiSupport.title'),
+                subtitle: loc.t('aiSupport.subtitle'),
+                onClose: onClose,
+              ),
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -276,11 +299,22 @@ class _ChatPanel extends StatelessWidget {
                   itemCount: messages.length + (typing ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (typing && index == messages.length) {
-                      return _Bubble(
-                        text: loc.t('aiSupport.typing'),
-                        isUser: false,
-                        italic: true,
-                        maxWidth: panelWidth * 0.82,
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const MeGiMascot(size: 28, showShadow: false),
+                            const SizedBox(width: 6),
+                            _Bubble(
+                              text: loc.t('aiSupport.typing'),
+                              isUser: false,
+                              italic: true,
+                              maxWidth: panelWidth * 0.62,
+                            ),
+                          ],
+                        ),
                       );
                     }
                     final msg = messages[index];
@@ -363,9 +397,14 @@ class _ChatPanel extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.title, required this.onClose});
+  const _Header({
+    required this.title,
+    required this.subtitle,
+    required this.onClose,
+  });
 
   final String title;
+  final String subtitle;
   final VoidCallback onClose;
 
   @override
@@ -382,11 +421,7 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 18,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.smart_toy_outlined, color: Colors.white),
-          ),
+          const MeGiMascotBadge(size: 40),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -394,12 +429,23 @@ class _Header extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),

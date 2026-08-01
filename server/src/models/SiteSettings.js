@@ -1,40 +1,22 @@
 const mongoose = require('mongoose');
 const { defaultSiteSettings } = require('./siteSettingsDefaults');
 
+/**
+ * Flexible CMS document — nested blocks stored as Mixed so admin can evolve
+ * fields without a migration every time.
+ */
 const siteSettingsSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, default: 'global' },
-    emergency: {
-      enabled: { type: Boolean, default: true },
-      bannerTitle: { type: String, default: '' },
-      bannerBody: { type: String, default: '' },
-    },
-    landing: {
-      welcomeTitle: { type: String, default: '' },
-      welcomeSubtitle: { type: String, default: '' },
-      loginCta: { type: String, default: '' },
-      signupCta: { type: String, default: '' },
-    },
-    home: {
-      title: { type: String, default: '' },
-      subtitle: { type: String, default: '' },
-    },
-    partner: {
-      title: { type: String, default: '' },
-      subtitle: { type: String, default: '' },
-      contactEmail: { type: String, default: 'info@medgift.us' },
-      contactLine: { type: String, default: 'MedGift US · info@medgift.us' },
-      contactButton: { type: String, default: '' },
-    },
-    brand: {
-      supportEmail: { type: String, default: 'info@medgift.us' },
-      notifyEmail: { type: String, default: 'info@medgift.us' },
-    },
-    flags: {
-      showAiChat: { type: Boolean, default: true },
-      showEmergencyBanner: { type: Boolean, default: true },
-      showPartnershipFooter: { type: Boolean, default: true },
-    },
+    emergency: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().emergency },
+    landing: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().landing },
+    home: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().home },
+    manifesto: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().manifesto },
+    about: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().about },
+    partner: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().partner },
+    inquiry: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().inquiry },
+    brand: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().brand },
+    flags: { type: mongoose.Schema.Types.Mixed, default: () => defaultSiteSettings().flags },
     updatedAt: { type: Date, default: null },
     updatedBy: { type: String, default: null },
   },

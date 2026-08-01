@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/impact_metrics_service.dart';
+import '../services/site_settings_service.dart';
 
 /// Live Impact & ESG dashboard with equipment diverted, CO₂ avoided, and community savings.
 class ImpactEsgDashboardCard extends StatelessWidget {
@@ -32,11 +33,19 @@ class ImpactEsgDashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
 
     return ListenableBuilder(
-      listenable: ImpactMetricsService.instance,
+      listenable: Listenable.merge([
+        ImpactMetricsService.instance,
+        cms,
+      ]),
       builder: (context, _) {
         final m = ImpactMetricsService.instance.metrics;
+        final h = cms.settings.home;
+        final impactTitle = cms.text(h.impactTitle, loc.t('impact.title'));
+        final impactSubtitle =
+            cms.text(h.impactSubtitle, loc.t('impact.subtitle'));
 
         return Card(
           clipBehavior: Clip.antiAlias,
@@ -77,7 +86,7 @@ class ImpactEsgDashboardCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            loc.t('impact.title'),
+                            impactTitle,
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -85,7 +94,7 @@ class ImpactEsgDashboardCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            loc.t('impact.subtitle'),
+                            impactSubtitle,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: Colors.white70,
                                 ),

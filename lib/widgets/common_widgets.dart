@@ -2,32 +2,48 @@ import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../services/site_settings_service.dart';
 
 class ComplianceBanner extends StatelessWidget {
   const ComplianceBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppTheme.warningAmber.withValues(alpha: 0.12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.verified_user_outlined, color: AppTheme.warningOnSurface),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                AppLocalizations.of(context).t('compliance.banner'),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.primaryDeepBlue,
-                    ),
-              ),
+    final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
+
+    return ListenableBuilder(
+      listenable: cms,
+      builder: (context, _) {
+        final text = cms.text(
+          cms.settings.home.complianceBanner,
+          loc.t('compliance.banner'),
+        );
+        return Card(
+          color: AppTheme.warningAmber.withValues(alpha: 0.12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.verified_user_outlined,
+                  color: AppTheme.warningOnSurface,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.primaryDeepBlue,
+                        ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

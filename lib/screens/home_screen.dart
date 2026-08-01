@@ -26,159 +26,216 @@ class HomeScreen extends StatelessWidget {
       listenable: cms,
       builder: (context, _) {
         final s = cms.settings;
-        final title = cms.text(s.home.title, loc.t('home.title'));
-        final subtitle = cms.text(s.home.subtitle, loc.t('home.subtitle'));
+        final f = s.flags;
+        final h = s.home;
+        final title = cms.text(h.title, loc.t('home.title'));
+        final subtitle = cms.text(h.subtitle, loc.t('home.subtitle'));
+        final location =
+            cms.text(h.locationLabel, loc.t('common.unitedStates'));
 
         return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.t('app.title')),
-        actions: [
-          const LanguageMenuButton(),
-          TextButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.location_on_outlined),
-            label: Text(loc.t('common.unitedStates')),
+          appBar: AppBar(
+            title: Text(
+              cms.text(s.brand.displayName, loc.t('app.title')),
+            ),
+            actions: [
+              const LanguageMenuButton(),
+              TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.location_on_outlined),
+                label: Text(location),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            const ComplianceBanner(),
-            const SizedBox(height: 16),
-            const BrowseEquipmentEntryCard(),
-            const SizedBox(height: 16),
-            const PassItOnEntryCard(),
-            const SizedBox(height: 24),
-            const ImpactEsgDashboardCard(),
-            const SizedBox(height: 24),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = constraints.maxWidth > 900 ? 4 : 2;
-                return GridView.count(
-                  crossAxisCount: crossAxisCount,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1.4,
-                  children: [
-                    StatCard(
-                      label: loc.t('home.statItemsDonated'),
-                      value: '1,284',
-                      icon: Icons.inventory_2_outlined,
-                    ),
-                    StatCard(
-                      label: loc.t('home.statPartnerOrgs'),
-                      value: '312',
-                      icon: Icons.apartment_outlined,
-                    ),
-                    StatCard(
-                      label: loc.t('home.statAiScans'),
-                      value: '4,907',
-                      icon: Icons.document_scanner_outlined,
-                    ),
-                    StatCard(
-                      label: loc.t('home.statStatesServed'),
-                      value: '48',
-                      icon: Icons.map_outlined,
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 32),
-            SectionHeader(
-              title: loc.t('home.quickActions'),
-              subtitle: loc.t('home.quickActionsSubtitle'),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacementNamed(AppRoutes.dme);
-                  },
-                  icon: const Icon(Icons.accessible),
-                  label: Text(loc.t('home.donateDme')),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                FilledButton.tonalIcon(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pushReplacementNamed(AppRoutes.woundCare);
-                  },
-                  icon: const Icon(Icons.healing),
-                  label: Text(loc.t('home.donateWoundCare')),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pushReplacementNamed(AppRoutes.recipient);
-                  },
-                  icon: const Icon(Icons.near_me_outlined),
-                  label: Text(loc.t('browseEquipment.entryTitle')),
-                ),
+                const SizedBox(height: 24),
+                if (f.showComplianceBanner) ...[
+                  const ComplianceBanner(),
+                  const SizedBox(height: 16),
+                ],
+                if (f.showBrowseEntry) ...[
+                  const BrowseEquipmentEntryCard(),
+                  const SizedBox(height: 16),
+                ],
+                if (f.showPassItOnEntry) ...[
+                  const PassItOnEntryCard(),
+                  const SizedBox(height: 24),
+                ],
+                if (f.showImpactCard) ...[
+                  const ImpactEsgDashboardCard(),
+                  const SizedBox(height: 24),
+                ],
+                if (f.showHomeStats) ...[
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossAxisCount =
+                          constraints.maxWidth > 900 ? 4 : 2;
+                      return GridView.count(
+                        crossAxisCount: crossAxisCount,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1.4,
+                        children: [
+                          StatCard(
+                            label: cms.text(
+                              h.statItemsLabel,
+                              loc.t('home.statItemsDonated'),
+                            ),
+                            value: cms.text(h.statItemsValue, '1,284'),
+                            icon: Icons.inventory_2_outlined,
+                          ),
+                          StatCard(
+                            label: cms.text(
+                              h.statOrgsLabel,
+                              loc.t('home.statPartnerOrgs'),
+                            ),
+                            value: cms.text(h.statOrgsValue, '312'),
+                            icon: Icons.apartment_outlined,
+                          ),
+                          StatCard(
+                            label: cms.text(
+                              h.statAiLabel,
+                              loc.t('home.statAiScans'),
+                            ),
+                            value: cms.text(h.statAiValue, '4,907'),
+                            icon: Icons.document_scanner_outlined,
+                          ),
+                          StatCard(
+                            label: cms.text(
+                              h.statStatesLabel,
+                              loc.t('home.statStatesServed'),
+                            ),
+                            value: cms.text(h.statStatesValue, '48'),
+                            icon: Icons.map_outlined,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                ],
+                if (f.showQuickActions) ...[
+                  SectionHeader(
+                    title: cms.text(
+                      h.quickActionsTitle,
+                      loc.t('home.quickActions'),
+                    ),
+                    subtitle: cms.text(
+                      h.quickActionsSubtitle,
+                      loc.t('home.quickActionsSubtitle'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushReplacementNamed(AppRoutes.dme);
+                        },
+                        icon: const Icon(Icons.accessible),
+                        label: Text(
+                          cms.text(h.donateDmeLabel, loc.t('home.donateDme')),
+                        ),
+                      ),
+                      FilledButton.tonalIcon(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushReplacementNamed(AppRoutes.woundCare);
+                        },
+                        icon: const Icon(Icons.healing),
+                        label: Text(
+                          cms.text(
+                            h.donateWoundCareLabel,
+                            loc.t('home.donateWoundCare'),
+                          ),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushReplacementNamed(AppRoutes.recipient);
+                        },
+                        icon: const Icon(Icons.near_me_outlined),
+                        label: Text(
+                          cms.text(
+                            h.browseCtaLabel,
+                            loc.t('browseEquipment.entryTitle'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                ],
+                if (f.showRecentDonations) ...[
+                  SectionHeader(
+                    title: cms.text(
+                      h.recentTitle,
+                      loc.t('home.recentDonations'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...DonationService.recentDonations.map(
+                    (item) => Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: Icon(
+                          item.category == DonationCategory.dme
+                              ? Icons.accessible
+                              : Icons.healing,
+                        ),
+                        title: Text(item.title),
+                        subtitle: Text(
+                          loc.t('home.recentItemSubtitle', {
+                            'qty': item.quantity,
+                            'zip': item.zipCode,
+                            'condition': locCondition(loc, item.condition),
+                          }),
+                        ),
+                        trailing: item.aiConfidence != null
+                            ? Chip(
+                                label: Text(
+                                  loc.t(
+                                    'common.aiPercent',
+                                    {
+                                      'percent':
+                                          (item.aiConfidence! * 100).round(),
+                                    },
+                                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+                if (f.showSponsors) const CorporateSponsorsSection(),
+                if (f.showPartnershipFooter) const PartnershipFooter(),
               ],
             ),
-            const SizedBox(height: 32),
-            SectionHeader(title: loc.t('home.recentDonations')),
-            const SizedBox(height: 12),
-            ...DonationService.recentDonations.map(
-              (item) => Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: Icon(
-                    item.category == DonationCategory.dme
-                        ? Icons.accessible
-                        : Icons.healing,
-                  ),
-                  title: Text(item.title),
-                  subtitle: Text(
-                    loc.t('home.recentItemSubtitle', {
-                      'qty': item.quantity,
-                      'zip': item.zipCode,
-                      'condition': locCondition(loc, item.condition),
-                    }),
-                  ),
-                  trailing: item.aiConfidence != null
-                      ? Chip(
-                          label: Text(
-                            loc.t(
-                              'common.aiPercent',
-                              {
-                                'percent':
-                                    (item.aiConfidence! * 100).round(),
-                              },
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            const CorporateSponsorsSection(),
-            if (s.flags.showPartnershipFooter) const PartnershipFooter(),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
       },
     );
   }

@@ -56,6 +56,13 @@ class AuthLandingScreen extends StatelessWidget {
             cms.text(s.landing.welcomeSubtitle, loc.t('auth.welcomeSubtitle'));
         final loginCta = cms.text(s.landing.loginCta, loc.t('auth.logIn'));
         final signupCta = cms.text(s.landing.signupCta, loc.t('auth.signUp'));
+        final forgotCta = cms.text(
+          s.landing.forgotPasswordCta,
+          loc.t('auth.forgotPasswordCta'),
+        );
+        final newHere = cms.text(s.landing.newHereHint, loc.t('auth.newHere'));
+        final aboutLink =
+            cms.text(s.landing.aboutLinkLabel, loc.t('about.openLink'));
 
         return Scaffold(
           appBar: AppBar(
@@ -115,7 +122,7 @@ class AuthLandingScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: () => _openForgotPassword(context),
                         icon: const Icon(Icons.lock_reset_outlined),
-                        label: Text(loc.t('auth.forgotPasswordCta')),
+                        label: Text(forgotCta),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           minimumSize: const Size.fromHeight(48),
@@ -123,17 +130,20 @@ class AuthLandingScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        loc.t('auth.newHere'),
+                        newHere,
                         style: theme.textTheme.bodySmall,
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => _openAboutUs(context),
-                        child: Text(loc.t('about.openLink')),
-                      ),
+                      if (s.flags.showAboutLink) ...[
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => _openAboutUs(context),
+                          child: Text(aboutLink),
+                        ),
+                      ],
                       const SizedBox(height: 24),
-                      const MedGiftManifestoSection(),
+                      if (s.flags.showManifesto)
+                        const MedGiftManifestoSection(),
                       if (s.flags.showPartnershipFooter)
                         const PartnershipFooter(),
                     ],

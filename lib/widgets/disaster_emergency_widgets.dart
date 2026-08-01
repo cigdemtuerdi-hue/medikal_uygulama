@@ -100,9 +100,17 @@ class CrisisReliefNeedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
     const color = Color(0xFFC62828);
 
-    return Container(
+    return ListenableBuilder(
+      listenable: cms,
+      builder: (context, _) {
+        final label = cms.text(
+          cms.settings.emergency.crisisLabel,
+          loc.t('disaster.crisisLabel'),
+        );
+        return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 10,
         vertical: compact ? 4 : 6,
@@ -130,7 +138,7 @@ class CrisisReliefNeedBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            loc.t('disaster.crisisLabel'),
+            label,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -140,6 +148,8 @@ class CrisisReliefNeedBadge extends StatelessWidget {
           ),
         ],
       ),
+        );
+      },
     );
   }
 }

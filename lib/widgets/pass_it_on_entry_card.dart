@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../config/app_routes.dart';
 import '../l10n/app_localizations.dart';
 import '../services/item_lifecycle_service.dart';
+import '../services/site_settings_service.dart';
 
 /// Home / Profile entry point so Pass-It-On is easy to find.
 class PassItOnEntryCard extends StatelessWidget {
@@ -11,11 +12,21 @@ class PassItOnEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
 
     return ListenableBuilder(
-      listenable: ItemLifecycleService.instance,
+      listenable: Listenable.merge([
+        ItemLifecycleService.instance,
+        cms,
+      ]),
       builder: (context, _) {
         final count = ItemLifecycleService.instance.myReceivedItems.length;
+        final h = cms.settings.home;
+        final title = cms.text(h.passItOnTitle, loc.t('passItOn.entryTitle'));
+        final bodyTemplate = h.passItOnBody.trim();
+        final body = bodyTemplate.isEmpty
+            ? loc.t('passItOn.entryBody', {'count': count})
+            : bodyTemplate.replaceAll('{count}', '$count');
 
         return Card(
           color: const Color(0xFFFFF3E0),
@@ -38,7 +49,7 @@ class PassItOnEntryCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          loc.t('passItOn.entryTitle'),
+                          title,
                           style:
                               Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -47,7 +58,7 @@ class PassItOnEntryCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          loc.t('passItOn.entryBody', {'count': count}),
+                          body,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],

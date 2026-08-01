@@ -74,7 +74,7 @@ async function getAdminSettings(_req, res, next) {
 
 /**
  * PUT /api/admin/settings — admin auth
- * Body: partial settings object (emergency, landing, home, partner, brand, flags)
+ * Body: partial settings object (emergency, landing, home, manifesto, about, partner, inquiry, brand, flags)
  */
 async function putAdminSettings(req, res, next) {
   try {
@@ -84,7 +84,10 @@ async function putAdminSettings(req, res, next) {
       'emergency',
       'landing',
       'home',
+      'manifesto',
+      'about',
       'partner',
+      'inquiry',
       'brand',
       'flags',
     ]) {

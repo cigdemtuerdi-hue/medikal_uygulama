@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../services/site_settings_service.dart';
 import 'partnership_footer.dart';
 
 /// "Our Manifesto" — mission pillars + sponsorship CTA for Landing / About Us.
@@ -40,171 +41,187 @@ class MedGiftManifestoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final cms = SiteSettingsService.instance;
 
-    final pillars = [
-      (
-        icon: Icons.recycling_outlined,
-        color: const Color(0xFF2E7D32),
-        title: loc.t('manifesto.pillar1Title'),
-        body: loc.t('manifesto.pillar1Body'),
-        onTap: () => _openDetail(
-          context,
-          icon: Icons.recycling_outlined,
-          color: const Color(0xFF2E7D32),
-          detailTitleKey: 'manifesto.detail1Title',
-          bodyKey: 'manifesto.detail1Body',
-          introKey: null,
-          bulletKeys: const [],
-        ),
-      ),
-      (
-        icon: Icons.groups_outlined,
-        color: AppTheme.primaryBlue,
-        title: loc.t('manifesto.pillar2Title'),
-        body: loc.t('manifesto.pillar2Body'),
-        onTap: () => _openDetail(
-          context,
-          icon: Icons.groups_outlined,
-          color: AppTheme.primaryBlue,
-          detailTitleKey: 'manifesto.detail2Title',
-          bodyKey: null,
-          introKey: 'manifesto.detail2Intro',
-          bulletKeys: const [
-            'manifesto.detail2Bullet1',
-            'manifesto.detail2Bullet2',
-            'manifesto.detail2Bullet3',
-          ],
-        ),
-      ),
-      (
-        icon: Icons.energy_savings_leaf_outlined,
-        color: const Color(0xFF00897B),
-        title: loc.t('manifesto.pillar3Title'),
-        body: loc.t('manifesto.pillar3Body'),
-        onTap: () => _openDetail(
-          context,
-          icon: Icons.energy_savings_leaf_outlined,
-          color: const Color(0xFF00897B),
-          detailTitleKey: 'manifesto.detail3Title',
-          bodyKey: null,
-          introKey: 'manifesto.detail3Intro',
-          bulletKeys: const [
-            'manifesto.detail3Bullet1',
-            'manifesto.detail3Bullet2',
-          ],
-        ),
-      ),
-    ];
+    return ListenableBuilder(
+      listenable: cms,
+      builder: (context, _) {
+        final m = cms.settings.manifesto;
+        final eyebrow = cms.text(m.eyebrow, loc.t('manifesto.eyebrow'));
+        final title = cms.text(m.title, loc.t('manifesto.title'));
+        final subtitle = cms.text(m.subtitle, loc.t('manifesto.subtitle'));
+        final lead = cms.text(m.lead, loc.t('manifesto.lead'));
+        final ctaBody = cms.text(m.ctaBody, loc.t('manifesto.ctaBody'));
+        final ctaButton = cms.text(m.ctaButton, loc.t('manifesto.ctaButton'));
+        final readMore =
+            cms.text(m.readMoreLabel, loc.t('manifesto.readMore'));
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primaryDeepBlue,
-                  Color(0xFF0B3D2E),
-                  AppTheme.primaryBlue,
-                ],
-              ),
+        final pillars = [
+          (
+            icon: Icons.recycling_outlined,
+            color: const Color(0xFF2E7D32),
+            title: loc.t('manifesto.pillar1Title'),
+            body: loc.t('manifesto.pillar1Body'),
+            onTap: () => _openDetail(
+              context,
+              icon: Icons.recycling_outlined,
+              color: const Color(0xFF2E7D32),
+              detailTitleKey: 'manifesto.detail1Title',
+              bodyKey: 'manifesto.detail1Body',
+              introKey: null,
+              bulletKeys: const [],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (showEyebrow) ...[
-                  Text(
-                    loc.t('manifesto.eyebrow'),
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: Colors.white70,
-                      letterSpacing: 1.1,
-                      fontWeight: FontWeight.w600,
+          ),
+          (
+            icon: Icons.groups_outlined,
+            color: AppTheme.primaryBlue,
+            title: loc.t('manifesto.pillar2Title'),
+            body: loc.t('manifesto.pillar2Body'),
+            onTap: () => _openDetail(
+              context,
+              icon: Icons.groups_outlined,
+              color: AppTheme.primaryBlue,
+              detailTitleKey: 'manifesto.detail2Title',
+              bodyKey: null,
+              introKey: 'manifesto.detail2Intro',
+              bulletKeys: const [
+                'manifesto.detail2Bullet1',
+                'manifesto.detail2Bullet2',
+                'manifesto.detail2Bullet3',
+              ],
+            ),
+          ),
+          (
+            icon: Icons.energy_savings_leaf_outlined,
+            color: const Color(0xFF00897B),
+            title: loc.t('manifesto.pillar3Title'),
+            body: loc.t('manifesto.pillar3Body'),
+            onTap: () => _openDetail(
+              context,
+              icon: Icons.energy_savings_leaf_outlined,
+              color: const Color(0xFF00897B),
+              detailTitleKey: 'manifesto.detail3Title',
+              bodyKey: null,
+              introKey: 'manifesto.detail3Intro',
+              bulletKeys: const [
+                'manifesto.detail3Bullet1',
+                'manifesto.detail3Bullet2',
+              ],
+            ),
+          ),
+        ];
+
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.primaryDeepBlue,
+                      Color(0xFF0B3D2E),
+                      AppTheme.primaryBlue,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showEyebrow) ...[
+                      Text(
+                        eyebrow,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: Colors.white70,
+                          letterSpacing: 1.1,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    Text(
+                      title,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        height: 1.25,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                Text(
-                  loc.t('manifesto.title'),
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    height: 1.25,
-                  ),
+                    const SizedBox(height: 10),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  loc.t('manifesto.subtitle'),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    height: 1.45,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
-            child: Text(
-              loc.t('manifesto.lead'),
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.5,
-                color: AppTheme.primaryDeepBlue.withValues(alpha: 0.92),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Column(
-              children: [
-                for (var i = 0; i < pillars.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 12),
-                  _PillarCard(
-                    icon: pillars[i].icon,
-                    color: pillars[i].color,
-                    title: pillars[i].title,
-                    body: pillars[i].body,
-                    readMoreLabel: loc.t('manifesto.readMore'),
-                    onTap: pillars[i].onTap,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  loc.t('manifesto.ctaBody'),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+                child: Text(
+                  lead,
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    height: 1.45,
+                    height: 1.5,
+                    color: AppTheme.primaryDeepBlue.withValues(alpha: 0.92),
                   ),
                 ),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () => openPartnershipInquiry(context),
-                  icon: const Icon(Icons.volunteer_activism_outlined),
-                  label: Text(loc.t('manifesto.ctaButton')),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < pillars.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 12),
+                      _PillarCard(
+                        icon: pillars[i].icon,
+                        color: pillars[i].color,
+                        title: pillars[i].title,
+                        body: pillars[i].body,
+                        readMoreLabel: readMore,
+                        onTap: pillars[i].onTap,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ctaBody,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        height: 1.45,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: () => openPartnershipInquiry(context),
+                      icon: const Icon(Icons.volunteer_activism_outlined),
+                      label: Text(ctaButton),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

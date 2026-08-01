@@ -5,6 +5,7 @@ import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/corporate_esg_badge_service.dart';
 import '../services/impact_metrics_service.dart';
+import '../services/site_settings_service.dart';
 import 'common_widgets.dart';
 
 String _formatInt(int value) {
@@ -862,18 +863,29 @@ class CorporateSponsorsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
 
     return ListenableBuilder(
-      listenable: ImpactMetricsService.instance,
+      listenable: Listenable.merge([
+        ImpactMetricsService.instance,
+        cms,
+      ]),
       builder: (context, _) {
         final sponsors = CorporateEsgBadgeService.instance.featuredSponsors;
+        final h = cms.settings.home;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeader(
-              title: loc.t('esgBadge.sponsorsSectionTitle'),
-              subtitle: loc.t('esgBadge.sponsorsSectionSubtitle'),
+              title: cms.text(
+                h.sponsorsTitle,
+                loc.t('esgBadge.sponsorsSectionTitle'),
+              ),
+              subtitle: cms.text(
+                h.sponsorsSubtitle,
+                loc.t('esgBadge.sponsorsSectionSubtitle'),
+              ),
             ),
             const SizedBox(height: 12),
             ...sponsors.map(

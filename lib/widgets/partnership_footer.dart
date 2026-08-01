@@ -145,6 +145,24 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final loc = AppLocalizations.of(context);
+    final cms = SiteSettingsService.instance;
+    final inquiry = cms.settings.inquiry;
+    final notifyEmail = cms.settings.brand.notifyEmail.trim().isEmpty
+        ? ContactInquiryService.adminEmail
+        : cms.settings.brand.notifyEmail.trim();
+    final sheetTitle = cms.text(
+      inquiry.sheetTitle,
+      'Contact Us / Sponsorship Inquiry',
+    );
+    final sheetSubtitle = cms.text(
+      inquiry.sheetSubtitle,
+      'Your message is delivered to the MedGift admin inbox and '
+      'routed to $notifyEmail.',
+    );
+    final nameLabel = cms.text(inquiry.nameLabel, 'Full name');
+    final emailLabel = cms.text(inquiry.emailLabel, 'Email');
+    final sendLabel = cms.text(inquiry.sendButton, 'Send Message');
 
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
@@ -167,7 +185,7 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Contact Us / Sponsorship Inquiry',
+                sheetTitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryDeepBlue,
@@ -175,17 +193,16 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Your message is delivered to the MedGift admin inbox and '
-                'routed to ${ContactInquiryService.adminEmail}.',
+                sheetSubtitle,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _nameController,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Full name',
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: nameLabel,
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().length < 2) {
@@ -198,9 +215,9 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
+                decoration: InputDecoration(
+                  labelText: emailLabel,
+                  prefixIcon: const Icon(Icons.email_outlined),
                 ),
                 validator: (value) {
                   final email = value?.trim() ?? '';
@@ -211,27 +228,22 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                 },
               ),
               const SizedBox(height: 12),
-              Builder(
-                builder: (context) {
-                  final loc = AppLocalizations.of(context);
-                  return DropdownButtonFormField<InquirySubject>(
-                    initialValue: _subject,
-                    decoration: InputDecoration(
-                      labelText: loc.t('inquiry.subjectLabel'),
-                      prefixIcon: const Icon(Icons.topic_outlined),
-                    ),
-                    items: InquirySubject.values
-                        .map(
-                          (subject) => DropdownMenuItem(
-                            value: subject,
-                            child: Text(locInquirySubject(loc, subject)),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) setState(() => _subject = value);
-                    },
-                  );
+              DropdownButtonFormField<InquirySubject>(
+                initialValue: _subject,
+                decoration: InputDecoration(
+                  labelText: loc.t('inquiry.subjectLabel'),
+                  prefixIcon: const Icon(Icons.topic_outlined),
+                ),
+                items: InquirySubject.values
+                    .map(
+                      (subject) => DropdownMenuItem(
+                        value: subject,
+                        child: Text(locInquirySubject(loc, subject)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _subject = value);
                 },
               ),
               const SizedBox(height: 12),
@@ -239,11 +251,9 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                 controller: _messageController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  labelText:
-                      AppLocalizations.of(context).t('inquiry.messageLabel'),
+                  labelText: loc.t('inquiry.messageLabel'),
                   alignLabelWithHint: true,
-                  hintText:
-                      AppLocalizations.of(context).t('inquiry.messageHint'),
+                  hintText: loc.t('inquiry.messageHint'),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().length < 10) {
@@ -262,7 +272,7 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.send_outlined),
-                label: Text(_sending ? 'Sending...' : 'Send Message'),
+                label: Text(_sending ? 'Sending...' : sendLabel),
               ),
             ],
           ),
@@ -302,64 +312,90 @@ class _InquirySuccessDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
-                'Thank You',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryDeepBlue,
-                    ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Thank you, ${inquiry.name}. Your '
-                '${inquiry.subject.label.toLowerCase()} inquiry has been '
-                'delivered to our admin team by email and saved in the '
-                'Admin Inquiries inbox.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      height: 1.45,
-                    ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.skyBlue.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.15),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      inquiry.id,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppTheme.primaryDeepBlue,
-                            fontWeight: FontWeight.bold,
+              Builder(
+                builder: (context) {
+                  final cms = SiteSettingsService.instance;
+                  final i = cms.settings.inquiry;
+                  final successTitle = cms.text(i.successTitle, 'Thank You');
+                  final defaultBody =
+                      'Thank you, ${inquiry.name}. Your '
+                      '${inquiry.subject.label.toLowerCase()} inquiry has been '
+                      'delivered to our admin team by email and saved in the '
+                      'Admin Inquiries inbox.';
+                  final successBody = cms
+                      .text(i.successBody, defaultBody)
+                      .replaceAll('{name}', inquiry.name);
+                  final sla = cms.text(
+                    i.responseSla,
+                    'We typically respond within 2 business days.',
+                  );
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        successTitle,
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryDeepBlue,
+                                ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        successBody,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              height: 1.45,
+                            ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.skyBlue.withValues(alpha: 0.22),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color:
+                                AppTheme.primaryBlue.withValues(alpha: 0.15),
                           ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Confirmation reference',
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      inquiry.emailDeliveryNote ??
-                          'Notification sent to ${inquiry.routedToEmail}',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'We typically respond within 2 business days.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              inquiry.id,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: AppTheme.primaryDeepBlue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Confirmation reference',
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              inquiry.emailDeliveryNote ??
+                                  'Notification sent to ${inquiry.routedToEmail}',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              sla,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
               SizedBox(
