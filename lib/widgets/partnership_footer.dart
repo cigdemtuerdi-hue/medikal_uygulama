@@ -153,16 +153,17 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
         : cms.settings.brand.notifyEmail.trim();
     final sheetTitle = cms.text(
       inquiry.sheetTitle,
-      'Contact Us / Sponsorship Inquiry',
+      loc.t('inquiry.sheetTitle'),
     );
     final sheetSubtitle = cms.text(
       inquiry.sheetSubtitle,
-      'Your message is delivered to the MedGift admin inbox and '
-      'routed to $notifyEmail.',
+      loc.t('inquiry.sheetSubtitle', {'email': notifyEmail}),
     );
-    final nameLabel = cms.text(inquiry.nameLabel, 'Full name');
-    final emailLabel = cms.text(inquiry.emailLabel, 'Email');
-    final sendLabel = cms.text(inquiry.sendButton, 'Send Message');
+    final nameLabel = cms.text(inquiry.nameLabel, loc.t('inquiry.nameLabel'));
+    final emailLabel =
+        cms.text(inquiry.emailLabel, loc.t('inquiry.emailLabel'));
+    final sendLabel =
+        cms.text(inquiry.sendButton, loc.t('inquiry.sendButton'));
 
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
@@ -206,7 +207,7 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().length < 2) {
-                    return 'Please enter your name';
+                    return loc.t('inquiry.nameError');
                   }
                   return null;
                 },
@@ -222,7 +223,7 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                 validator: (value) {
                   final email = value?.trim() ?? '';
                   if (!email.contains('@') || !email.contains('.')) {
-                    return 'Enter a valid email address';
+                    return loc.t('inquiry.emailError');
                   }
                   return null;
                 },
@@ -257,7 +258,7 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().length < 10) {
-                    return 'Please write a short message (at least 10 characters)';
+                    return loc.t('inquiry.messageError');
                   }
                   return null;
                 },
@@ -272,7 +273,7 @@ class _ContactInquirySheetState extends State<_ContactInquirySheet> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.send_outlined),
-                label: Text(_sending ? 'Sending...' : sendLabel),
+                label: Text(_sending ? loc.t('inquiry.sending') : sendLabel),
               ),
             ],
           ),
@@ -314,20 +315,28 @@ class _InquirySuccessDialog extends StatelessWidget {
               const SizedBox(height: 20),
               Builder(
                 builder: (context) {
+                  final loc = AppLocalizations.of(context);
                   final cms = SiteSettingsService.instance;
                   final i = cms.settings.inquiry;
-                  final successTitle = cms.text(i.successTitle, 'Thank You');
-                  final defaultBody =
-                      'Thank you, ${inquiry.name}. Your '
-                      '${inquiry.subject.label.toLowerCase()} inquiry has been '
-                      'delivered to our admin team by email and saved in the '
-                      'Admin Inquiries inbox.';
+                  final subjectLabel =
+                      locInquirySubject(loc, inquiry.subject).toLowerCase();
+                  final successTitle = cms.text(
+                    i.successTitle,
+                    loc.t('inquiry.successTitle'),
+                  );
                   final successBody = cms
-                      .text(i.successBody, defaultBody)
-                      .replaceAll('{name}', inquiry.name);
+                      .text(
+                        i.successBody,
+                        loc.t('inquiry.successBody', {
+                          'name': inquiry.name,
+                          'subject': subjectLabel,
+                        }),
+                      )
+                      .replaceAll('{name}', inquiry.name)
+                      .replaceAll('{subject}', subjectLabel);
                   final sla = cms.text(
                     i.responseSla,
-                    'We typically respond within 2 business days.',
+                    loc.t('inquiry.responseSla'),
                   );
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -374,13 +383,15 @@ class _InquirySuccessDialog extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Confirmation reference',
+                              loc.t('inquiry.confirmationRef'),
                               style: Theme.of(context).textTheme.labelSmall,
                             ),
                             const SizedBox(height: 10),
                             Text(
                               inquiry.emailDeliveryNote ??
-                                  'Notification sent to ${inquiry.routedToEmail}',
+                                  loc.t('inquiry.notificationSent', {
+                                    'email': inquiry.routedToEmail,
+                                  }),
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
