@@ -40,6 +40,10 @@ class ListingApiService {
 
   static const _timeout = Duration(seconds: 20);
 
+  /// Photos are far larger than a JSON body, and Render's free tier can be slow
+  /// to wake, so uploads get a longer leash.
+  static const _uploadTimeout = Duration(seconds: 60);
+
   Uri _uri(String path, [Map<String, String>? query]) {
     final base = AppConfig.apiBaseUrl.replaceAll(RegExp(r'/$'), '');
     final normalized = path.startsWith('/') ? path : '/$path';
@@ -111,7 +115,7 @@ class ListingApiService {
     String? city,
     String? state,
     String? postalCode,
-    String? photoUrl,
+    List<String> photos = const [],
   }) async {
     try {
       final response = await http
@@ -129,7 +133,7 @@ class ListingApiService {
               'city': ?city,
               'state': ?state,
               'postalCode': ?postalCode,
-              'photoUrl': ?photoUrl,
+              'photos': photos,
             }),
           )
           .timeout(_timeout);
@@ -151,6 +155,55 @@ class ListingApiService {
       debugPrint('[ListingApi] create failed: $err\n$stack');
       return _offline<Listing>();
     }
+  }
+
+  /// Uploads one listing photo and returns the path to reference it by.
+  ///
+  /// Sends the raw bytes rather than base64 or multipart: base64 would inflate
+  /// the payload by a third for no benefit, and multipart would need a parser
+  /// on the server for a single field.
+  Future<ListingApiResult<String>> uploadPhoto({
+    required Uint8List bytes,
+    required String contentType,
+  }) async {
+    try {
+      final token = await _sessionToken();
+      final response = await http
+          .post(
+            _uri('/api/uploads'),
+            headers: {
+              'Content-Type': contentType,
+              'Accept': 'application/json',
+              if (token != null && token.isNotEmpty)
+                'Authorization': 'Bearer $token',
+            },
+            body: bytes,
+          )
+          .timeout(_uploadTimeout);
+
+      if (response.statusCode == 201) {
+        final url = _parse(response.body)?['url']?.toString();
+        if (url != null && url.isNotEmpty) {
+          return ListingApiResult<String>(
+            success: true,
+            message: 'Görsel yüklendi.',
+            data: url,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+      return _failure<String>(response, 'Görsel yüklenemedi.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] uploadPhoto failed: $err\n$stack');
+      return _offline<String>();
+    }
+  }
+
+  /// Absolute URL for a photo path returned by [uploadPhoto] or read off a
+  /// [Listing]. Values that are already absolute are passed through.
+  String photoUrlFor(String path) {
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return _uri(path).toString();
   }
 
   /// The caller's own listings, including hidden ones.

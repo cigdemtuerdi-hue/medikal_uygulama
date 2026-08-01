@@ -93,6 +93,22 @@ const listingSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
+    /**
+     * Up to five photo URLs, in display order. Paths returned by
+     * /api/uploads, validated in listingController before they land here.
+     */
+    photos: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (value) => !value || value.length <= 5,
+        message: 'En fazla 5 görsel eklenebilir.',
+      },
+    },
+    /**
+     * Kept as the cover image for listings created before `photos` existed.
+     * Writers mirror photos[0] into it; readers should prefer `photos`.
+     */
     photoUrl: {
       type: String,
       default: null,

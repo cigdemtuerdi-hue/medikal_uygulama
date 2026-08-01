@@ -5,6 +5,7 @@ const {
   countListings,
   updateListing,
 } = require('../models/listingStore');
+const { uploadExists } = require('../models/uploadStore');
 
 /** Donors publish offers, recipients and NGO partners publish requests. */
 const KINDS = new Set(['offer', 'request']);
@@ -15,10 +16,52 @@ const URGENCIES = new Set(['low', 'normal', 'high']);
 /** Reservations expire so stalled handoffs release the item back to browse. */
 const RESERVATION_WINDOW_MS = 48 * 60 * 60 * 1000;
 
+const MAX_PHOTOS = 5;
+
+/** Both Mongo ObjectIds and the memory store's ids are 24 hex characters. */
+const UPLOAD_PATH_RE = /^\/api\/uploads\/([a-f0-9]{24})$/i;
+
 function clampText(value, max) {
   return String(value ?? '')
     .trim()
     .slice(0, max);
+}
+
+/**
+ * Accepts only paths this API itself issued, and only ones that still resolve
+ * to stored bytes.
+ *
+ * Taking an arbitrary URL would let a listing point at any third-party address
+ * — a tracking pixel aimed at whoever browses, or a `javascript:`/`data:` value
+ * rendered straight into an <img>. Restricting to our own upload ids also means
+ * a photo can never outlive the object it references.
+ */
+async function sanitizePhotos(value) {
+  if (value == null) return [];
+  const list = Array.isArray(value) ? value : [value];
+
+  const seen = new Set();
+  const accepted = [];
+  for (const entry of list) {
+    if (accepted.length >= MAX_PHOTOS) break;
+    const match = UPLOAD_PATH_RE.exec(String(entry ?? '').trim());
+    if (!match) continue;
+
+    const id = match[1].toLowerCase();
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    if (await uploadExists(id)) accepted.push(`/api/uploads/${id}`);
+  }
+  return accepted;
+}
+
+/** Older records predate `photos` and only carry a single `photoUrl`. */
+function readPhotos(row) {
+  if (Array.isArray(row.photos) && row.photos.length > 0) {
+    return row.photos.slice(0, MAX_PHOTOS);
+  }
+  return row.photoUrl ? [row.photoUrl] : [];
 }
 
 /**
@@ -41,6 +84,7 @@ function toPublicJson(row) {
     city: row.city || null,
     state: row.state || null,
     postalPrefix: row.postalCode ? String(row.postalCode).slice(0, 3) : null,
+    photos: readPhotos(row),
     photoUrl: row.photoUrl || null,
     status: row.status || 'active',
     reservedUntil: row.reservedUntil || null,
@@ -127,6 +171,7 @@ async function create(req, res, next) {
     const condition = clampText(req.body?.condition, 20);
     const urgency = clampText(req.body?.urgency, 10);
     const quantityRaw = Number(req.body?.quantity);
+    const photos = await sanitizePhotos(req.body?.photos ?? req.body?.photoUrl);
 
     const created = await createListing({
       kind: requestedKind,
@@ -146,7 +191,9 @@ async function create(req, res, next) {
       city: clampText(req.body?.city, 80) || null,
       state: clampText(req.body?.state, 2).toUpperCase() || null,
       postalCode: clampText(req.body?.postalCode, 10) || null,
-      photoUrl: clampText(req.body?.photoUrl, 600) || null,
+      photos,
+      // Mirrored so clients still reading the old single-photo field keep working.
+      photoUrl: photos[0] || null,
       status: 'active',
     });
 
@@ -407,8 +454,10 @@ async function update(req, res, next) {
     if (req.body?.sizeNote != null) {
       patch.sizeNote = clampText(req.body.sizeNote, 160) || null;
     }
-    if (req.body?.photoUrl != null) {
-      patch.photoUrl = clampText(req.body.photoUrl, 600) || null;
+    if (req.body?.photos != null) {
+      const photos = await sanitizePhotos(req.body.photos);
+      patch.photos = photos;
+      patch.photoUrl = photos[0] || null;
     }
     if (req.body?.status != null) {
       const status = clampText(req.body.status, 20);

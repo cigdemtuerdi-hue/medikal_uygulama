@@ -6,6 +6,7 @@ import '../models/user_onboarding_models.dart';
 import '../services/auth_session_service.dart';
 import '../services/listing_api_service.dart';
 import '../services/onboarding_service.dart';
+import '../widgets/listing_photo_picker.dart';
 
 /// Counterpart browse + matching surface.
 ///
@@ -200,6 +201,10 @@ class _ListingCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (listing.displayPhotos.isNotEmpty) ...[
+              _ListingPhotoStrip(paths: listing.displayPhotos),
+              const SizedBox(height: 10),
+            ],
             Row(
               children: [
                 Expanded(
@@ -723,6 +728,177 @@ class _MatchesTabState extends State<_MatchesTab> {
 }
 
 // ---------------------------------------------------------------------------
+// Listing photos
+// ---------------------------------------------------------------------------
+
+/// Cover image plus thumbnails for the remaining photos, opening a full-screen
+/// gallery on tap. Recipients judge whether equipment fits from these, so the
+/// cover gets real height rather than a thumbnail strip.
+class _ListingPhotoStrip extends StatelessWidget {
+  const _ListingPhotoStrip({required this.paths});
+
+  final List<String> paths;
+
+  void _openGallery(BuildContext context, int initialIndex) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => _PhotoGalleryPage(paths: paths, initialIndex: initialIndex),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AspectRatio(
+          aspectRatio: 16 / 10,
+          child: _RemotePhoto(
+            path: paths.first,
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => _openGallery(context, 0),
+            semanticLabel: 'Kapak fotoğrafı',
+          ),
+        ),
+        if (paths.length > 1) ...[
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 54,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: paths.length - 1,
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
+              itemBuilder: (context, index) => SizedBox(
+                width: 54,
+                child: _RemotePhoto(
+                  path: paths[index + 1],
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => _openGallery(context, index + 1),
+                  semanticLabel: 'Fotoğraf ${index + 2}',
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// One photo served by `/api/uploads`, with its own loading and error states.
+class _RemotePhoto extends StatelessWidget {
+  const _RemotePhoto({
+    required this.path,
+    required this.borderRadius,
+    this.onTap,
+    this.fit = BoxFit.cover,
+    this.semanticLabel,
+  });
+
+  final String path;
+  final BorderRadius borderRadius;
+  final VoidCallback? onTap;
+  final BoxFit fit;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final image = Image.network(
+      ListingApiService.instance.photoUrlFor(path),
+      fit: fit,
+      semanticLabel: semanticLabel,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return ColoredBox(
+          color: theme.colorScheme.surfaceContainerHighest,
+          child: const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2.2),
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, _, _) => ColoredBox(
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: Icon(
+          Icons.broken_image_outlined,
+          color: theme.colorScheme.outline,
+        ),
+      ),
+    );
+
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: onTap == null
+          ? image
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                image,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(onTap: onTap),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _PhotoGalleryPage extends StatefulWidget {
+  const _PhotoGalleryPage({required this.paths, required this.initialIndex});
+
+  final List<String> paths;
+  final int initialIndex;
+
+  @override
+  State<_PhotoGalleryPage> createState() => _PhotoGalleryPageState();
+}
+
+class _PhotoGalleryPageState extends State<_PhotoGalleryPage> {
+  late final PageController _controller =
+      PageController(initialPage: widget.initialIndex);
+  late int _index = widget.initialIndex;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text('${_index + 1} / ${widget.paths.length}'),
+      ),
+      body: PageView.builder(
+        controller: _controller,
+        itemCount: widget.paths.length,
+        onPageChanged: (value) => setState(() => _index = value),
+        itemBuilder: (context, index) => InteractiveViewer(
+          maxScale: 4,
+          child: _RemotePhoto(
+            path: widget.paths[index],
+            borderRadius: BorderRadius.zero,
+            fit: BoxFit.contain,
+            semanticLabel: 'Fotoğraf ${index + 1}',
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Create sheet
 // ---------------------------------------------------------------------------
 
@@ -742,6 +918,7 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
   final _city = TextEditingController();
   final _state = TextEditingController();
   final _postal = TextEditingController();
+  final List<ListingPhotoDraft> _photos = [];
   String _category = _categories.first.$1;
   String? _condition = 'good';
   String _urgency = 'normal';
@@ -758,13 +935,31 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
     super.dispose();
   }
 
+  /// Hands one picked photo to the API and returns the stored path.
+  Future<String> _uploadPhoto(ListingPhotoDraft draft) async {
+    final result = await ListingApiService.instance.uploadPhoto(
+      bytes: draft.bytes,
+      contentType: draft.contentType,
+    );
+    final path = result.data;
+    if (!result.success || path == null) throw Exception(result.message);
+    return path;
+  }
+
   Future<void> _submit() async {
     if (_title.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Başlık zorunlu.')),
-      );
+      _notify('Başlık zorunlu.');
       return;
     }
+    if (_photos.any((p) => p.isPending)) {
+      _notify('Fotoğraflar hâlâ yükleniyor. Lütfen bekleyin.');
+      return;
+    }
+    if (_photos.any((p) => p.error != null)) {
+      _notify('Yüklenemeyen fotoğrafları kaldırın veya yeniden deneyin.');
+      return;
+    }
+
     setState(() => _submitting = true);
     final result = await ListingApiService.instance.create(
       title: _title.text.trim(),
@@ -776,13 +971,21 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
       city: _city.text.trim().isEmpty ? null : _city.text.trim(),
       state: _state.text.trim().isEmpty ? null : _state.text.trim(),
       postalCode: _postal.text.trim().isEmpty ? null : _postal.text.trim(),
+      photos: [
+        for (final photo in _photos)
+          if (photo.uploadedPath != null) photo.uploadedPath!,
+      ],
     );
     if (!mounted) return;
     setState(() => _submitting = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(result.message)),
-    );
+    _notify(result.message);
     if (result.success) Navigator.of(context).pop(true);
+  }
+
+  void _notify(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -917,6 +1120,17 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            ListingPhotoPicker(
+              photos: _photos,
+              enabled: !_submitting,
+              onUpload: _uploadPhoto,
+              onChanged: (photos) => setState(() {
+                _photos
+                  ..clear()
+                  ..addAll(photos);
+              }),
             ),
             const SizedBox(height: 16),
             FilledButton(

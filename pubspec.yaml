@@ -25,6 +25,8 @@ dependencies:
   pdf: ^3.13.0
   mobile_scanner: ^7.4.0
   http: ^1.6.0
+  image: ^4.2.0
+  web: ^1.1.1
 
 dependency_overrides:
   http: ^1.2.2
@@ -33,9 +35,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  # Used only by test/generate_brand_icons_test.dart to strip the alpha channel
-  # from exported iOS app icons, which App Store Connect rejects.
-  image: ^4.2.0
 
 flutter:
   uses-material-design: true

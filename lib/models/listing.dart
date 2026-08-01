@@ -18,6 +18,7 @@ class Listing {
     this.state,
     this.postalPrefix,
     this.postalCode,
+    this.photos = const [],
     this.photoUrl,
     this.status = 'active',
     this.reservedUntil,
@@ -50,6 +51,11 @@ class Listing {
       state: json['state']?.toString(),
       postalPrefix: json['postalPrefix']?.toString(),
       postalCode: json['postalCode']?.toString(),
+      photos: (json['photos'] as List?)
+              ?.map((e) => e.toString())
+              .where((e) => e.isNotEmpty)
+              .toList(growable: false) ??
+          const [],
       photoUrl: json['photoUrl']?.toString(),
       status: json['status']?.toString() ?? 'active',
       reservedUntil: parseDate(json['reservedUntil']),
@@ -86,6 +92,11 @@ class Listing {
 
   /// Full ZIP, present only on the owner's own listings.
   final String? postalCode;
+
+  /// Photo paths relative to the API host, in display order. Up to five.
+  final List<String> photos;
+
+  /// Cover image on records created before [photos] existed.
   final String? photoUrl;
   final String status;
   final DateTime? reservedUntil;
@@ -103,6 +114,13 @@ class Listing {
 
   bool get isOffer => kind == 'offer';
   bool get isUrgent => urgency == 'high';
+
+  /// Photos to display, falling back to the pre-[photos] single-image field.
+  List<String> get displayPhotos {
+    if (photos.isNotEmpty) return photos;
+    final legacy = photoUrl;
+    return (legacy != null && legacy.isNotEmpty) ? [legacy] : const [];
+  }
 
   /// Human-readable location at the precision the caller is allowed to see.
   String get locationLabel {

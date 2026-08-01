@@ -94,6 +94,10 @@ class _AppShellState extends State<AppShell> {
                                 compact: !isExtended,
                                 showLabel: isExtended,
                                 logoSize: isExtended ? 40 : 32,
+                                tooltip: loc.t('nav.home'),
+                                onTap: () => _onDestinationSelected(
+                                  AppTab.home.tabIndex,
+                                ),
                               ),
                             ),
                           ),

@@ -6,9 +6,11 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const MongoUser = require('./models/User');
 const MongoListing = require('./models/Listing');
+const MongoUpload = require('./models/Upload');
 const { MemoryUserModel } = require('./models/memoryUserStore');
 const { setUserModel, getUserModel } = require('./models/userModel');
 const { setListingModel } = require('./models/listingStore');
+const { setUploadModel } = require('./models/uploadStore');
 
 const PORT = Number(process.env.PORT) || 3001;
 const MONGODB_URI =
@@ -107,6 +109,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/compliance', require('./routes/compliance'));
 app.use('/api/health-records', require('./routes/healthRecords'));
 app.use('/api/listings', require('./routes/listings'));
+app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/admin', require('./routes/admin'));
 
 // eslint-disable-next-line no-unused-vars
@@ -224,8 +227,11 @@ async function resolveUserModel() {
 async function start() {
   const userModel = await resolveUserModel();
   setUserModel(userModel);
-  // Listings share the connection, so they fall back to memory alongside users.
-  setListingModel(userModel === MemoryUserModel ? null : MongoListing);
+  // Listings and uploads share the connection, so they fall back to memory
+  // alongside users.
+  const memoryMode = userModel === MemoryUserModel;
+  setListingModel(memoryMode ? null : MongoListing);
+  setUploadModel(memoryMode ? null : MongoUpload);
   await seedDemoUserIfNeeded();
 
   app.listen(PORT, '0.0.0.0', () => {
@@ -240,6 +246,7 @@ async function start() {
     console.info('[api] POST /api/compliance/audit');
     console.info('[api] /api/health-records (RBAC + AES-256)');
     console.info('[api] /api/listings (session token required)');
+    console.info('[api] POST /api/uploads, GET /api/uploads/:id');
     console.info('[api] /api/admin/{overview,users,listings} (admin token)');
   });
 }

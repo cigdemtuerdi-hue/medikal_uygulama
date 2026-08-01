@@ -58,58 +58,86 @@ class MedGiftBrand extends StatelessWidget {
     this.compact = false,
     this.showLabel = true,
     this.logoSize = 48,
+    this.onTap,
+    this.tooltip,
   });
 
   final bool compact;
   final bool showLabel;
   final double logoSize;
 
+  /// Makes the mark act as a home button. Kept opt-in because the brand also
+  /// appears on screens with nowhere to navigate back to, such as the auth
+  /// forms.
+  final VoidCallback? onTap;
+  final String? tooltip;
+
   @override
   Widget build(BuildContext context) {
-    if (compact || !showLabel) {
-      return Semantics(
-        label: 'MedGift US',
-        header: true,
-        child: ExcludeSemantics(child: MedGiftLogo(size: logoSize)),
-      );
+    return _wrap(context, _buildContent(context));
+  }
+
+  /// A tappable brand must announce itself as a button, not a header, or a
+  /// screen reader reader will skip past an actionable element.
+  Widget _wrap(BuildContext context, Widget content) {
+    if (onTap == null) {
+      return Semantics(label: 'MedGift US', header: true, child: content);
     }
 
     return Semantics(
-      label: 'MedGift US',
-      header: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ExcludeSemantics(child: MedGiftLogo(size: logoSize)),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'MedGift',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primaryDeepBlue,
-                        letterSpacing: -0.3,
-                        height: 1.1,
-                      ),
-                ),
-                Text(
-                  'US',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.primaryBlue,
-                        letterSpacing: 1.2,
-                        height: 1.1,
-                      ),
-                ),
-              ],
-            ),
+      label: tooltip ?? 'MedGift US',
+      button: true,
+      child: Tooltip(
+        message: tooltip ?? 'MedGift US',
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(logoSize * 0.28),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: ExcludeSemantics(child: content),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    if (compact || !showLabel) {
+      return ExcludeSemantics(child: MedGiftLogo(size: logoSize));
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ExcludeSemantics(child: MedGiftLogo(size: logoSize)),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'MedGift',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primaryDeepBlue,
+                      letterSpacing: -0.3,
+                      height: 1.1,
+                    ),
+              ),
+              Text(
+                'US',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.primaryBlue,
+                      letterSpacing: 1.2,
+                      height: 1.1,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
