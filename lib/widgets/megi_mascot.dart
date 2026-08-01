@@ -34,6 +34,8 @@ class _MeGiMascotPainter extends CustomPainter {
 
   final bool showShadow;
 
+  static const Color _blush = Color(0xFFFF8FA3);
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
@@ -44,69 +46,85 @@ class _MeGiMascotPainter extends CustomPainter {
     final sky = AppTheme.skyBlue;
     final white = AppTheme.cleanWhite;
 
-    // Heart sits a bit high so legs have room.
-    final heartCenter = Offset(w * 0.50, h * 0.42);
-    final heartScale = w * 0.34;
-    final heart = _heartPath(heartCenter, heartScale);
+    final cx = w * 0.50;
+    final heartCenter = Offset(cx, h * 0.40);
+    // Base scale of the logo heart, stretched slightly into a plump body.
+    final hs = w * 0.35;
+    const stretchY = 1.24;
+    final heart = _heartBody(heartCenter, hs, stretchY);
 
     if (showShadow) {
       canvas.drawOval(
         Rect.fromCenter(
-          center: Offset(w * 0.50, h * 0.92),
-          width: w * 0.42,
-          height: h * 0.07,
+          center: Offset(cx, h * 0.80),
+          width: w * 0.44,
+          height: h * 0.052,
         ),
-        Paint()..color = deep.withValues(alpha: 0.12),
+        Paint()..color = deep.withValues(alpha: 0.13),
       );
     }
 
-    // Arms (behind heart slightly via draw order after limbs under body tip)
-    _drawArm(
-      canvas,
-      shoulder: Offset(w * 0.22, h * 0.48),
-      hand: Offset(w * 0.08, h * 0.58),
-      mid: mid,
-      deep: deep,
-      light: light,
-      thickness: w * 0.075,
-    );
-    _drawArm(
-      canvas,
-      shoulder: Offset(w * 0.78, h * 0.48),
-      hand: Offset(w * 0.92, h * 0.58),
-      mid: mid,
-      deep: deep,
-      light: light,
-      thickness: w * 0.075,
-    );
+    final limbPaint = Paint()
+      ..color = mid
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
 
-    // Legs
-    _drawLeg(
-      canvas,
-      hip: Offset(w * 0.40, h * 0.68),
-      foot: Offset(w * 0.36, h * 0.88),
-      mid: mid,
-      deep: deep,
-      light: light,
-      thickness: w * 0.08,
-    );
-    _drawLeg(
-      canvas,
-      hip: Offset(w * 0.60, h * 0.68),
-      foot: Offset(w * 0.64, h * 0.88),
-      mid: mid,
-      deep: deep,
-      light: light,
-      thickness: w * 0.08,
-    );
+    // Stubby legs, tucked behind the body.
+    for (final dir in const [-1.0, 1.0]) {
+      final leg = Path()
+        ..moveTo(cx + dir * w * 0.078, h * 0.585)
+        ..quadraticBezierTo(
+          cx + dir * w * 0.086,
+          h * 0.64,
+          cx + dir * w * 0.09,
+          h * 0.685,
+        );
+      canvas.drawPath(leg, limbPaint..strokeWidth = w * 0.105);
 
-    // Soft drop under heart
-    canvas.save();
-    canvas.translate(w * 0.01, h * 0.015);
-    canvas.drawPath(heart, Paint()..color = mid.withValues(alpha: 0.18));
-    canvas.restore();
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx + dir * w * 0.10, h * 0.72),
+          width: w * 0.155,
+          height: w * 0.086,
+        ),
+        Paint()..color = deep,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx + dir * w * 0.092, h * 0.709),
+          width: w * 0.075,
+          height: w * 0.028,
+        ),
+        Paint()..color = light.withValues(alpha: 0.42),
+      );
+    }
 
-    // Heart body — same gradient recipe as MedGift logo heart
+    // Short arms held out to the sides, clearing the widest point of the body.
+    for (final dir in const [-1.0, 1.0]) {
+      final arm = Path()
+        ..moveTo(cx + dir * w * 0.185, h * 0.435)
+        ..quadraticBezierTo(
+          cx + dir * w * 0.30,
+          h * 0.448,
+          cx + dir * w * 0.322,
+          h * 0.505,
+        );
+      canvas.drawPath(arm, limbPaint..strokeWidth = w * 0.088);
+
+      final hand = Offset(cx + dir * w * 0.33, h * 0.522);
+      canvas.drawCircle(hand, w * 0.058, Paint()..color = sky);
+      canvas.drawCircle(
+        hand,
+        w * 0.058,
+        Paint()
+          ..color = deep.withValues(alpha: 0.28)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w * 0.012,
+      );
+    }
+
+    // Heart body — logo gradient recipe.
     canvas.drawPath(
       heart,
       Paint()
@@ -114,109 +132,73 @@ class _MeGiMascotPainter extends CustomPainter {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [sky, light, mid],
-          stops: const [0.0, 0.45, 1.0],
+          stops: const [0.0, 0.5, 1.0],
         ).createShader(
           Rect.fromCenter(
             center: heartCenter,
-            width: heartScale * 2.2,
-            height: heartScale * 2.0,
+            width: hs * 1.9,
+            height: hs * 2.2,
           ),
         ),
     );
-
-    // Inner contour
     canvas.drawPath(
-      _heartPath(heartCenter, heartScale * 0.72),
+      heart,
       Paint()
-        ..color = white.withValues(alpha: 0.14)
+        ..color = deep.withValues(alpha: 0.22)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = w * 0.016,
+        ..strokeWidth = w * 0.018,
     );
 
-    // Specular gleam (logo-style)
+    // Specular gleam on the upper-left lobe.
+    canvas.save();
+    canvas.translate(cx - w * 0.16, h * 0.275);
+    canvas.rotate(-0.6);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(
-          heartCenter.dx - heartScale * 0.28,
-          heartCenter.dy - heartScale * 0.22,
-        ),
-        width: heartScale * 0.26,
-        height: heartScale * 0.16,
+        center: Offset.zero,
+        width: w * 0.095,
+        height: w * 0.045,
       ),
-      Paint()..color = white.withValues(alpha: 0.72),
+      Paint()..color = white.withValues(alpha: 0.6),
     );
+    canvas.restore();
+
+    // Blush sits under the eyes, drawn first so eyes stay crisp.
+    for (final dir in const [-1.0, 1.0]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx + dir * w * 0.172, h * 0.462),
+          width: w * 0.092,
+          height: w * 0.052,
+        ),
+        Paint()..color = _blush.withValues(alpha: 0.5),
+      );
+    }
 
     // Face
-    final faceY = heartCenter.dy + heartScale * 0.02;
-    final eyeY = faceY - heartScale * 0.06;
-    final eyeDx = heartScale * 0.22;
-    final eyeR = heartScale * 0.13;
-
-    _drawEye(
-      canvas,
-      center: Offset(heartCenter.dx - eyeDx, eyeY),
-      radius: eyeR,
-      deep: deep,
-      white: white,
-      lookRight: false,
-    );
-    _drawEye(
-      canvas,
-      center: Offset(heartCenter.dx + eyeDx, eyeY),
-      radius: eyeR,
-      deep: deep,
-      white: white,
-      lookRight: true,
-    );
-
-    // Tiny nose
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(heartCenter.dx, faceY + heartScale * 0.08),
-        width: heartScale * 0.10,
-        height: heartScale * 0.08,
-      ),
-      Paint()..color = deep.withValues(alpha: 0.55),
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(
-          heartCenter.dx - heartScale * 0.015,
-          faceY + heartScale * 0.07,
-        ),
-        width: heartScale * 0.04,
-        height: heartScale * 0.03,
-      ),
-      Paint()..color = white.withValues(alpha: 0.45),
-    );
-
-    // Soft blush
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(heartCenter.dx - eyeDx * 1.35, faceY + heartScale * 0.12),
-        width: heartScale * 0.16,
-        height: heartScale * 0.09,
-      ),
-      Paint()..color = const Color(0xFFFF8A9A).withValues(alpha: 0.35),
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(heartCenter.dx + eyeDx * 1.35, faceY + heartScale * 0.12),
-        width: heartScale * 0.16,
-        height: heartScale * 0.09,
-      ),
-      Paint()..color = const Color(0xFFFF8A9A).withValues(alpha: 0.35),
-    );
-
-    // Smile
-    final smile = Path()
-      ..moveTo(heartCenter.dx - heartScale * 0.16, faceY + heartScale * 0.18)
-      ..quadraticBezierTo(
-        heartCenter.dx,
-        faceY + heartScale * 0.30,
-        heartCenter.dx + heartScale * 0.16,
-        faceY + heartScale * 0.18,
+    for (final dir in const [-1.0, 1.0]) {
+      _drawEye(
+        canvas,
+        center: Offset(cx + dir * w * 0.108, h * 0.385),
+        radius: w * 0.077,
+        deep: deep,
+        white: white,
+        towardCenter: -dir,
       );
+    }
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx, h * 0.458),
+        width: w * 0.046,
+        height: w * 0.034,
+      ),
+      Paint()..color = deep.withValues(alpha: 0.6),
+    );
+
+    final smile = Path()
+      ..moveTo(cx - w * 0.062, h * 0.482)
+      ..quadraticBezierTo(cx, h * 0.538, cx + w * 0.062, h * 0.482);
     canvas.drawPath(
       smile,
       Paint()
@@ -233,116 +215,65 @@ class _MeGiMascotPainter extends CustomPainter {
     required double radius,
     required Color deep,
     required Color white,
-    required bool lookRight,
+    required double towardCenter,
   }) {
     canvas.drawCircle(center, radius, Paint()..color = white);
     canvas.drawCircle(
       center,
       radius,
       Paint()
-        ..color = deep.withValues(alpha: 0.35)
+        ..color = deep.withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = radius * 0.12,
+        ..strokeWidth = radius * 0.11,
     );
+
     final pupil = Offset(
-      center.dx + (lookRight ? radius * 0.08 : -radius * 0.08),
-      center.dy + radius * 0.06,
+      center.dx + towardCenter * radius * 0.1,
+      center.dy + radius * 0.08,
     );
-    canvas.drawCircle(pupil, radius * 0.55, Paint()..color = deep);
+    canvas.drawCircle(pupil, radius * 0.58, Paint()..color = deep);
     canvas.drawCircle(
-      Offset(pupil.dx - radius * 0.18, pupil.dy - radius * 0.18),
-      radius * 0.18,
-      Paint()..color = white.withValues(alpha: 0.95),
+      Offset(pupil.dx - radius * 0.2, pupil.dy - radius * 0.24),
+      radius * 0.24,
+      Paint()..color = white,
     );
-  }
-
-  void _drawArm(
-    Canvas canvas, {
-    required Offset shoulder,
-    required Offset hand,
-    required Color mid,
-    required Color deep,
-    required Color light,
-    required double thickness,
-  }) {
-    canvas.drawLine(
-      shoulder,
-      hand,
-      Paint()
-        ..color = mid
-        ..strokeWidth = thickness
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawCircle(hand, thickness * 0.72, Paint()..color = light);
     canvas.drawCircle(
-      hand,
-      thickness * 0.72,
-      Paint()
-        ..color = deep.withValues(alpha: 0.25)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = thickness * 0.12,
+      Offset(pupil.dx + radius * 0.22, pupil.dy + radius * 0.2),
+      radius * 0.11,
+      Paint()..color = white.withValues(alpha: 0.85),
     );
   }
 
-  void _drawLeg(
-    Canvas canvas, {
-    required Offset hip,
-    required Offset foot,
-    required Color mid,
-    required Color deep,
-    required Color light,
-    required double thickness,
-  }) {
-    canvas.drawLine(
-      hip,
-      foot,
-      Paint()
-        ..color = mid
-        ..strokeWidth = thickness
-        ..strokeCap = StrokeCap.round,
-    );
-    // Cute little foot
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(foot.dx, foot.dy + thickness * 0.15),
-        width: thickness * 1.55,
-        height: thickness * 0.95,
-      ),
-      Paint()..color = deep,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(foot.dx - thickness * 0.1, foot.dy),
-        width: thickness * 0.9,
-        height: thickness * 0.55,
-      ),
-      Paint()..color = light.withValues(alpha: 0.55),
-    );
-  }
-
-  /// Same cubic heart silhouette used in [MedGiftLogo].
-  Path _heartPath(Offset center, double scale) {
+  /// Cubic heart silhouette from [MedGiftLogo], stretched vertically by
+  /// [stretchY] and with the tip rounded off so the mascot reads as a soft
+  /// body instead of a spade.
+  Path _heartBody(Offset center, double scale, double stretchY) {
     final path = Path();
     final cx = center.dx;
     final cy = center.dy;
+    final sy = scale * stretchY;
+    final r = scale * 0.19;
+    final tipY = cy + sy * 0.52;
+    final shoulderY = tipY - r * 0.62 * stretchY;
 
-    path.moveTo(cx, cy + scale * 0.52);
+    path.moveTo(cx - r, shoulderY);
     path.cubicTo(
       cx - scale * 1.15,
-      cy + scale * 0.08,
+      cy + sy * 0.08,
       cx - scale * 0.95,
-      cy - scale * 0.95,
+      cy - sy * 0.95,
       cx,
-      cy - scale * 0.38,
+      cy - sy * 0.38,
     );
     path.cubicTo(
       cx + scale * 0.95,
-      cy - scale * 0.95,
+      cy - sy * 0.95,
       cx + scale * 1.15,
-      cy + scale * 0.08,
-      cx,
-      cy + scale * 0.52,
+      cy + sy * 0.08,
+      cx + r,
+      shoulderY,
     );
+    path.quadraticBezierTo(cx, tipY + r * 0.30 * stretchY, cx - r, shoulderY);
     path.close();
     return path;
   }
@@ -369,11 +300,11 @@ class MeGiMascotBadge extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white.withValues(alpha: 0.18),
+        color: backgroundColor ?? Colors.white,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
-      child: MeGiMascot(size: size * 0.88, showShadow: false),
+      child: MeGiMascot(size: size * 0.92, showShadow: false),
     );
   }
 }
