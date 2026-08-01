@@ -50,6 +50,13 @@
   </script>
   <!-- UserWay accessibility widget -->
   <script src="https://cdn.userway.org/widget.js" data-account="NFWJF1Hh3e"></script>
+  <style>
+    /* UserWay anchors its trigger 13px from the top, which lands on top of the
+       AppBar actions (language menu, log out). Drop it below the 56px bar. */
+    .uwy.userway_p1 .userway_buttons_wrapper {
+      top: 80px !important;
+    }
+  </style>
 </head>
 <body>
   <!--
