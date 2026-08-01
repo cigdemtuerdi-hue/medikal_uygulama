@@ -34,11 +34,13 @@ function isEmailConfigured() {
 }
 
 function fromAddress() {
-  // Resend verified domain or onboarding sandbox sender.
+  // Prefer explicit RESEND_FROM. When using Resend without a verified
+  // domain, never fall back to info@medgift.us (Resend rejects it).
   const raw = (
     process.env.RESEND_FROM ||
-    process.env.FROM_EMAIL ||
-    'info@medgift.us'
+    (usesResend()
+      ? 'Medgift LLC <onboarding@resend.dev>'
+      : process.env.FROM_EMAIL || 'info@medgift.us')
   ).trim();
   if (raw.includes('<')) return raw;
   return `Medgift LLC <${raw}>`;
