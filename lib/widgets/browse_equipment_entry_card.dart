@@ -28,7 +28,7 @@ class BrowseEquipmentEntryCard extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              Navigator.of(context).pushReplacementNamed(AppRoutes.recipient);
+              Navigator.of(context).pushNamed(AppRoutes.browse);
             },
             child: Padding(
               padding: const EdgeInsets.all(18),

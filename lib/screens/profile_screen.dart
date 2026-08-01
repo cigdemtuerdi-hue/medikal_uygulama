@@ -25,6 +25,7 @@ import '../widgets/exchange_receipt_card.dart';
 import '../widgets/impact_esg_dashboard_card.dart';
 import '../widgets/instant_match_banner.dart';
 import '../widgets/language_menu_button.dart';
+import '../widgets/browse_equipment_entry_card.dart';
 import '../widgets/pass_it_on_entry_card.dart';
 import '../widgets/profile_avatar_image.dart';
 import '../widgets/verified_ngo_badge.dart';
@@ -398,6 +399,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const ImpactEsgDashboardCard(),
             const SizedBox(height: 16),
             const PassItOnEntryCard(),
+            const SizedBox(height: 16),
+            const BrowseEquipmentEntryCard(),
             const SizedBox(height: 24),
             CorporateEsgBadgesSection(
               organizationName: displayName,

@@ -74,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await AuthSessionService.instance.startSession(
         email: email,
         role: role,
+        token: result.token,
       );
       if (!mounted) return;
       setState(() => _loading = false);

@@ -9,6 +9,7 @@ import '../models/site_settings.dart';
 import '../services/admin_access_service.dart';
 import '../services/contact_inquiry_service.dart';
 import '../services/site_settings_service.dart';
+import '../widgets/admin_directory_tabs.dart';
 import '../widgets/async_state_widgets.dart';
 import 'admin_inquiries_screen.dart';
 
@@ -43,13 +44,23 @@ class _AdminConsoleScreenState extends State<AdminConsoleScreen>
   void initState() {
     super.initState();
     _draft = _CmsDraft();
-    _tabs = TabController(length: 8, vsync: this);
+    _tabs = TabController(length: 10, vsync: this);
+    // The directory tabs are read-only, so the Save FAB has to hide there.
+    _tabs.addListener(_onTabChanged);
     _access.addListener(_onChanged);
     _settingsService.addListener(_onChanged);
     _emailController.text = AppConfig.adminEmail;
     if (_access.isAuthenticated) {
       _bootstrapAuthenticated();
     }
+  }
+
+  /// Users and Listings are directory views with nothing to save.
+  bool get _isReadOnlyTab => _tabs.index <= 1;
+
+  void _onTabChanged() {
+    if (_tabs.indexIsChanging) return;
+    setState(() {});
   }
 
   Future<void> _bootstrapAuthenticated() async {
@@ -63,6 +74,7 @@ class _AdminConsoleScreenState extends State<AdminConsoleScreen>
   void dispose() {
     _access.removeListener(_onChanged);
     _settingsService.removeListener(_onChanged);
+    _tabs.removeListener(_onTabChanged);
     _tabs.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -188,6 +200,8 @@ class _AdminConsoleScreenState extends State<AdminConsoleScreen>
           controller: _tabs,
           isScrollable: true,
           tabs: const [
+            Tab(text: 'Kullanıcılar'),
+            Tab(text: 'İlanlar'),
             Tab(text: 'Görünürlük'),
             Tab(text: 'Karşılama'),
             Tab(text: 'Ana Sayfa'),
@@ -199,23 +213,27 @@ class _AdminConsoleScreenState extends State<AdminConsoleScreen>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _saving ? null : _save,
-        icon: _saving
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.save_outlined),
-        label: Text(_saving ? 'Kaydediliyor…' : 'Kaydet'),
-      ),
+      floatingActionButton: _isReadOnlyTab
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _saving ? null : _save,
+              icon: _saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.save_outlined),
+              label: Text(_saving ? 'Kaydediliyor…' : 'Kaydet'),
+            ),
       body: ContentConstrained(
         maxWidth: 920,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
         child: TabBarView(
           controller: _tabs,
           children: [
+            AdminUsersTab(adminToken: _access.token),
+            AdminListingsTab(adminToken: _access.token),
             _VisibilityTab(
               email: _access.email ?? AppConfig.adminEmail,
               draft: _draft,

@@ -191,6 +191,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     await AuthSessionService.instance.startSession(
       email: email,
       role: widget.role,
+      token: registerResult.token,
     );
 
     if (_isRecipient) {

@@ -4,6 +4,7 @@ import '../screens/admin_console_screen.dart';
 import '../screens/ai_vision_screen.dart';
 import '../screens/app_entry_screen.dart';
 import '../screens/app_shell.dart';
+import '../screens/browse_listings_screen.dart';
 import '../screens/dme_donate_screen.dart';
 import '../screens/exchange_screen.dart';
 import '../screens/forgot_password_screen.dart';
@@ -144,6 +145,7 @@ class AppRoutes {
   static const exchange = '/exchange';
   static const recipient = '/recipient';
   static const myItems = '/my-items';
+  static const browse = '/browse';
   static const ngoPortal = '/ngo-portal';
   static const profile = '/profile';
   static const roleSelection = '/onboarding/role';
@@ -226,6 +228,8 @@ class AppRoutes {
         AppRoutes.entry: (_) => const AppEntryScreen(),
         AppRoutes.login: (_) => const LoginHost(),
         AppRoutes.admin: (_) => const AdminConsoleScreen(),
+        AppRoutes.browse: (_) =>
+            const AiSupportHost(child: BrowseListingsScreen()),
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),
         AppRoutes.forgotPassword: (_) => const ForgotPasswordHost(),

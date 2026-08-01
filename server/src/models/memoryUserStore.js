@@ -127,6 +127,18 @@ const MemoryUserModel = {
     return user;
   },
 
+  /** Newest-first page of accounts for the admin console. */
+  async listUsers({ role = null, limit = 100, skip = 0 } = {}) {
+    return store.users
+      .filter((u) => !role || u.role === role)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(skip, skip + limit);
+  },
+
+  async countUsers({ role = null } = {}) {
+    return store.users.filter((u) => !role || u.role === role).length;
+  },
+
   _reset() {
     store.users = [];
   },

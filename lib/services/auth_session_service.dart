@@ -18,6 +18,7 @@ class AuthSessionService {
   static const _roleKey = 'auth_session_role';
   static const _loggedOutKey = 'auth_session_explicit_logout';
   static const _lastActiveKey = 'auth_session_last_active_ms';
+  static const _tokenKey = 'auth_session_token';
 
   bool _loaded = false;
   bool _loggedIn = false;
@@ -25,12 +26,16 @@ class AuthSessionService {
   String? _email;
   UserRole? _role;
   DateTime? _lastActivityAt;
+  String? _token;
 
   bool get isLoggedIn => _loggedIn;
   bool get explicitlyLoggedOut => _explicitLogout;
   String? get email => _email;
   UserRole? get role => _role;
   DateTime? get lastActivityAt => _lastActivityAt;
+
+  /// Signed session token from the API; sent as a bearer on listing calls.
+  String? get token => _token;
 
   /// True when a session exists but idle time exceeded [idleTimeout].
   bool get isIdleExpired {
@@ -44,6 +49,7 @@ class AuthSessionService {
     _loggedIn = prefs.getBool(_loggedInKey) ?? false;
     _explicitLogout = prefs.getBool(_loggedOutKey) ?? false;
     _email = prefs.getString(_emailKey);
+    _token = prefs.getString(_tokenKey);
     final roleName = prefs.getString(_roleKey);
     if (roleName != null) {
       try {
@@ -66,6 +72,7 @@ class AuthSessionService {
   Future<void> startSession({
     required String email,
     UserRole? role,
+    String? token,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final normalized = email.trim().toLowerCase();
@@ -76,6 +83,10 @@ class AuthSessionService {
     await prefs.setInt(_lastActiveKey, now.millisecondsSinceEpoch);
     if (role != null) {
       await prefs.setString(_roleKey, role.name);
+    }
+    if (token != null && token.isNotEmpty) {
+      await prefs.setString(_tokenKey, token);
+      _token = token;
     }
     _loggedIn = true;
     _explicitLogout = false;
@@ -112,11 +123,13 @@ class AuthSessionService {
     await prefs.remove(_emailKey);
     await prefs.remove(_roleKey);
     await prefs.remove(_lastActiveKey);
+    await prefs.remove(_tokenKey);
     _loggedIn = false;
     _explicitLogout = true;
     _email = null;
     _role = null;
     _lastActivityAt = null;
+    _token = null;
     _loaded = true;
   }
 }

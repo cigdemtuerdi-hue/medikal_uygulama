@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { getUserModel } = require('../models/userModel');
 const { sendPasswordResetEmail } = require('../services/emailService');
+const { issueSessionToken } = require('../utils/sessionToken');
 
 /** bcrypt cost factor — balance security vs latency on modest hosts. */
 const BCRYPT_ROUNDS = 12;
@@ -282,11 +283,19 @@ async function register(req, res, next) {
       existing.hipaaConsentVersion = hipaaConsentVersion || 'hipaa-npp-2026.07';
       existing.hipaaConsentAt = consentAt;
       await existing.save();
+      const session = issueSessionToken({
+        userId: existing._id,
+        email,
+        role: existing.role || null,
+      });
       return res.status(200).json({
         success: true,
         message: 'Hesabınız oluşturuldu. Giriş yapabilirsiniz.',
         email,
         userId: String(existing._id),
+        role: existing.role || null,
+        token: session.token,
+        expiresInSeconds: session.expiresInSeconds,
       });
     }
 
@@ -300,11 +309,19 @@ async function register(req, res, next) {
       hipaaConsentAt: consentAt,
     });
 
+    const session = issueSessionToken({
+      userId: created._id,
+      email,
+      role: created.role || null,
+    });
     return res.status(201).json({
       success: true,
       message: 'Hesabınız oluşturuldu. Giriş yapabilirsiniz.',
       email,
       userId: String(created._id),
+      role: created.role || null,
+      token: session.token,
+      expiresInSeconds: session.expiresInSeconds,
     });
   } catch (err) {
     if (err && (err.code === 11000 || /duplicate/i.test(String(err.message)))) {
@@ -362,12 +379,20 @@ async function login(req, res, next) {
       });
     }
 
+    const session = issueSessionToken({
+      userId: user._id,
+      email: user.email,
+      role: user.role || null,
+    });
+
     return res.status(200).json({
       success: true,
       message: 'Giriş başarılı.',
       email: user.email,
       userId: String(user._id),
       role: user.role || null,
+      token: session.token,
+      expiresInSeconds: session.expiresInSeconds,
     });
   } catch (err) {
     return next(err);
