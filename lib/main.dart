@@ -44,7 +44,11 @@ class MedGiftApp extends StatelessWidget {
       valueListenable: LocaleController.instance,
       builder: (context, locale, _) {
         return MaterialApp(
-          title: 'MedGift US',
+          // Must match the <title> in web/index.html: Flutter overwrites the
+          // document title on boot, so a short title here would replace the
+          // keyword-bearing one that search engines index after rendering.
+          title: 'MedGift US — Donate & Receive Durable Medical Equipment '
+              'Nationwide',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light(),
           locale: locale,
