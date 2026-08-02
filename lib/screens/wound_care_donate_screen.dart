@@ -331,7 +331,18 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
               const SizedBox(height: 12),
               FdaSafetyComplianceCard(result: _fdaResult),
               const FdaSafetyGuidelinesLink(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              ListingPhotoPicker(
+                photos: _photos,
+                enabled: !_isSubmitting,
+                onUpload: ListingPhotoPublishHelper.upload,
+                onChanged: (photos) => setState(() {
+                  _photos
+                    ..clear()
+                    ..addAll(photos);
+                }),
+              ),
+              const SizedBox(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(loc.t('woundCare.sealedTitle')),
@@ -412,17 +423,6 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              ListingPhotoPicker(
-                photos: _photos,
-                enabled: !_isSubmitting,
-                onUpload: ListingPhotoPublishHelper.upload,
-                onChanged: (photos) => setState(() {
-                  _photos
-                    ..clear()
-                    ..addAll(photos);
-                }),
               ),
               const SizedBox(height: 24),
               HandoffOptionPicker(

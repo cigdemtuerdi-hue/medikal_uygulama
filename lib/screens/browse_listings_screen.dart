@@ -1024,6 +1024,18 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
                 if (value != null) setState(() => _category = value);
               },
             ),
+            const SizedBox(height: 12),
+            ListingPhotoPicker(
+              photos: _photos,
+              enabled: !_submitting,
+              hintKey: widget.isDonor ? 'photos.hint' : 'photos.requestHint',
+              onUpload: ListingPhotoPublishHelper.upload,
+              onChanged: (photos) => setState(() {
+                _photos
+                  ..clear()
+                  ..addAll(photos);
+              }),
+            ),
             if (widget.isDonor) ...[
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
@@ -1112,18 +1124,6 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            ListingPhotoPicker(
-              photos: _photos,
-              enabled: !_submitting,
-              hintKey: widget.isDonor ? 'photos.hint' : 'photos.requestHint',
-              onUpload: ListingPhotoPublishHelper.upload,
-              onChanged: (photos) => setState(() {
-                _photos
-                  ..clear()
-                  ..addAll(photos);
-              }),
             ),
             const SizedBox(height: 16),
             FilledButton(

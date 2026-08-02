@@ -407,7 +407,18 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
               const SizedBox(height: 12),
               FdaSafetyComplianceCard(result: _fdaResult),
               const FdaSafetyGuidelinesLink(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              ListingPhotoPicker(
+                photos: _photos,
+                enabled: !_isSubmitting,
+                onUpload: ListingPhotoPublishHelper.upload,
+                onChanged: (photos) => setState(() {
+                  _photos
+                    ..clear()
+                    ..addAll(photos);
+                }),
+              ),
+              const SizedBox(height: 16),
               DropdownButtonFormField<ItemCondition>(
                 initialValue: _condition,
                 decoration:
@@ -483,17 +494,6 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
                   labelText: loc.t('dme.notesLabel'),
                   hintText: loc.t('dme.notesHint'),
                 ),
-              ),
-              const SizedBox(height: 20),
-              ListingPhotoPicker(
-                photos: _photos,
-                enabled: !_isSubmitting,
-                onUpload: ListingPhotoPublishHelper.upload,
-                onChanged: (photos) => setState(() {
-                  _photos
-                    ..clear()
-                    ..addAll(photos);
-                }),
               ),
               const SizedBox(height: 28),
               HandoffOptionPicker(
