@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Central configuration for Google Maps Platform and admin messaging.
 class AppConfig {
+  static const String productionApiBaseUrl =
+      'https://medgift-us-api.onrender.com';
   /// Single API key for Places, Geocoding, Distance Matrix, and Maps SDK.
   ///
   /// Resolution order:
@@ -109,7 +112,8 @@ class AppConfig {
   /// Resolution order:
   /// 1. `--dart-define=API_BASE_URL=...`
   /// 2. `API_BASE_URL` in `.env`
-  /// 3. Local default `http://localhost:3001`
+  /// 3. Production API in release / profile builds
+  /// 4. Local default `http://127.0.0.1:3001` in debug
   static String get apiBaseUrl {
     const define = String.fromEnvironment('API_BASE_URL');
     if (define.isNotEmpty) return define.trim().replaceAll(RegExp(r'/$'), '');
@@ -119,6 +123,7 @@ class AppConfig {
         return env.replaceAll(RegExp(r'/$'), '');
       }
     } catch (_) {}
+    if (kReleaseMode || kProfileMode) return productionApiBaseUrl;
     return 'http://127.0.0.1:3001';
   }
 }

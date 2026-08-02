@@ -5,9 +5,9 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Medikal Uygulama</string>
+	<string>MedGift</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>medikal_uygulama</string>
+	<string>MedGift</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -50,13 +52,22 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Profil resmi ve kimlik belgesi çekebilmeniz için kamera erişimine izin vermeniz gerekmektedir.</string>
+	<string>MedGift needs camera access to scan equipment labels, capture listing photos, and upload verification documents.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Durumunuzu tanıtan video kaydedebilmeniz için mikrofon erişimine izin vermeniz gerekmektedir.</string>
+	<string>MedGift needs microphone access only if you record an optional short video for your profile or verification.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Profil resmi, kimlik belgesi ve tıbbi belgeleri seçebilmek için galeri erişimine izin vermeniz gerekmektedir.</string>
+	<string>MedGift needs photo library access so you can attach listing photos and verification documents.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MedGift may save donation labels or receipts to your photo library when you choose to download them.</string>
 	<key>GMSApiKey</key>
 	<string>AIzaSyAFUphMYjehwgdozhZcElbEq0FMnGo6UVQ</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>mailto</string>
+		<string>tel</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
