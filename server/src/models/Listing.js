@@ -1,10 +1,12 @@
 const mongoose = require('mongoose');
 
 /**
- * Listing — one durable medical equipment offer (donor) or need (recipient).
+ * Listing — one durable medical equipment offer (donor), need (recipient),
+ * or paid sale listing.
  *
- * Both sides share a schema so browse and matching can run one query instead
- * of joining two collections. `kind` separates them.
+ * Both donation sides share a schema so browse and matching can run one query
+ * instead of joining two collections. `kind` separates them; `sale` carries a
+ * price and is browsed on the shop surface rather than the donate matcher.
  *
  * Location is stored as city/state/postalCode. The public projection in
  * listingController never exposes street address or the owner's contact
@@ -12,11 +14,11 @@ const mongoose = require('mongoose');
  */
 const listingSchema = new mongoose.Schema(
   {
-    /** 'offer' = donor has equipment, 'request' = recipient needs equipment. */
+    /** 'offer' | 'request' | 'sale' */
     kind: {
       type: String,
       required: true,
-      enum: ['offer', 'request'],
+      enum: ['offer', 'request', 'sale'],
       index: true,
     },
     ownerUserId: {
@@ -114,6 +116,30 @@ const listingSchema = new mongoose.Schema(
       default: null,
       trim: true,
       maxlength: 600,
+    },
+    /**
+     * Asking price in USD cents. Required for `sale`; ignored for donate
+     * kinds. Stored as an integer so $17.00 never becomes 16.999999.
+     */
+    priceCents: {
+      type: Number,
+      default: null,
+      min: 100,
+      max: 100000000,
+    },
+    currency: {
+      type: String,
+      default: 'USD',
+      uppercase: true,
+      trim: true,
+      maxlength: 3,
+    },
+    /** Platform take rate applied at create time (currently 0.17). */
+    commissionRate: {
+      type: Number,
+      default: 0.17,
+      min: 0,
+      max: 1,
     },
     /** active | reserved | fulfilled | withdrawn */
     status: {

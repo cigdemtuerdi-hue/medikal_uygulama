@@ -1,4 +1,4 @@
-/// A donor offer or a recipient request as returned by `/api/listings`.
+/// A donor offer, recipient request, or paid sale as returned by `/api/listings`.
 ///
 /// The API decides what each caller may see, so this model holds the union of
 /// the public, owner and admin projections and leaves the fields the caller was
@@ -20,6 +20,11 @@ class Listing {
     this.postalCode,
     this.photos = const [],
     this.photoUrl,
+    this.priceCents,
+    this.currency,
+    this.commissionRate,
+    this.commissionCents,
+    this.sellerNetCents,
     this.status = 'active',
     this.reservedUntil,
     this.createdAt,
@@ -57,6 +62,11 @@ class Listing {
               .toList(growable: false) ??
           const [],
       photoUrl: json['photoUrl']?.toString(),
+      priceCents: (json['priceCents'] as num?)?.toInt(),
+      currency: json['currency']?.toString(),
+      commissionRate: (json['commissionRate'] as num?)?.toDouble(),
+      commissionCents: (json['commissionCents'] as num?)?.toInt(),
+      sellerNetCents: (json['sellerNetCents'] as num?)?.toInt(),
       status: json['status']?.toString() ?? 'active',
       reservedUntil: parseDate(json['reservedUntil']),
       createdAt: parseDate(json['createdAt']),
@@ -74,8 +84,7 @@ class Listing {
 
   final String id;
 
-  /// 'offer' when a donor is giving equipment away, 'request' when a patient
-  /// or NGO partner needs it.
+  /// 'offer' | 'request' | 'sale'
   final String kind;
   final String title;
   final String category;
@@ -98,6 +107,13 @@ class Listing {
 
   /// Cover image on records created before [photos] existed.
   final String? photoUrl;
+
+  /// Asking price in USD cents — only set on [isSale] listings.
+  final int? priceCents;
+  final String? currency;
+  final double? commissionRate;
+  final int? commissionCents;
+  final int? sellerNetCents;
   final String status;
   final DateTime? reservedUntil;
   final DateTime? createdAt;
@@ -113,7 +129,15 @@ class Listing {
   final List<String> matchReasons;
 
   bool get isOffer => kind == 'offer';
+  bool get isSale => kind == 'sale';
   bool get isUrgent => urgency == 'high';
+
+  /// Formatted asking price, e.g. `$125.00`. Empty when not a sale.
+  String get priceLabel {
+    final cents = priceCents;
+    if (cents == null) return '';
+    return formatUsdCents(cents);
+  }
 
   /// Photos to display, falling back to the pre-[photos] single-image field.
   List<String> get displayPhotos {
@@ -132,6 +156,19 @@ class Listing {
     if (zip != null) parts.add(zip);
     return parts.isEmpty ? 'Konum belirtilmemiş' : parts.join(', ');
   }
+}
+
+/// Formats integer USD cents as `$1,234.56`.
+String formatUsdCents(int cents) {
+  final dollars = cents / 100;
+  final whole = dollars.truncate();
+  final frac = (cents.abs() % 100).toString().padLeft(2, '0');
+  final wholeStr = whole.abs().toString().replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+$)'),
+        (m) => '${m[1]},',
+      );
+  final sign = cents < 0 ? '-' : '';
+  return '$sign\$$wholeStr.$frac';
 }
 
 /// A registered account as shown in the admin console.

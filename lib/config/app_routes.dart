@@ -6,6 +6,7 @@ import '../screens/app_entry_screen.dart';
 import '../screens/app_shell.dart';
 import '../screens/browse_listings_screen.dart';
 import '../screens/dme_donate_screen.dart';
+import '../screens/shop_screen.dart';
 import '../screens/exchange_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/home_screen.dart';
@@ -146,6 +147,7 @@ class AppRoutes {
   static const recipient = '/recipient';
   static const myItems = '/my-items';
   static const browse = '/browse';
+  static const shop = '/shop';
   static const ngoPortal = '/ngo-portal';
   static const profile = '/profile';
   static const roleSelection = '/onboarding/role';
@@ -230,6 +232,7 @@ class AppRoutes {
         AppRoutes.admin: (_) => const AdminConsoleScreen(),
         AppRoutes.browse: (_) =>
             const AiSupportHost(child: BrowseListingsScreen()),
+        AppRoutes.shop: (_) => const AiSupportHost(child: ShopScreen()),
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),
         AppRoutes.forgotPassword: (_) => const ForgotPasswordHost(),

@@ -7,11 +7,19 @@ const {
 } = require('../models/listingStore');
 const { uploadExists } = require('../models/uploadStore');
 
-/** Donors publish offers, recipients and NGO partners publish requests. */
-const KINDS = new Set(['offer', 'request']);
+/** Donors publish offers, recipients/NGO publish requests; anyone may sell. */
+const KINDS = new Set(['offer', 'request', 'sale']);
+const DONATE_KINDS = new Set(['offer', 'request']);
 const STATUSES = new Set(['active', 'reserved', 'fulfilled', 'withdrawn']);
 const CONDITIONS = new Set(['new', 'likeNew', 'good', 'fair']);
 const URGENCIES = new Set(['low', 'normal', 'high']);
+
+/** Platform take on every sale. Sellers see this before they publish. */
+const COMMISSION_RATE = 0.17;
+
+/** Floor: $1.00. Ceiling guards against fat-fingered billion-dollar listings. */
+const MIN_PRICE_CENTS = 100;
+const MAX_PRICE_CENTS = 100_000_000;
 
 /** Reservations expire so stalled handoffs release the item back to browse. */
 const RESERVATION_WINDOW_MS = 48 * 60 * 60 * 1000;
@@ -64,6 +72,29 @@ function readPhotos(row) {
   return row.photoUrl ? [row.photoUrl] : [];
 }
 
+function pricingFields(row) {
+  if (row.kind !== 'sale' || row.priceCents == null) {
+    return {
+      priceCents: null,
+      currency: null,
+      commissionRate: null,
+      commissionCents: null,
+      sellerNetCents: null,
+    };
+  }
+  const priceCents = Math.round(Number(row.priceCents));
+  const rate =
+    typeof row.commissionRate === 'number' ? row.commissionRate : COMMISSION_RATE;
+  const commissionCents = Math.round(priceCents * rate);
+  return {
+    priceCents,
+    currency: row.currency || 'USD',
+    commissionRate: rate,
+    commissionCents,
+    sellerNetCents: priceCents - commissionCents,
+  };
+}
+
 /**
  * Everything a signed-in counterpart may see. Deliberately omits ownerEmail,
  * ownerUserId, street address and any free-text the owner did not intend to
@@ -86,6 +117,7 @@ function toPublicJson(row) {
     postalPrefix: row.postalCode ? String(row.postalCode).slice(0, 3) : null,
     photos: readPhotos(row),
     photoUrl: row.photoUrl || null,
+    ...pricingFields(row),
     status: row.status || 'active',
     reservedUntil: row.reservedUntil || null,
     createdAt: row.createdAt,
@@ -135,27 +167,37 @@ function counterpartKind(role) {
 
 /**
  * POST /api/listings
+ *
+ * `kind: 'sale'` is open to any signed-in account. Donate kinds still follow
+ * the role map (donor → offer, recipient/NGO → request).
  */
 async function create(req, res, next) {
   try {
     const role = req.user.role;
-    const expectedKind = allowedKindForRole(role);
-    if (!expectedKind) {
-      return res.status(403).json({
-        success: false,
-        message:
-          'Bu hesap için ilan türü belirlenemedi. Profilinizden rolünüzü seçin.',
-        code: 'ROLE_REQUIRED',
-      });
-    }
+    const requestedKind = String(req.body?.kind || '').trim();
+    const isSale = requestedKind === 'sale';
 
-    const requestedKind = String(req.body?.kind || expectedKind);
-    if (!KINDS.has(requestedKind) || requestedKind !== expectedKind) {
-      return res.status(403).json({
-        success: false,
-        message: 'Rolünüz bu ilan türünü yayınlayamaz.',
-        code: 'KIND_NOT_ALLOWED',
-      });
+    let kind;
+    if (isSale) {
+      kind = 'sale';
+    } else {
+      const expectedKind = allowedKindForRole(role);
+      if (!expectedKind) {
+        return res.status(403).json({
+          success: false,
+          message:
+            'Bu hesap için ilan türü belirlenemedi. Profilinizden rolünüzü seçin.',
+          code: 'ROLE_REQUIRED',
+        });
+      }
+      kind = requestedKind || expectedKind;
+      if (!DONATE_KINDS.has(kind) || kind !== expectedKind) {
+        return res.status(403).json({
+          success: false,
+          message: 'Rolünüz bu ilan türünü yayınlayamaz.',
+          code: 'KIND_NOT_ALLOWED',
+        });
+      }
     }
 
     const title = clampText(req.body?.title, 120);
@@ -168,13 +210,36 @@ async function create(req, res, next) {
       });
     }
 
+    let priceCents = null;
+    if (isSale) {
+      // Prefer integer cents; fall back to dollars when the client sends `price`.
+      let asCents;
+      if (req.body?.priceCents != null) {
+        asCents = Math.round(Number(req.body.priceCents));
+      } else if (req.body?.price != null) {
+        asCents = Math.round(Number(req.body.price) * 100);
+      }
+      if (
+        !Number.isFinite(asCents) ||
+        asCents < MIN_PRICE_CENTS ||
+        asCents > MAX_PRICE_CENTS
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Satış fiyatı en az $1.00 olmalıdır.',
+          code: 'PRICE_REQUIRED',
+        });
+      }
+      priceCents = asCents;
+    }
+
     const condition = clampText(req.body?.condition, 20);
     const urgency = clampText(req.body?.urgency, 10);
     const quantityRaw = Number(req.body?.quantity);
     const photos = await sanitizePhotos(req.body?.photos ?? req.body?.photoUrl);
 
     const created = await createListing({
-      kind: requestedKind,
+      kind,
       ownerUserId: req.user.userId,
       ownerEmail: req.user.email,
       ownerRole: role,
@@ -187,13 +252,16 @@ async function create(req, res, next) {
         Number.isFinite(quantityRaw) && quantityRaw >= 1
           ? Math.min(Math.floor(quantityRaw), 999)
           : 1,
-      urgency: URGENCIES.has(urgency) ? urgency : 'normal',
+      urgency: isSale ? 'normal' : URGENCIES.has(urgency) ? urgency : 'normal',
       city: clampText(req.body?.city, 80) || null,
       state: clampText(req.body?.state, 2).toUpperCase() || null,
       postalCode: clampText(req.body?.postalCode, 10) || null,
       photos,
       // Mirrored so clients still reading the old single-photo field keep working.
       photoUrl: photos[0] || null,
+      priceCents,
+      currency: isSale ? 'USD' : null,
+      commissionRate: isSale ? COMMISSION_RATE : null,
       status: 'active',
     });
 
@@ -222,6 +290,86 @@ async function listMine(req, res, next) {
 }
 
 /**
+ * GET /api/listings/shop
+ * Active paid listings for the marketplace. Open to any signed-in user.
+ */
+async function shop(req, res, next) {
+  try {
+    const limit = Math.min(Number(req.query?.limit) || 60, 100);
+    const skip = Math.max(Number(req.query?.skip) || 0, 0);
+    const filter = {
+      kind: 'sale',
+      status: 'active',
+      excludeOwnerUserId: req.user.userId,
+      category: clampText(req.query?.category, 60) || undefined,
+      state: clampText(req.query?.state, 2).toUpperCase() || undefined,
+      search: clampText(req.query?.q, 80) || undefined,
+    };
+
+    const [rows, total] = await Promise.all([
+      queryListings(filter, { limit, skip }),
+      countListings(filter),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      kind: 'sale',
+      commissionRate: COMMISSION_RATE,
+      total,
+      listings: rows.map(toPublicJson),
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+/**
+ * POST /api/listings/:id/purchase
+ * Buyer requests a sale item — holds it for 48 hours (Stripe comes later).
+ */
+async function purchase(req, res, next) {
+  try {
+    const row = await findListingById(req.params.id);
+    if (!row || row.hidden || row.kind !== 'sale') {
+      return res.status(404).json({
+        success: false,
+        message: 'Satış ilanı bulunamadı.',
+        code: 'LISTING_NOT_FOUND',
+      });
+    }
+    if (row.ownerUserId === req.user.userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Kendi satış ilanınızı satın alamazsınız.',
+        code: 'SELF_PURCHASE',
+      });
+    }
+    if (row.status !== 'active') {
+      return res.status(409).json({
+        success: false,
+        message: 'Bu ürün şu anda satışa açık değil.',
+        code: 'NOT_AVAILABLE',
+      });
+    }
+
+    const updated = await updateListing(row.id, {
+      status: 'reserved',
+      reservedByUserId: req.user.userId,
+      reservedUntil: new Date(Date.now() + RESERVATION_WINDOW_MS),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        'Satın alma talebiniz alındı. Satıcı 48 saat içinde sizinle iletişime geçecek. Online ödeme yakında eklenecek.',
+      listing: toPublicJson(updated),
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+/**
  * GET /api/listings/browse
  * Returns the opposite side of the market with contact details stripped.
  */
@@ -229,7 +377,10 @@ async function browse(req, res, next) {
   try {
     const role = req.user.role;
     const requested = String(req.query?.kind || '');
-    const kind = KINDS.has(requested) ? requested : counterpartKind(role);
+    // Shop has its own endpoint; keep donate browse free of sale rows.
+    const kind = DONATE_KINDS.has(requested)
+      ? requested
+      : counterpartKind(role);
 
     if (!kind) {
       return res.status(403).json({
@@ -347,6 +498,14 @@ async function matches(req, res, next) {
       });
     }
 
+    if (mine.kind === 'sale') {
+      return res.status(400).json({
+        success: false,
+        message: 'Satış ilanları bağış eşleştirmesine dahil edilmez.',
+        code: 'SALE_NO_MATCH',
+      });
+    }
+
     const wanted = mine.kind === 'offer' ? 'request' : 'offer';
     const candidates = await queryListings(
       {
@@ -388,6 +547,13 @@ async function reserve(req, res, next) {
         success: false,
         message: 'İlan bulunamadı.',
         code: 'LISTING_NOT_FOUND',
+      });
+    }
+    if (row.kind === 'sale') {
+      return res.status(400).json({
+        success: false,
+        message: 'Satış ilanları için /purchase kullanın.',
+        code: 'USE_PURCHASE',
       });
     }
     if (row.ownerUserId === req.user.userId) {
@@ -486,11 +652,14 @@ module.exports = {
   create,
   listMine,
   browse,
+  shop,
   matches,
   reserve,
+  purchase,
   update,
   toPublicJson,
   toOwnerJson,
   toAdminJson,
   scoreMatch,
+  COMMISSION_RATE,
 };

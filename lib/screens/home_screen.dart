@@ -13,6 +13,7 @@ import '../widgets/impact_esg_dashboard_card.dart';
 import '../widgets/language_menu_button.dart';
 import '../widgets/partnership_footer.dart';
 import '../widgets/pass_it_on_entry_card.dart';
+import '../widgets/sales_entry_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -72,6 +73,8 @@ class HomeScreen extends StatelessWidget {
                   const BrowseEquipmentEntryCard(),
                   const SizedBox(height: 16),
                 ],
+                const SalesEntryCard(),
+                const SizedBox(height: 16),
                 if (f.showPassItOnEntry) ...[
                   const PassItOnEntryCard(),
                   const SizedBox(height: 24),

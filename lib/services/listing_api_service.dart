@@ -102,11 +102,15 @@ class ListingApiService {
         .toList(growable: false);
   }
 
-  /// Publishes an offer (donor) or a request (recipient / NGO partner).
-  /// The server derives the allowed kind from the account role.
+  /// Publishes an offer, request, or paid sale.
+  ///
+  /// Donate kinds are derived from the account role on the server. Pass
+  /// [kind] `'sale'` (and [priceCents]) for the marketplace — any signed-in
+  /// user may sell.
   Future<ListingApiResult<Listing>> create({
     required String title,
     required String category,
+    String? kind,
     String? description,
     String? condition,
     String? sizeNote,
@@ -116,6 +120,7 @@ class ListingApiService {
     String? state,
     String? postalCode,
     List<String> photos = const [],
+    int? priceCents,
   }) async {
     try {
       final response = await http
@@ -125,6 +130,7 @@ class ListingApiService {
             body: jsonEncode({
               'title': title,
               'category': category,
+              'kind': ?kind,
               'description': ?description,
               'condition': ?condition,
               'sizeNote': ?sizeNote,
@@ -134,6 +140,7 @@ class ListingApiService {
               'state': ?state,
               'postalCode': ?postalCode,
               'photos': photos,
+              'priceCents': ?priceCents,
             }),
           )
           .timeout(_timeout);
@@ -233,6 +240,58 @@ class ListingApiService {
         'limit': '$limit',
       },
     );
+  }
+
+  /// Active paid sale listings for the marketplace.
+  Future<ListingApiResult<List<Listing>>> shop({
+    String? category,
+    String? state,
+    String? search,
+    int limit = 60,
+  }) async {
+    return _getListings(
+      '/api/listings/shop',
+      key: 'listings',
+      fallback: 'Satış ilanları yüklenemedi.',
+      query: {
+        'category': ?category,
+        'state': ?state,
+        'q': ?search,
+        'limit': '$limit',
+      },
+    );
+  }
+
+  /// Buyer hold on a sale listing (Stripe checkout comes later).
+  Future<ListingApiResult<Listing>> purchase(String listingId) async {
+    try {
+      final response = await http
+          .post(
+            _uri('/api/listings/$listingId/purchase'),
+            headers: _headers(await _sessionToken()),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final parsed = _parse(response.body);
+        final listing = parsed?['listing'] as Map?;
+        final message = (parsed?['message'] as String?)?.trim();
+        return ListingApiResult<Listing>(
+          success: true,
+          message: (message != null && message.isNotEmpty)
+              ? message
+              : 'Satın alma talebiniz alındı.',
+          data: listing == null
+              ? null
+              : Listing.fromJson(listing.cast<String, dynamic>()),
+          statusCode: response.statusCode,
+        );
+      }
+      return _failure<Listing>(response, 'Satın alma talebi gönderilemedi.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] purchase failed: $err\n$stack');
+      return _offline<Listing>();
+    }
   }
 
   /// Ranked counterparts for one of the caller's own listings.
