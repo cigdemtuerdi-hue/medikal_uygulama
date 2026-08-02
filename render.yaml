@@ -57,3 +57,8 @@ services:
       # 64 hex chars (32 bytes) for AES-256-GCM PHI encryption. Generate once and keep secret.
       - key: PHI_ENCRYPTION_KEY
         sync: false
+      # Stripe Checkout — set in Render Dashboard (do not commit keys).
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

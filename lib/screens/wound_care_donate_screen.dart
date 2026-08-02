@@ -9,6 +9,7 @@ import '../models/fda_safety_models.dart';
 import '../services/available_items_service.dart';
 import '../services/donation_service.dart';
 import '../services/fda_safety_service.dart';
+import '../services/listing_photo_publish_helper.dart';
 import '../services/ngo_partner_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/direct_ngo_donate_picker.dart';
@@ -19,6 +20,7 @@ import '../widgets/fda_safety_guidelines.dart';
 import '../widgets/handoff_option_badge.dart';
 import '../widgets/liability_waiver_widgets.dart';
 import '../widgets/listing_created_dialog.dart';
+import '../widgets/listing_photo_picker.dart';
 import '../widgets/urgent_need_badge.dart';
 import '../widgets/urgent_required_features.dart';
 
@@ -47,6 +49,7 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
   bool _allocateToDisaster = false;
   String? _selectedNgoId;
   String? _waiverError;
+  final List<ListingPhotoDraft> _photos = [];
   FdaSafetyCheckResult _fdaResult = const FdaSafetyCheckResult(
     status: FdaSafetyStatus.idle,
   );
@@ -112,6 +115,19 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
     }
     setState(() => _waiverError = null);
 
+    if (_photos.any((p) => p.isPending)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('photos.pending'))),
+      );
+      return;
+    }
+    if (_photos.any((p) => p.error != null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('photos.failed'))),
+      );
+      return;
+    }
+
     if (_fdaResult.status == FdaSafetyStatus.checking ||
         _fdaResult.status == FdaSafetyStatus.idle) {
       setState(() => _isSubmitting = true);
@@ -137,15 +153,45 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
     }
 
     setState(() => _isSubmitting = true);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
 
     final zip = _zipController.text.trim();
     final brand = _brandController.text.trim();
     final model = _modelController.text.trim();
-    final itemId = 'item-${DateTime.now().millisecondsSinceEpoch}';
     final title = locWoundCareType(loc, _selectedType);
+    final description = _sealedPackaging
+        ? loc.t('woundCare.defaultDescriptionSealed')
+        : loc.t('woundCare.defaultDescriptionUnsealed');
+    final photoPaths = ListingPhotoPublishHelper.uploadedPaths(_photos);
+    final sizeNote = [
+      if (brand.isNotEmpty) brand,
+      if (model.isNotEmpty) model,
+      if (_expiryController.text.trim().isNotEmpty)
+        'exp ${_expiryController.text.trim()}',
+    ].join(' · ');
+
+    final apiResult = await ListingPhotoPublishHelper.createIfSignedIn(
+      title: title,
+      category: 'woundCare',
+      description: description,
+      condition: ListingPhotoPublishHelper.conditionKey(_condition),
+      sizeNote: sizeNote.isEmpty ? null : sizeNote,
+      quantity: _quantity,
+      postalCode: zip,
+      photos: photoPaths,
+    );
+
+    if (!mounted) return;
+
+    if (apiResult != null && !apiResult.success) {
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(apiResult.message)),
+      );
+      return;
+    }
+
+    final itemId = apiResult?.data?.id ??
+        'item-${DateTime.now().millisecondsSinceEpoch}';
     final ngoId = _donateToNgo
         ? (_selectedNgoId ??
             NgoPartnerService.instance.verifiedPartners.first.id)
@@ -158,9 +204,7 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
       AvailableDonationItem(
         id: itemId,
         title: title,
-        description: _sealedPackaging
-            ? loc.t('woundCare.defaultDescriptionSealed')
-            : loc.t('woundCare.defaultDescriptionUnsealed'),
+        description: description,
         condition: _condition,
         donorZipCode: zip,
         brand: brand.isEmpty ? null : brand,
@@ -197,6 +241,8 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
       _allocateToDisaster = false;
       _selectedNgoId = null;
       _waiverError = null;
+      _photos.clear();
+      _isSubmitting = false;
       _zipController.text = DonationService.donorProfile.zipCode;
       _brandController.clear();
       _modelController.clear();
@@ -366,6 +412,17 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 20),
+              ListingPhotoPicker(
+                photos: _photos,
+                enabled: !_isSubmitting,
+                onUpload: ListingPhotoPublishHelper.upload,
+                onChanged: (photos) => setState(() {
+                  _photos
+                    ..clear()
+                    ..addAll(photos);
+                }),
               ),
               const SizedBox(height: 24),
               HandoffOptionPicker(

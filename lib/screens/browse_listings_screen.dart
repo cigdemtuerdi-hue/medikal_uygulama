@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/listing.dart';
 import '../models/user_onboarding_models.dart';
 import '../services/auth_session_service.dart';
 import '../services/listing_api_service.dart';
+import '../services/listing_photo_publish_helper.dart';
 import '../services/onboarding_service.dart';
 import '../widgets/listing_photo_picker.dart';
 
@@ -935,28 +937,18 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
     super.dispose();
   }
 
-  /// Hands one picked photo to the API and returns the stored path.
-  Future<String> _uploadPhoto(ListingPhotoDraft draft) async {
-    final result = await ListingApiService.instance.uploadPhoto(
-      bytes: draft.bytes,
-      contentType: draft.contentType,
-    );
-    final path = result.data;
-    if (!result.success || path == null) throw Exception(result.message);
-    return path;
-  }
-
   Future<void> _submit() async {
+    final loc = AppLocalizations.of(context);
     if (_title.text.trim().isEmpty) {
       _notify('Başlık zorunlu.');
       return;
     }
     if (_photos.any((p) => p.isPending)) {
-      _notify('Fotoğraflar hâlâ yükleniyor. Lütfen bekleyin.');
+      _notify(loc.t('photos.pending'));
       return;
     }
     if (_photos.any((p) => p.error != null)) {
-      _notify('Yüklenemeyen fotoğrafları kaldırın veya yeniden deneyin.');
+      _notify(loc.t('photos.failed'));
       return;
     }
 
@@ -1125,7 +1117,8 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
             ListingPhotoPicker(
               photos: _photos,
               enabled: !_submitting,
-              onUpload: _uploadPhoto,
+              hintKey: widget.isDonor ? 'photos.hint' : 'photos.requestHint',
+              onUpload: ListingPhotoPublishHelper.upload,
               onChanged: (photos) => setState(() {
                 _photos
                   ..clear()

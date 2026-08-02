@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
@@ -10,10 +11,7 @@ import '../services/auth_session_service.dart';
 import '../services/listing_api_service.dart';
 import '../widgets/listing_photo_picker.dart';
 
-/// Paid equipment marketplace — browse sales, publish your own, request a buy.
-///
-/// Stripe checkout is intentionally not here yet; buy places a 48-hour hold so
-/// the seller can complete the handoff offline until payments land.
+/// Paid equipment marketplace — browse sales, publish your own, buy via Stripe.
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
 
@@ -199,15 +197,41 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
     );
     if (ok != true || !mounted) return;
 
-    final result = await ListingApiService.instance.purchase(listing.id);
+    final checkout = await ListingApiService.instance.checkout(listing.id);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(result.message)),
-    );
-    if (result.success) {
+
+    if (checkout.success && checkout.data != null) {
+      final uri = Uri.tryParse(checkout.data!);
+      if (uri == null ||
+          !(await canLaunchUrl(uri)) ||
+          !(await launchUrl(uri, mode: LaunchMode.externalApplication))) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.t('shop.checkoutOpenFailed'))),
+        );
+        return;
+      }
       widget.onChanged();
       await _reload();
+      return;
     }
+
+    if (checkout.code == 'STRIPE_NOT_CONFIGURED') {
+      final hold = await ListingApiService.instance.purchase(listing.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(hold.message)),
+      );
+      if (hold.success) {
+        widget.onChanged();
+        await _reload();
+      }
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(checkout.message)),
+    );
   }
 
   @override

@@ -4,9 +4,11 @@ import '../l10n/app_localizations.dart';
 import '../l10n/localized_labels.dart';
 import '../models/donation_models.dart';
 import '../models/wishlist_models.dart';
+import '../services/listing_photo_publish_helper.dart';
 import '../services/onboarding_document_service.dart';
 import '../services/wishlist_service.dart';
 import 'document_upload_card.dart';
+import 'listing_photo_picker.dart';
 import 'urgent_need_badge.dart';
 import 'urgent_required_features.dart';
 
@@ -28,6 +30,8 @@ class WishlistSectionCard extends StatelessWidget {
     var isUrgentNeed = false;
     String? verificationDocPath;
     String? featuresError;
+    final photos = <ListingPhotoDraft>[];
+    var submitting = false;
 
     final result = await showDialog<WishlistAddResult>(
       context: context,
@@ -61,38 +65,56 @@ class WishlistSectionCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        onChanged: (value) {
-                          setLocal(() {
-                            selectedType = value;
-                            if (value != null &&
-                                labelController.text.trim().isEmpty) {
-                              labelController.text = locDmeType(loc, value);
-                            }
-                          });
-                        },
+                        onChanged: submitting
+                            ? null
+                            : (value) {
+                                setLocal(() {
+                                  selectedType = value;
+                                  if (value != null &&
+                                      labelController.text.trim().isEmpty) {
+                                    labelController.text =
+                                        locDmeType(loc, value);
+                                  }
+                                });
+                              },
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: labelController,
+                        enabled: !submitting,
                         decoration: InputDecoration(
                           labelText: loc.t('wishlist.itemLabel'),
                           hintText: loc.t('wishlist.itemHint'),
                         ),
                         autofocus: true,
                       ),
+                      const SizedBox(height: 12),
+                      ListingPhotoPicker(
+                        photos: photos,
+                        enabled: !submitting,
+                        hintKey: 'photos.requestHint',
+                        onUpload: ListingPhotoPublishHelper.upload,
+                        onChanged: (next) => setLocal(() {
+                          photos
+                            ..clear()
+                            ..addAll(next);
+                        }),
+                      ),
                       const SizedBox(height: 8),
                       UrgentNeedRequestToggle(
                         value: isUrgentNeed,
-                        onChanged: (value) {
-                          setLocal(() {
-                            isUrgentNeed = value;
-                            featuresError = null;
-                            if (!value) {
-                              verificationDocPath = null;
-                              featuresController.clear();
-                            }
-                          });
-                        },
+                        onChanged: submitting
+                            ? (_) {}
+                            : (value) {
+                                setLocal(() {
+                                  isUrgentNeed = value;
+                                  featuresError = null;
+                                  if (!value) {
+                                    verificationDocPath = null;
+                                    featuresController.clear();
+                                  }
+                                });
+                              },
                       ),
                       if (isUrgentNeed) ...[
                         const SizedBox(height: 12),
@@ -150,38 +172,82 @@ class WishlistSectionCard extends StatelessWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed:
+                      submitting ? null : () => Navigator.pop(context),
                   child: Text(loc.t('common.cancel')),
                 ),
                 FilledButton(
-                  onPressed: () {
-                    if (isUrgentNeed &&
-                        featuresController.text.trim().isEmpty) {
-                      setLocal(
-                        () => featuresError =
-                            loc.t('urgent.featuresRequiredError'),
-                      );
-                      return;
-                    }
-                    final label = labelController.text.trim().isEmpty &&
-                            selectedType != null
-                        ? locDmeType(loc, selectedType!)
-                        : labelController.text;
-                    final outcome = WishlistService.instance.addEntry(
-                      label: label,
-                      dmeType: selectedType,
-                      queryText: labelController.text,
-                      isUrgentNeed: isUrgentNeed,
-                      verificationDocPath: verificationDocPath,
-                      verificationDocLabel:
-                          documentService.fileLabel(verificationDocPath),
-                      requiredFeaturesDescription: isUrgentNeed
-                          ? featuresController.text
-                          : null,
-                    );
-                    Navigator.pop(context, outcome);
-                  },
-                  child: Text(loc.t('wishlist.add')),
+                  onPressed: submitting
+                      ? null
+                      : () async {
+                          if (isUrgentNeed &&
+                              featuresController.text.trim().isEmpty) {
+                            setLocal(
+                              () => featuresError =
+                                  loc.t('urgent.featuresRequiredError'),
+                            );
+                            return;
+                          }
+                          if (photos.any((p) => p.isPending)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(loc.t('photos.pending'))),
+                            );
+                            return;
+                          }
+                          if (photos.any((p) => p.error != null)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(loc.t('photos.failed'))),
+                            );
+                            return;
+                          }
+
+                          final label = labelController.text.trim().isEmpty &&
+                                  selectedType != null
+                              ? locDmeType(loc, selectedType!)
+                              : labelController.text;
+                          setLocal(() => submitting = true);
+
+                          final apiResult =
+                              await ListingPhotoPublishHelper.createIfSignedIn(
+                            title: label.trim(),
+                            category: selectedType?.name ?? 'other',
+                            description: isUrgentNeed
+                                ? featuresController.text.trim()
+                                : null,
+                            urgency: isUrgentNeed ? 'high' : 'normal',
+                            photos: ListingPhotoPublishHelper.uploadedPaths(
+                              photos,
+                            ),
+                          );
+
+                          if (!context.mounted) return;
+                          if (apiResult != null && !apiResult.success) {
+                            setLocal(() => submitting = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(apiResult.message)),
+                            );
+                            return;
+                          }
+
+                          final outcome = WishlistService.instance.addEntry(
+                            label: label,
+                            dmeType: selectedType,
+                            queryText: labelController.text,
+                            isUrgentNeed: isUrgentNeed,
+                            verificationDocPath: verificationDocPath,
+                            verificationDocLabel:
+                                documentService.fileLabel(verificationDocPath),
+                            requiredFeaturesDescription: isUrgentNeed
+                                ? featuresController.text
+                                : null,
+                          );
+                          Navigator.pop(context, outcome);
+                        },
+                  child: Text(
+                    submitting
+                        ? loc.t('common.submitting')
+                        : loc.t('wishlist.add'),
+                  ),
                 ),
               ],
             );

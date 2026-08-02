@@ -7,10 +7,14 @@ const authRoutes = require('./routes/auth');
 const MongoUser = require('./models/User');
 const MongoListing = require('./models/Listing');
 const MongoUpload = require('./models/Upload');
+const MongoOrder = require('./models/Order');
 const { MemoryUserModel } = require('./models/memoryUserStore');
 const { setUserModel, getUserModel } = require('./models/userModel');
 const { setListingModel } = require('./models/listingStore');
 const { setUploadModel } = require('./models/uploadStore');
+const { setOrderModel } = require('./models/orderStore');
+const { isStripeConfigured } = require('./services/stripeService');
+const { stripeWebhook } = require('./controllers/paymentController');
 
 const PORT = Number(process.env.PORT) || 3001;
 const MONGODB_URI =
@@ -48,6 +52,14 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }),
 );
+
+// Stripe needs the raw body for signature verification — mount before JSON.
+app.post(
+  '/api/payments/webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhook,
+);
+
 app.use(express.json({ limit: '128kb' }));
 
 const { enforceTls } = require('./middleware/tls');
@@ -101,6 +113,9 @@ app.get('/api/health', (_req, res) => {
         : (process.env.EMAIL_HOST || '').trim() || null,
       smsEnabled: false,
     },
+    payments: {
+      stripeConfigured: isStripeConfigured(),
+    },
   });
 });
 
@@ -110,6 +125,7 @@ app.use('/api/compliance', require('./routes/compliance'));
 app.use('/api/health-records', require('./routes/healthRecords'));
 app.use('/api/listings', require('./routes/listings'));
 app.use('/api/uploads', require('./routes/uploads'));
+app.use('/api/orders', require('./routes/payments'));
 app.use('/api/admin', require('./routes/admin'));
 
 // eslint-disable-next-line no-unused-vars
@@ -232,6 +248,7 @@ async function start() {
   const memoryMode = userModel === MemoryUserModel;
   setListingModel(memoryMode ? null : MongoListing);
   setUploadModel(memoryMode ? null : MongoUpload);
+  setOrderModel(memoryMode ? null : MongoOrder);
   await seedDemoUserIfNeeded();
 
   app.listen(PORT, '0.0.0.0', () => {
@@ -248,6 +265,11 @@ async function start() {
     console.info('[api] /api/health-records (RBAC + AES-256)');
     console.info('[api] /api/listings (session token required)');
     console.info('[api] POST /api/uploads, GET /api/uploads/:id');
+    console.info('[api] POST /api/listings/:id/checkout');
+    console.info('[api] POST /api/payments/webhook');
+    console.info(
+      `[api] Stripe: ${isStripeConfigured() ? 'configured' : 'not configured'}`,
+    );
     console.info('[api] /api/admin/{overview,users,listings} (admin token)');
   });
 }

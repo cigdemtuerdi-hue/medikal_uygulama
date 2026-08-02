@@ -262,7 +262,65 @@ class ListingApiService {
     );
   }
 
-  /// Buyer hold on a sale listing (Stripe checkout comes later).
+  /// Starts Stripe Checkout for a sale listing.
+  ///
+  /// On success [ListingApiResult.data] is the hosted Checkout URL. When the
+  /// API returns [code] `STRIPE_NOT_CONFIGURED`, call [purchase] instead.
+  Future<ListingApiResult<String>> checkout(String listingId) async {
+    try {
+      final response = await http
+          .post(
+            _uri('/api/listings/$listingId/checkout'),
+            headers: _headers(await _sessionToken()),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 201) {
+        final url = _parse(response.body)?['checkoutUrl']?.toString();
+        if (url != null && url.isNotEmpty) {
+          return ListingApiResult<String>(
+            success: true,
+            message: '',
+            data: url,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+      return _failure<String>(response, 'Ödeme oturumu açılamadı.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] checkout failed: $err\n$stack');
+      return _offline<String>();
+    }
+  }
+
+  Future<ListingApiResult<SaleOrder>> orderBySession(String sessionId) async {
+    try {
+      final response = await http
+          .get(
+            _uri('/api/orders/by-session/$sessionId'),
+            headers: _headers(await _sessionToken()),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final raw = _parse(response.body)?['order'] as Map?;
+        return ListingApiResult<SaleOrder>(
+          success: true,
+          message: '',
+          data: raw == null
+              ? null
+              : SaleOrder.fromJson(raw.cast<String, dynamic>()),
+          statusCode: response.statusCode,
+        );
+      }
+      return _failure<SaleOrder>(response, 'Sipariş yüklenemedi.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] orderBySession failed: $err\n$stack');
+      return _offline<SaleOrder>();
+    }
+  }
+
+  /// Buyer hold on a sale listing when Stripe is not configured.
   Future<ListingApiResult<Listing>> purchase(String listingId) async {
     try {
       final response = await http

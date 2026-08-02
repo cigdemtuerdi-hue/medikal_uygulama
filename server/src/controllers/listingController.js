@@ -361,7 +361,7 @@ async function purchase(req, res, next) {
     return res.status(200).json({
       success: true,
       message:
-        'Satın alma talebiniz alındı. Satıcı 48 saat içinde sizinle iletişime geçecek. Online ödeme yakında eklenecek.',
+        'Satın alma talebiniz alındı. Satıcı 48 saat içinde sizinle iletişime geçecek.',
       listing: toPublicJson(updated),
     });
   } catch (err) {

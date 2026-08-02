@@ -136,14 +136,20 @@ jobs:
             build/web/login \
             build/web/forgot-password \
             build/web/hipaa-privacy-notice \
-            build/web/privacy-policy
+            build/web/privacy-policy \
+            build/web/shop \
+            build/web/shop/success \
+            build/web/shop/cancel
           cp build/web/index.html build/web/admin/index.html
           cp build/web/index.html build/web/login/index.html
           cp build/web/index.html build/web/forgot-password/index.html
           cp build/web/index.html build/web/hipaa-privacy-notice/index.html
           cp build/web/index.html build/web/privacy-policy/index.html
+          cp build/web/index.html build/web/shop/index.html
+          cp build/web/index.html build/web/shop/success/index.html
+          cp build/web/index.html build/web/shop/cancel/index.html
           echo "Published CNAME=$(cat build/web/CNAME)"
-          echo "Deep-link folders ready: admin, login, forgot-password, hipaa-privacy-notice"
+          echo "Deep-link folders ready: admin, login, forgot-password, hipaa, shop/success, shop/cancel"
 
       - name: Deploy to GitHub Pages (gh-pages)
         if: ${{ github.event.inputs.target != 'firebase' }}

@@ -10,6 +10,7 @@ const {
   purchase,
   update,
 } = require('../controllers/listingController');
+const { createCheckout } = require('../controllers/paymentController');
 
 const router = express.Router();
 
@@ -25,7 +26,8 @@ const router = express.Router();
  * GET    /shop            → active paid sale listings (PII stripped)
  * GET    /:id/matches     → ranked counterparts for one of the caller's listings
  * POST   /:id/reserve     → 48-hour hold on a donate counterpart listing
- * POST   /:id/purchase    → buyer hold on a sale listing
+ * POST   /:id/checkout    → Stripe Checkout Session for a sale listing
+ * POST   /:id/purchase    → hold-only fallback when Stripe is not configured
  * PATCH  /:id             → owner-only edit / status change
  */
 router.use(requireUser);
@@ -36,6 +38,7 @@ router.get('/browse', browse);
 router.get('/shop', shop);
 router.get('/:id/matches', matches);
 router.post('/:id/reserve', reserve);
+router.post('/:id/checkout', createCheckout);
 router.post('/:id/purchase', purchase);
 router.patch('/:id', update);
 

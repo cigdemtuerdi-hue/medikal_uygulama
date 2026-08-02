@@ -158,6 +158,59 @@ class Listing {
   }
 }
 
+/// A marketplace order returned by `/api/orders` or checkout.
+class SaleOrder {
+  const SaleOrder({
+    required this.id,
+    required this.listingId,
+    required this.title,
+    required this.priceCents,
+    required this.commissionCents,
+    required this.sellerNetCents,
+    required this.status,
+    this.commissionRate,
+    this.currency = 'USD',
+    this.paidAt,
+    this.createdAt,
+  });
+
+  factory SaleOrder.fromJson(Map<String, dynamic> json) {
+    DateTime? parseDate(Object? value) {
+      if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+      return null;
+    }
+
+    return SaleOrder(
+      id: json['id']?.toString() ?? '',
+      listingId: json['listingId']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      priceCents: (json['priceCents'] as num?)?.toInt() ?? 0,
+      commissionCents: (json['commissionCents'] as num?)?.toInt() ?? 0,
+      sellerNetCents: (json['sellerNetCents'] as num?)?.toInt() ?? 0,
+      commissionRate: (json['commissionRate'] as num?)?.toDouble(),
+      currency: json['currency']?.toString() ?? 'USD',
+      status: json['status']?.toString() ?? 'pending',
+      paidAt: parseDate(json['paidAt']),
+      createdAt: parseDate(json['createdAt']),
+    );
+  }
+
+  final String id;
+  final String listingId;
+  final String title;
+  final int priceCents;
+  final int commissionCents;
+  final int sellerNetCents;
+  final double? commissionRate;
+  final String currency;
+  final String status;
+  final DateTime? paidAt;
+  final DateTime? createdAt;
+
+  bool get isPaid => status == 'paid';
+  String get priceLabel => formatUsdCents(priceCents);
+}
+
 /// Formats integer USD cents as `$1,234.56`.
 String formatUsdCents(int cents) {
   final dollars = cents / 100;

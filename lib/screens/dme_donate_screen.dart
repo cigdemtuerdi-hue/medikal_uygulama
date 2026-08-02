@@ -10,6 +10,7 @@ import '../models/fda_safety_models.dart';
 import '../services/available_items_service.dart';
 import '../services/donation_service.dart';
 import '../services/fda_safety_service.dart';
+import '../services/listing_photo_publish_helper.dart';
 import '../services/ngo_partner_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/direct_ngo_donate_picker.dart';
@@ -20,6 +21,7 @@ import '../widgets/fda_safety_guidelines.dart';
 import '../widgets/handoff_option_badge.dart';
 import '../widgets/liability_waiver_widgets.dart';
 import '../widgets/listing_created_dialog.dart';
+import '../widgets/listing_photo_picker.dart';
 import '../widgets/urgent_need_badge.dart';
 import '../widgets/urgent_required_features.dart';
 import '../widgets/us_address_autocomplete_field.dart';
@@ -57,6 +59,7 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
   bool _allocateToDisaster = false;
   String? _selectedNgoId;
   String? _waiverError;
+  final List<ListingPhotoDraft> _photos = [];
   FdaSafetyCheckResult _fdaResult = const FdaSafetyCheckResult(
     status: FdaSafetyStatus.idle,
   );
@@ -184,6 +187,19 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
       return;
     }
 
+    if (_photos.any((p) => p.isPending)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('photos.pending'))),
+      );
+      return;
+    }
+    if (_photos.any((p) => p.error != null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('photos.failed'))),
+      );
+      return;
+    }
+
     if (_fdaResult.status == FdaSafetyStatus.checking ||
         _fdaResult.status == FdaSafetyStatus.idle) {
       setState(() => _isSubmitting = true);
@@ -210,17 +226,46 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
 
     setState(() => _isSubmitting = true);
 
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-
-    if (!mounted) return;
-
-    setState(() => _isSubmitting = false);
-
     final zip = _zipController.text.trim();
     final brand = _brandController.text.trim();
     final model = _modelController.text.trim();
-    final itemId = 'item-${DateTime.now().millisecondsSinceEpoch}';
     final title = locDmeType(loc, _selectedType);
+    final description = _notesController.text.trim().isEmpty
+        ? loc.t('dme.defaultDescription')
+        : _notesController.text.trim();
+    final photoPaths = ListingPhotoPublishHelper.uploadedPaths(_photos);
+    final sizing = _buildSizing();
+    final sizeNote = [
+      if (brand.isNotEmpty) brand,
+      if (model.isNotEmpty) model,
+      if (sizing?.notes != null) sizing!.notes!,
+      if (sizing?.seatWidthInches != null)
+        'seat ${sizing!.seatWidthInches}"',
+    ].join(' · ');
+
+    final apiResult = await ListingPhotoPublishHelper.createIfSignedIn(
+      title: title,
+      category: _selectedType.name,
+      description: description,
+      condition: ListingPhotoPublishHelper.conditionKey(_condition),
+      sizeNote: sizeNote.isEmpty ? null : sizeNote,
+      quantity: _quantity,
+      postalCode: zip,
+      photos: photoPaths,
+    );
+
+    if (!mounted) return;
+
+    if (apiResult != null && !apiResult.success) {
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(apiResult.message)),
+      );
+      return;
+    }
+
+    final itemId = apiResult?.data?.id ??
+        'item-${DateTime.now().millisecondsSinceEpoch}';
     final ngoId = _donateToNgo
         ? (_selectedNgoId ??
             NgoPartnerService.instance.verifiedPartners.first.id)
@@ -233,16 +278,14 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
       AvailableDonationItem(
         id: itemId,
         title: title,
-        description: _notesController.text.trim().isEmpty
-            ? loc.t('dme.defaultDescription')
-            : _notesController.text.trim(),
+        description: description,
         condition: _condition,
         donorZipCode: zip,
         brand: brand.isEmpty ? null : brand,
         model: model.isEmpty ? null : model,
         dmeType: _selectedType,
         quantityAvailable: _quantity,
-        sizing: _buildSizing(),
+        sizing: sizing,
         handoffOption: _handoffOption,
         priorityToUrgentRequests: _priorityToUrgent,
         directNgoPartnerId: ngo?.id,
@@ -273,6 +316,8 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
       _allocateToDisaster = false;
       _selectedNgoId = null;
       _waiverError = null;
+      _photos.clear();
+      _isSubmitting = false;
       _zipController.text = DonationService.donorProfile.zipCode;
       _brandController.clear();
       _modelController.clear();
@@ -438,6 +483,17 @@ class _DmeDonateScreenState extends State<DmeDonateScreen> {
                   labelText: loc.t('dme.notesLabel'),
                   hintText: loc.t('dme.notesHint'),
                 ),
+              ),
+              const SizedBox(height: 20),
+              ListingPhotoPicker(
+                photos: _photos,
+                enabled: !_isSubmitting,
+                onUpload: ListingPhotoPublishHelper.upload,
+                onChanged: (photos) => setState(() {
+                  _photos
+                    ..clear()
+                    ..addAll(photos);
+                }),
               ),
               const SizedBox(height: 28),
               HandoffOptionPicker(

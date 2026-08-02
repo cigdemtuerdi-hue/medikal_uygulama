@@ -45,6 +45,7 @@ class ListingPhotoPicker extends StatefulWidget {
     required this.onUpload,
     this.maxPhotos = 5,
     this.enabled = true,
+    this.hintKey = 'photos.hint',
   });
 
   final List<ListingPhotoDraft> photos;
@@ -55,6 +56,9 @@ class ListingPhotoPicker extends StatefulWidget {
 
   final int maxPhotos;
   final bool enabled;
+
+  /// Localization key for the helper line under the title.
+  final String hintKey;
 
   @override
   State<ListingPhotoPicker> createState() => _ListingPhotoPickerState();
@@ -171,7 +175,7 @@ class _ListingPhotoPickerState extends State<ListingPhotoPicker> {
         ),
         const SizedBox(height: 2),
         Text(
-          loc.t('photos.hint'),
+          loc.t(widget.hintKey),
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 10),

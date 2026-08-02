@@ -7,11 +7,13 @@ import '../models/donation_models.dart';
 import '../models/urgent_need_models.dart';
 import '../models/wishlist_models.dart';
 import '../services/donation_service.dart';
+import '../services/listing_photo_publish_helper.dart';
 import '../services/onboarding_document_service.dart';
 import '../services/urgent_need_service.dart';
 import '../services/wishlist_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/document_upload_card.dart';
+import '../widgets/listing_photo_picker.dart';
 import '../widgets/request_tracking_card.dart';
 import '../widgets/urgent_need_badge.dart';
 import '../widgets/urgent_required_features.dart';
@@ -39,6 +41,8 @@ class _UrgentWishlistScreenState extends State<UrgentWishlistScreen> {
     DmeType? selectedType;
     String? verificationDocPath;
     String? featuresError;
+    final photos = <ListingPhotoDraft>[];
+    var submitting = false;
 
     final result = await showDialog<WishlistAddResult>(
       context: context,
@@ -73,24 +77,40 @@ class _UrgentWishlistScreenState extends State<UrgentWishlistScreen> {
                             ),
                           ),
                         ],
-                        onChanged: (value) {
-                          setLocal(() {
-                            selectedType = value;
-                            if (value != null &&
-                                labelController.text.trim().isEmpty) {
-                              labelController.text = locDmeType(loc, value);
-                            }
-                          });
-                        },
+                        onChanged: submitting
+                            ? null
+                            : (value) {
+                                setLocal(() {
+                                  selectedType = value;
+                                  if (value != null &&
+                                      labelController.text.trim().isEmpty) {
+                                    labelController.text =
+                                        locDmeType(loc, value);
+                                  }
+                                });
+                              },
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: labelController,
+                        enabled: !submitting,
                         decoration: InputDecoration(
                           labelText: loc.t('wishlist.itemLabel'),
                           hintText: loc.t('wishlist.itemHint'),
                         ),
                         autofocus: true,
+                      ),
+                      const SizedBox(height: 12),
+                      ListingPhotoPicker(
+                        photos: photos,
+                        enabled: !submitting,
+                        hintKey: 'photos.requestHint',
+                        onUpload: ListingPhotoPublishHelper.upload,
+                        onChanged: (next) => setLocal(() {
+                          photos
+                            ..clear()
+                            ..addAll(next);
+                        }),
                       ),
                       const SizedBox(height: 16),
                       UrgentRequiredFeaturesField(
@@ -143,34 +163,78 @@ class _UrgentWishlistScreenState extends State<UrgentWishlistScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed:
+                      submitting ? null : () => Navigator.pop(context),
                   child: Text(loc.t('common.cancel')),
                 ),
                 FilledButton(
-                  onPressed: () {
-                    if (featuresController.text.trim().isEmpty) {
-                      setLocal(
-                        () => featuresError = loc.t('urgent.featuresRequiredError'),
-                      );
-                      return;
-                    }
-                    final label = labelController.text.trim().isEmpty &&
-                            selectedType != null
-                        ? locDmeType(loc, selectedType!)
-                        : labelController.text;
-                    final outcome = WishlistService.instance.addEntry(
-                      label: label,
-                      dmeType: selectedType,
-                      queryText: labelController.text,
-                      isUrgentNeed: true,
-                      verificationDocPath: verificationDocPath,
-                      verificationDocLabel:
-                          documentService.fileLabel(verificationDocPath),
-                      requiredFeaturesDescription: featuresController.text,
-                    );
-                    Navigator.pop(context, outcome);
-                  },
-                  child: Text(loc.t('urgent.addUrgentRequest')),
+                  onPressed: submitting
+                      ? null
+                      : () async {
+                          if (featuresController.text.trim().isEmpty) {
+                            setLocal(
+                              () => featuresError =
+                                  loc.t('urgent.featuresRequiredError'),
+                            );
+                            return;
+                          }
+                          if (photos.any((p) => p.isPending)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(loc.t('photos.pending'))),
+                            );
+                            return;
+                          }
+                          if (photos.any((p) => p.error != null)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(loc.t('photos.failed'))),
+                            );
+                            return;
+                          }
+
+                          final label = labelController.text.trim().isEmpty &&
+                                  selectedType != null
+                              ? locDmeType(loc, selectedType!)
+                              : labelController.text;
+                          setLocal(() => submitting = true);
+
+                          final apiResult =
+                              await ListingPhotoPublishHelper.createIfSignedIn(
+                            title: label.trim(),
+                            category: selectedType?.name ?? 'other',
+                            description: featuresController.text.trim(),
+                            urgency: 'high',
+                            photos: ListingPhotoPublishHelper.uploadedPaths(
+                              photos,
+                            ),
+                          );
+
+                          if (!context.mounted) return;
+                          if (apiResult != null && !apiResult.success) {
+                            setLocal(() => submitting = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(apiResult.message)),
+                            );
+                            return;
+                          }
+
+                          final outcome = WishlistService.instance.addEntry(
+                            label: label,
+                            dmeType: selectedType,
+                            queryText: labelController.text,
+                            isUrgentNeed: true,
+                            verificationDocPath: verificationDocPath,
+                            verificationDocLabel:
+                                documentService.fileLabel(verificationDocPath),
+                            requiredFeaturesDescription:
+                                featuresController.text,
+                          );
+                          Navigator.pop(context, outcome);
+                        },
+                  child: Text(
+                    submitting
+                        ? loc.t('common.submitting')
+                        : loc.t('urgent.addUrgentRequest'),
+                  ),
                 ),
               ],
             );

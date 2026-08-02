@@ -65,6 +65,36 @@ Common failure:
 Health check: `https://medgift-us-api.onrender.com/api/health`  
 Look at `messaging.emailConfigured`.
 
+## Stripe Checkout (sales marketplace)
+
+Buyers pay the full listing price on MedGift’s Stripe account. The API records
+`commissionCents` / `sellerNetCents` (17%); Connect payouts can come later.
+
+1. Stripe Dashboard → **Developers → API keys** → copy **Secret key** (`sk_test_…` or `sk_live_…`).
+2. **Developers → Webhooks → Add endpoint**
+   - URL: `https://medgift-us-api.onrender.com/api/payments/webhook`
+   - Events: `checkout.session.completed`, `checkout.session.expired`
+   - Copy the **Signing secret** (`whsec_…`).
+3. Render → **medgift-us-api** → **Environment**:
+
+   | Key | Value |
+   |-----|--------|
+   | `STRIPE_SECRET_KEY` | `sk_…` |
+   | `STRIPE_WEBHOOK_SECRET` | `whsec_…` |
+   | `APP_ORIGIN` | `https://medgift.us` |
+
+4. Redeploy / restart. Health should show `"payments":{"stripeConfigured":true}`.
+5. Shop → **Buy** opens Stripe Checkout; success returns to `/shop/success`.
+
+Without these keys the API stays up; checkout returns `STRIPE_NOT_CONFIGURED` and the app falls back to a 48-hour hold.
+
+Local smoke (no Stripe key required):
+
+```bash
+cd server
+npm run check:payments
+```
+
 ## Option A — Render (recommended, free)
 
 1. Open [Render Dashboard](https://dashboard.render.com/) and sign in with GitHub.

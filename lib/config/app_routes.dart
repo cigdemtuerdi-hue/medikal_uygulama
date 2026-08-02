@@ -7,6 +7,7 @@ import '../screens/app_shell.dart';
 import '../screens/browse_listings_screen.dart';
 import '../screens/dme_donate_screen.dart';
 import '../screens/shop_screen.dart';
+import '../screens/shop_checkout_result_screen.dart';
 import '../screens/exchange_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/home_screen.dart';
@@ -148,6 +149,8 @@ class AppRoutes {
   static const myItems = '/my-items';
   static const browse = '/browse';
   static const shop = '/shop';
+  static const shopSuccess = '/shop/success';
+  static const shopCancel = '/shop/cancel';
   static const ngoPortal = '/ngo-portal';
   static const profile = '/profile';
   static const roleSelection = '/onboarding/role';
@@ -245,11 +248,40 @@ class AppRoutes {
   /// Resolves `/reset-password/:token` deep links from email.
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final name = settings.name ?? '';
+    final path = Uri.tryParse(name)?.path ?? name;
+    final q = {
+      ...Uri.base.queryParameters,
+      ...?(Uri.tryParse(name)?.queryParameters),
+    };
 
     if (name == admin || name == '$admin/') {
       return MaterialPageRoute<void>(
         settings: const RouteSettings(name: admin),
         builder: (_) => const AdminConsoleScreen(),
+      );
+    }
+
+    if (path == shopSuccess || path == '$shopSuccess/') {
+      return MaterialPageRoute<void>(
+        settings: const RouteSettings(name: shopSuccess),
+        builder: (_) => AiSupportHost(
+          child: ShopCheckoutResultScreen(
+            success: true,
+            sessionId: q['session_id'],
+          ),
+        ),
+      );
+    }
+
+    if (path == shopCancel || path == '$shopCancel/') {
+      return MaterialPageRoute<void>(
+        settings: const RouteSettings(name: shopCancel),
+        builder: (_) => AiSupportHost(
+          child: ShopCheckoutResultScreen(
+            success: false,
+            orderId: q['order_id'],
+          ),
+        ),
       );
     }
 
