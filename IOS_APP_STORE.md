@@ -2,7 +2,16 @@
 
 Bundle ID: `us.medgift.app`  
 Display name: **MedGift**  
-Version: see `pubspec.yaml` (`1.0.0+1`)
+Version: see `pubspec.yaml` (`1.0.0+2`)
+
+## Apple Developer / D-U-N-S contact (important)
+
+Company email used for Apple Developer Program enrollment and D-U-N-S:
+
+- **`info@medgift.com`**
+
+Watch this inbox (and spam) for Dun & Bradstreet + Apple enrollment mail.  
+Do not mix with `info@medgift.us` for this Apple account unless Apple asks to update it.
 
 ## Blocker on this Mac (right now)
 
