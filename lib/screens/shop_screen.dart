@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/donation_models.dart';
 import '../models/listing.dart';
 import '../services/ai_vision_service.dart';
@@ -11,8 +12,8 @@ import '../widgets/listing_photo_picker.dart';
 
 /// Paid equipment marketplace — browse sales, publish your own, request a buy.
 ///
-/// Stripe checkout is intentionally not here yet; "Satın al" places a 48-hour
-/// hold so the seller can complete the handoff offline until payments land.
+/// Stripe checkout is intentionally not here yet; buy places a 48-hour hold so
+/// the seller can complete the handoff offline until payments land.
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
 
@@ -44,10 +45,11 @@ class _ShopScreenState extends State<ShopScreen>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final token = AuthSessionService.instance.token;
     if (token == null || token.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Satış')),
+        appBar: AppBar(title: Text(loc.t('shop.appBarTitle'))),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -56,15 +58,15 @@ class _ShopScreenState extends State<ShopScreen>
               children: [
                 const Icon(Icons.lock_outline, size: 40),
                 const SizedBox(height: 12),
-                const Text(
-                  'Satış vitrinini görmek için giriş yapmanız gerekiyor.',
+                Text(
+                  loc.t('shop.loginRequired'),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: () =>
                       Navigator.of(context).pushReplacementNamed('/login'),
-                  child: const Text('Giriş yap'),
+                  child: Text(loc.t('auth.logIn')),
                 ),
               ],
             ),
@@ -75,19 +77,19 @@ class _ShopScreenState extends State<ShopScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Satış / Shop'),
+        title: Text(loc.t('shop.appBarTitle')),
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [
-            Tab(text: 'Alışveriş'),
-            Tab(text: 'İlanlarım'),
+          tabs: [
+            Tab(text: loc.t('shop.tabBrowse')),
+            Tab(text: loc.t('shop.tabMine')),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openCreateSheet(context),
         icon: const Icon(Icons.add),
-        label: const Text('Satış ilanı'),
+        label: Text(loc.t('shop.fabCreate')),
       ),
       body: TabBarView(
         controller: _tabs,
@@ -113,26 +115,36 @@ class _ShopScreenState extends State<ShopScreen>
   }
 }
 
-const _categories = <(String, String)>[
-  ('wheelchair', 'Tekerlekli sandalye'),
-  ('walker', 'Yürüteç'),
-  ('hospitalBed', 'Hasta yatağı'),
-  ('oxygenEquipment', 'Oksijen ekipmanı'),
-  ('nebulizer', 'Nebülizatör'),
-  ('commode', 'Klozet sandalyesi'),
-  ('showerChair', 'Duş sandalyesi'),
-  ('woundCare', 'Yara bakımı'),
-  ('other', 'Diğer'),
+const _categoryKeys = <String>[
+  'wheelchair',
+  'walker',
+  'hospitalBed',
+  'oxygenEquipment',
+  'nebulizer',
+  'commode',
+  'showerChair',
+  'woundCare',
+  'other',
 ];
 
-const _conditions = <(String, String)>[
-  ('new', 'Sıfır'),
-  ('likeNew', 'Sıfır ayarında'),
-  ('good', 'İyi'),
-  ('fair', 'Orta'),
-];
+const _conditionKeys = <String>['new', 'likeNew', 'good', 'fair'];
 
 const _commissionRate = 0.17;
+
+String _categoryLabel(AppLocalizations loc, String key) {
+  if (key == 'woundCare') return loc.t('shop.category.woundCare');
+  if (key == 'other') return loc.t('dme.type.other');
+  return loc.t('dme.type.$key');
+}
+
+String _conditionLabel(AppLocalizations loc, String key) =>
+    loc.t('shop.condition.$key');
+
+String _statusLabel(AppLocalizations loc, String status) {
+  final key = 'shop.status.$status';
+  final value = loc.t(key);
+  return value == key ? status : value;
+}
 
 // ---------------------------------------------------------------------------
 // Browse
@@ -162,23 +174,25 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
   }
 
   Future<void> _buy(Listing listing) async {
+    final loc = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Satın alma talebi'),
+        title: Text(loc.t('shop.purchaseTitle')),
         content: Text(
-          '${listing.title} — ${listing.priceLabel}\n\n'
-          'Online ödeme henüz açık değil. Talebiniz satıcıya iletilir ve '
-          'ilan 48 saat sizin için ayrılır.',
+          loc.t('shop.purchaseBody', {
+            'title': listing.title,
+            'price': listing.priceLabel,
+          }),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Vazgeç'),
+            child: Text(loc.t('common.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Talep gönder'),
+            child: Text(loc.t('shop.purchaseSend')),
           ),
         ],
       ),
@@ -198,6 +212,7 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _reload,
       child: FutureBuilder(
@@ -218,11 +233,9 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
           final listings = result.data ?? const <Listing>[];
           if (listings.isEmpty) {
             return ListView(
-              children: const [
-                SizedBox(height: 80),
-                Center(
-                  child: Text('Henüz satış ilanı yok. İlk siz ekleyin.'),
-                ),
+              children: [
+                const SizedBox(height: 80),
+                Center(child: Text(loc.t('shop.emptyBrowse'))),
               ],
             );
           }
@@ -234,7 +247,7 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
               final listing = listings[index];
               return _SaleCard(
                 listing: listing,
-                actionLabel: 'Satın al',
+                actionLabel: loc.t('shop.buy'),
                 onAction: () => _buy(listing),
               );
             },
@@ -287,6 +300,7 @@ class _ShopMineTabState extends State<_ShopMineTab> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _reload,
       child: FutureBuilder(
@@ -309,9 +323,9 @@ class _ShopMineTabState extends State<_ShopMineTab> {
               .toList(growable: false);
           if (sales.isEmpty) {
             return ListView(
-              children: const [
-                SizedBox(height: 80),
-                Center(child: Text('Henüz satış ilanınız yok.')),
+              children: [
+                const SizedBox(height: 80),
+                Center(child: Text(loc.t('shop.emptyMine'))),
               ],
             );
           }
@@ -324,8 +338,9 @@ class _ShopMineTabState extends State<_ShopMineTab> {
               return _SaleCard(
                 listing: listing,
                 showCommission: true,
-                actionLabel:
-                    listing.status == 'active' ? 'İlanı kaldır' : null,
+                actionLabel: listing.status == 'active'
+                    ? loc.t('shop.withdraw')
+                    : null,
                 onAction: listing.status == 'active'
                     ? () => _withdraw(listing)
                     : null,
@@ -358,6 +373,7 @@ class _SaleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     final photos = listing.displayPhotos;
 
     return Card(
@@ -404,18 +420,24 @@ class _SaleCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${listing.category} · ${listing.locationLabel}',
+              '${_categoryLabel(loc, listing.category)} · ${listing.locationLabel}',
               style: theme.textTheme.bodySmall,
             ),
             if (listing.description.isNotEmpty) ...[
               const SizedBox(height: 6),
-              Text(listing.description, maxLines: 3, overflow: TextOverflow.ellipsis),
+              Text(
+                listing.description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
             if (showCommission && listing.commissionCents != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Komisyon ${formatUsdCents(listing.commissionCents!)} · '
-                'Net ${formatUsdCents(listing.sellerNetCents ?? 0)}',
+                loc.t('shop.commissionNetLine', {
+                  'commission': formatUsdCents(listing.commissionCents!),
+                  'net': formatUsdCents(listing.sellerNetCents ?? 0),
+                }),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: AppTheme.primaryBlue,
                   fontWeight: FontWeight.w600,
@@ -424,7 +446,9 @@ class _SaleCard extends StatelessWidget {
             ],
             const SizedBox(height: 6),
             Text(
-              'Durum: ${listing.status}',
+              loc.t('shop.statusLine', {
+                'status': _statusLabel(loc, listing.status),
+              }),
               style: theme.textTheme.labelMedium,
             ),
             if (actionLabel != null && onAction != null) ...[
@@ -466,7 +490,7 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
   final _photos = <ListingPhotoDraft>[];
   final _ai = AiVisionService();
 
-  String _category = _categories.first.$1;
+  String _category = _categoryKeys.first;
   String? _condition = 'good';
   bool _submitting = false;
   bool _aiBusy = false;
@@ -503,8 +527,9 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
   }
 
   Future<void> _suggestWithAi() async {
+    final loc = AppLocalizations.of(context);
     if (_photos.isEmpty) {
-      _notify('Önce en az bir fotoğraf ekleyin.');
+      _notify(loc.t('shop.needPhotoFirst'));
       return;
     }
     setState(() {
@@ -527,10 +552,10 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
         _condition = _mapCondition(result.suggestedCondition.name);
         _price.text = result.estimatedRetailValueUsd.toStringAsFixed(2);
         _description.text = result.recommendation;
-        _aiHint =
-            'AI önerisi (güven ${(result.confidence * 100).round()}%). '
-            'Fiyatı ve metni yayından önce kontrol edin. '
-            'MedGift komisyonu %${(_commissionRate * 100).round()}.';
+        _aiHint = loc.t('shop.aiHint', {
+          'confidence': (result.confidence * 100).round(),
+          'percent': (_commissionRate * 100).round(),
+        });
       });
     } finally {
       if (mounted) setState(() => _aiBusy = false);
@@ -559,21 +584,22 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
   }
 
   Future<void> _submit() async {
+    final loc = AppLocalizations.of(context);
     if (_title.text.trim().isEmpty) {
-      _notify('Başlık zorunlu.');
+      _notify(loc.t('shop.titleRequired'));
       return;
     }
     final cents = _priceCents;
     if (cents == null) {
-      _notify('Geçerli bir satış fiyatı girin (en az \$1).');
+      _notify(loc.t('shop.priceRequired'));
       return;
     }
     if (_photos.any((p) => p.isPending)) {
-      _notify('Fotoğraflar hâlâ yükleniyor. Lütfen bekleyin.');
+      _notify(loc.t('shop.photosPending'));
       return;
     }
     if (_photos.any((p) => p.error != null)) {
-      _notify('Yüklenemeyen fotoğrafları kaldırın veya yeniden deneyin.');
+      _notify(loc.t('shop.photosFailed'));
       return;
     }
 
@@ -608,11 +634,13 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
     final cents = _priceCents;
     final commission =
         cents == null ? null : (cents * _commissionRate).round();
     final net = cents == null || commission == null ? null : cents - commission;
+    final percent = (_commissionRate * 100).round();
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottom),
@@ -622,13 +650,12 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Satış ilanı oluştur',
+              loc.t('shop.createTitle'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 4),
             Text(
-              'Her satışta MedGift %${(_commissionRate * 100).round()} '
-              'komisyon alır. Alıcı kişisel bilgilerinizi görmez.',
+              loc.t('shop.createSubtitle', {'percent': percent}),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
@@ -653,7 +680,7 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
                     )
                   : const Icon(Icons.auto_awesome),
               label: Text(
-                _aiBusy ? 'AI öneriyor…' : 'AI ile başlık / fiyat öner',
+                _aiBusy ? loc.t('shop.aiBusy') : loc.t('shop.aiSuggest'),
               ),
             ),
             if (_aiHint != null) ...[
@@ -668,22 +695,25 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
             const SizedBox(height: 12),
             TextField(
               controller: _title,
-              decoration: const InputDecoration(
-                labelText: 'Başlık',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: loc.t('shop.titleLabel'),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
               // ignore: deprecated_member_use
               value: _category,
-              decoration: const InputDecoration(
-                labelText: 'Kategori',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: loc.t('shop.categoryLabel'),
+                border: const OutlineInputBorder(),
               ),
               items: [
-                for (final entry in _categories)
-                  DropdownMenuItem(value: entry.$1, child: Text(entry.$2)),
+                for (final key in _categoryKeys)
+                  DropdownMenuItem(
+                    value: key,
+                    child: Text(_categoryLabel(loc, key)),
+                  ),
               ],
               onChanged: (value) {
                 if (value != null) setState(() => _category = value);
@@ -693,13 +723,16 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
             DropdownButtonFormField<String>(
               // ignore: deprecated_member_use
               value: _condition,
-              decoration: const InputDecoration(
-                labelText: 'Durum',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: loc.t('shop.conditionLabel'),
+                border: const OutlineInputBorder(),
               ),
               items: [
-                for (final entry in _conditions)
-                  DropdownMenuItem(value: entry.$1, child: Text(entry.$2)),
+                for (final key in _conditionKeys)
+                  DropdownMenuItem(
+                    value: key,
+                    child: Text(_conditionLabel(loc, key)),
+                  ),
               ],
               onChanged: (value) => setState(() => _condition = value),
             ),
@@ -711,10 +744,10 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
-              decoration: const InputDecoration(
-                labelText: 'Satış fiyatı (USD)',
-                prefixText: '\$ ',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: loc.t('shop.priceLabel'),
+                prefixText: r'$ ',
+                border: const OutlineInputBorder(),
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -729,18 +762,18 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
             const SizedBox(height: 10),
             TextField(
               controller: _sizeNote,
-              decoration: const InputDecoration(
-                labelText: 'Ölçü / özellik',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: loc.t('shop.sizeLabel'),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _description,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Açıklama',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: loc.t('shop.descriptionLabel'),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 10),
@@ -750,9 +783,9 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
                   flex: 3,
                   child: TextField(
                     controller: _city,
-                    decoration: const InputDecoration(
-                      labelText: 'Şehir',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: loc.t('shop.cityLabel'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
@@ -761,9 +794,9 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
                   child: TextField(
                     controller: _state,
                     maxLength: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Eyalet',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: loc.t('shop.stateLabel'),
+                      border: const OutlineInputBorder(),
                       counterText: '',
                     ),
                   ),
@@ -773,9 +806,9 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
                   flex: 2,
                   child: TextField(
                     controller: _postal,
-                    decoration: const InputDecoration(
-                      labelText: 'ZIP',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: loc.t('shop.zipLabel'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
@@ -784,7 +817,9 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _submitting ? null : _submit,
-              child: Text(_submitting ? 'Yayınlanıyor…' : 'Satışa çıkar'),
+              child: Text(
+                _submitting ? loc.t('shop.publishing') : loc.t('shop.publish'),
+              ),
             ),
           ],
         ),
@@ -807,6 +842,8 @@ class _CommissionPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
+    final percent = (_commissionRate * 100).round();
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -820,20 +857,24 @@ class _CommissionPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Komisyon özeti',
+            loc.t('shop.commissionSummary'),
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: AppTheme.primaryDeepBlue,
             ),
           ),
           const SizedBox(height: 6),
-          _row('Satış fiyatı', formatUsdCents(priceCents)),
+          _row(loc.t('shop.salePrice'), formatUsdCents(priceCents)),
           _row(
-            'MedGift komisyonu (%${(_commissionRate * 100).round()})',
+            loc.t('shop.commissionLine', {'percent': percent}),
             formatUsdCents(commissionCents),
           ),
           const Divider(height: 14),
-          _row('Size kalan', formatUsdCents(netCents), bold: true),
+          _row(
+            loc.t('shop.sellerNet'),
+            formatUsdCents(netCents),
+            bold: true,
+          ),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../config/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/listing_photo_compressor.dart';
 
 /// One photo the user has chosen, from pick through to upload.
@@ -68,6 +69,7 @@ class _ListingPhotoPickerState extends State<ListingPhotoPicker> {
       widget.photos.length < widget.maxPhotos;
 
   Future<void> _pick() async {
+    final loc = AppLocalizations.of(context);
     final remaining = widget.maxPhotos - widget.photos.length;
     if (remaining <= 0) return;
 
@@ -84,15 +86,17 @@ class _ListingPhotoPickerState extends State<ListingPhotoPicker> {
       final selected = result.files.take(remaining).toList();
       if (result.files.length > remaining) {
         _showMessage(
-          'En fazla ${widget.maxPhotos} görsel ekleyebilirsiniz. '
-          'İlk $remaining tanesi alındı.',
+          loc.t('photos.maxReached', {
+            'max': widget.maxPhotos,
+            'kept': remaining,
+          }),
         );
       }
 
       for (final file in selected) {
         final raw = file.bytes;
         if (raw == null) {
-          _showMessage('${file.name} okunamadı.');
+          _showMessage(loc.t('photos.readFailed', {'name': file.name}));
           continue;
         }
 
@@ -149,6 +153,7 @@ class _ListingPhotoPickerState extends State<ListingPhotoPicker> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     final count = widget.photos.length;
 
     return Column(
@@ -156,18 +161,17 @@ class _ListingPhotoPickerState extends State<ListingPhotoPicker> {
       children: [
         Row(
           children: [
-            Text('Fotoğraflar', style: theme.textTheme.titleSmall),
+            Text(loc.t('photos.title'), style: theme.textTheme.titleSmall),
             const Spacer(),
             Text(
-              '$count / ${widget.maxPhotos}',
+              loc.t('photos.count', {'count': count, 'max': widget.maxPhotos}),
               style: theme.textTheme.bodySmall,
             ),
           ],
         ),
         const SizedBox(height: 2),
         Text(
-          'İlk fotoğraf kapak görseli olarak kullanılır. Ekipmanın genel '
-          'görünümünü, varsa hasarlı kısımları ve model etiketini çekin.',
+          loc.t('photos.hint'),
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 10),
@@ -214,12 +218,15 @@ class _PhotoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final failed = draft.error != null;
 
     return Semantics(
       label: failed
-          ? 'Yüklenemeyen fotoğraf'
-          : (isCover ? 'Kapak fotoğrafı' : 'Fotoğraf'),
+          ? loc.t('photos.failedSemantic')
+          : (isCover
+              ? loc.t('photos.coverSemantic')
+              : loc.t('photos.photoSemantic')),
       child: SizedBox(
         width: _tileSize,
         height: _tileSize,
@@ -263,10 +270,10 @@ class _PhotoTile extends StatelessWidget {
                       bottomRight: Radius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    'Kapak',
+                  child: Text(
+                    loc.t('photos.cover'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 11),
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
                   ),
                 ),
               ),
@@ -275,7 +282,7 @@ class _PhotoTile extends StatelessWidget {
               right: -6,
               child: IconButton(
                 iconSize: 18,
-                tooltip: 'Kaldır',
+                tooltip: loc.t('photos.remove'),
                 onPressed: enabled ? onRemove : null,
                 icon: const CircleAvatar(
                   radius: 11,
@@ -298,6 +305,7 @@ class _FailedOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.errorContainer.withValues(
@@ -307,7 +315,7 @@ class _FailedOverlay extends StatelessWidget {
       ),
       child: Center(
         child: IconButton(
-          tooltip: 'Yeniden dene',
+          tooltip: loc.t('photos.retry'),
           onPressed: onRetry,
           icon: const Icon(Icons.refresh, size: 20),
         ),
@@ -325,6 +333,7 @@ class _AddPhotoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     return SizedBox(
       width: _tileSize,
       height: _tileSize,
@@ -349,7 +358,10 @@ class _AddPhotoTile extends StatelessWidget {
                         color: theme.colorScheme.primary,
                       ),
                       const SizedBox(height: 4),
-                      Text('Ekle', style: theme.textTheme.labelSmall),
+                      Text(
+                        loc.t('photos.add'),
+                        style: theme.textTheme.labelSmall,
+                      ),
                     ],
                   ),
           ),
