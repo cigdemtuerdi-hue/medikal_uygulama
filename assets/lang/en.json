@@ -829,5 +829,6 @@
   "photos.pending": "Photos are still uploading. Please wait.",
   "photos.failed": "Remove or retry failed photo uploads.",
   "photos.requestHint": "Optional: add up to 5 photos that show the equipment you need, or a similar example.",
-  "photos.loginToUpload": "Sign in to upload photos with your listing."
+  "photos.loginToUpload": "Sign in to upload photos with your listing.",
+  "photos.addSlot": "Add {n}"
 }

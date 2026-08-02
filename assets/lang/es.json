@@ -829,5 +829,6 @@
   "photos.pending": "Las fotos aún se están subiendo. Espere.",
   "photos.failed": "Elimine o reintente las fotos que fallaron.",
   "photos.requestHint": "Opcional: añada hasta 5 fotos del equipo que necesita o un ejemplo similar.",
-  "photos.loginToUpload": "Inicie sesión para subir fotos con su anuncio."
+  "photos.loginToUpload": "Inicie sesión para subir fotos con su anuncio.",
+  "photos.addSlot": "Añadir {n}"
 }

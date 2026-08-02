@@ -183,19 +183,21 @@ class _ListingPhotoPickerState extends State<ListingPhotoPicker> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (var i = 0; i < widget.photos.length; i++)
-              _PhotoTile(
-                draft: widget.photos[i],
-                isCover: i == 0,
-                enabled: widget.enabled,
-                onRemove: () => _remove(widget.photos[i]),
-                onRetry: () => _retry(widget.photos[i]),
-              ),
-            if (count < widget.maxPhotos)
-              _AddPhotoTile(
-                busy: _picking,
-                onTap: _canAddMore ? _pick : null,
-              ),
+            for (var i = 0; i < widget.maxPhotos; i++)
+              if (i < widget.photos.length)
+                _PhotoTile(
+                  draft: widget.photos[i],
+                  isCover: i == 0,
+                  enabled: widget.enabled,
+                  onRemove: () => _remove(widget.photos[i]),
+                  onRetry: () => _retry(widget.photos[i]),
+                )
+              else
+                _AddPhotoTile(
+                  slot: i + 1,
+                  busy: _picking && i == count,
+                  onTap: _canAddMore ? _pick : null,
+                ),
           ],
         ),
       ],
@@ -329,8 +331,13 @@ class _FailedOverlay extends StatelessWidget {
 }
 
 class _AddPhotoTile extends StatelessWidget {
-  const _AddPhotoTile({required this.busy, required this.onTap});
+  const _AddPhotoTile({
+    required this.slot,
+    required this.busy,
+    required this.onTap,
+  });
 
+  final int slot;
   final bool busy;
   final VoidCallback? onTap;
 
@@ -338,12 +345,19 @@ class _AddPhotoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context);
+    final label = loc.t('photos.addSlot', {'n': slot});
     return SizedBox(
       width: _tileSize,
       height: _tileSize,
       child: Material(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(
+            color: theme.colorScheme.outlineVariant,
+            style: BorderStyle.solid,
+          ),
+        ),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(10),
@@ -363,8 +377,9 @@ class _AddPhotoTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        loc.t('photos.add'),
+                        label,
                         style: theme.textTheme.labelSmall,
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),

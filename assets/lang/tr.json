@@ -829,5 +829,6 @@
   "photos.pending": "Fotoğraflar hâlâ yükleniyor. Lütfen bekleyin.",
   "photos.failed": "Yüklenemeyen fotoğrafları kaldırın veya yeniden deneyin.",
   "photos.requestHint": "İsteğe bağlı: ihtiyacınız olan ekipmanı veya benzer bir örneği gösteren en fazla 5 fotoğraf ekleyin.",
-  "photos.loginToUpload": "İlanınıza fotoğraf yüklemek için giriş yapın."
+  "photos.loginToUpload": "İlanınıza fotoğraf yüklemek için giriş yapın.",
+  "photos.addSlot": "Ekle {n}"
 }
