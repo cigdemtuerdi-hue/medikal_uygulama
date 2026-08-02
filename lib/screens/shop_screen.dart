@@ -76,6 +76,17 @@ class _ShopScreenState extends State<ShopScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.t('shop.appBarTitle')),
+        actions: [
+          // App bar (not a bottom FAB) so MeGi stays clear at bottom-right.
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: () => _openCreateSheet(context),
+              icon: const Icon(Icons.add),
+              label: Text(loc.t('shop.fabCreate')),
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabs,
           tabs: [
@@ -83,11 +94,6 @@ class _ShopScreenState extends State<ShopScreen>
             Tab(text: loc.t('shop.tabMine')),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openCreateSheet(context),
-        icon: const Icon(Icons.add),
-        label: Text(loc.t('shop.fabCreate')),
       ),
       body: TabBarView(
         controller: _tabs,

@@ -73,8 +73,11 @@ class HomeScreen extends StatelessWidget {
                   const BrowseEquipmentEntryCard(),
                   const SizedBox(height: 16),
                 ],
-                const SalesEntryCard(),
-                const SizedBox(height: 16),
+                // Fallback when Quick Actions are hidden in CMS.
+                if (!f.showQuickActions) ...[
+                  const SalesEntryCard(),
+                  const SizedBox(height: 16),
+                ],
                 if (f.showPassItOnEntry) ...[
                   const PassItOnEntryCard(),
                   const SizedBox(height: 24),
@@ -186,7 +189,20 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // Keep Sale with other CTAs — not a bottom FAB over MeGi.
+                      FilledButton.tonalIcon(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRoutes.shop);
+                        },
+                        icon: const Icon(Icons.storefront_outlined),
+                        label: Text(loc.t('shop.entryTitle')),
+                      ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    loc.t('shop.entryBody'),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 32),
                 ],
