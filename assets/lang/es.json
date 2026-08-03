@@ -808,7 +808,7 @@
   "shop.category.woundCare": "Cuidado de heridas",
   "photos.title": "Fotos",
   "photos.count": "{count} / {max}",
-  "photos.hint": "La primera foto se usa como portada. Muestre el equipo completo, daños si hay y la etiqueta del modelo.",
+  "photos.hint": "Se requiere al menos una foto. La primera se usa como portada. Muestre el equipo completo, daños si hay y la etiqueta del modelo.",
   "photos.add": "Añadir",
   "photos.cover": "Portada",
   "photos.remove": "Quitar",
@@ -828,7 +828,8 @@
   "shop.backToShop": "Volver a la tienda",
   "photos.pending": "Las fotos aún se están subiendo. Espere.",
   "photos.failed": "Elimine o reintente las fotos que fallaron.",
-  "photos.requestHint": "Opcional: añada hasta 5 fotos del equipo que necesita o un ejemplo similar.",
+  "photos.requestHint": "Añada al menos 1 foto (hasta 5) del equipo que necesita o un ejemplo similar.",
   "photos.loginToUpload": "Inicie sesión para subir fotos con su anuncio.",
-  "photos.addSlot": "Añadir {n}"
+  "photos.addSlot": "Añadir {n}",
+  "photos.required": "Añada al menos una foto antes de publicar."
 }

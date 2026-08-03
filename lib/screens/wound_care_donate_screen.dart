@@ -127,6 +127,12 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
       );
       return;
     }
+    if (!ListingPhotoPublishHelper.hasUploadedPhoto(_photos)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.t('photos.required'))),
+      );
+      return;
+    }
 
     if (_fdaResult.status == FdaSafetyStatus.checking ||
         _fdaResult.status == FdaSafetyStatus.idle) {

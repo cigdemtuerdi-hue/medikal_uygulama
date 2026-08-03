@@ -808,7 +808,7 @@
   "shop.category.woundCare": "Yara bakımı",
   "photos.title": "Fotoğraflar",
   "photos.count": "{count} / {max}",
-  "photos.hint": "İlk fotoğraf kapak görseli olarak kullanılır. Ekipmanın genel görünümünü, varsa hasarlı kısımları ve model etiketini çekin.",
+  "photos.hint": "En az bir fotoğraf zorunludur. İlk fotoğraf kapak görseli olarak kullanılır. Ekipmanın genel görünümünü, varsa hasarlı kısımları ve model etiketini çekin.",
   "photos.add": "Ekle",
   "photos.cover": "Kapak",
   "photos.remove": "Kaldır",
@@ -828,7 +828,8 @@
   "shop.backToShop": "Mağazaya dön",
   "photos.pending": "Fotoğraflar hâlâ yükleniyor. Lütfen bekleyin.",
   "photos.failed": "Yüklenemeyen fotoğrafları kaldırın veya yeniden deneyin.",
-  "photos.requestHint": "İsteğe bağlı: ihtiyacınız olan ekipmanı veya benzer bir örneği gösteren en fazla 5 fotoğraf ekleyin.",
+  "photos.requestHint": "İhtiyacınız olan ekipmanı veya benzer bir örneği gösteren en az 1 (en fazla 5) fotoğraf ekleyin.",
   "photos.loginToUpload": "İlanınıza fotoğraf yüklemek için giriş yapın.",
-  "photos.addSlot": "Ekle {n}"
+  "photos.addSlot": "Ekle {n}",
+  "photos.required": "Yayınlamadan önce en az bir fotoğraf ekleyin."
 }

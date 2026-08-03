@@ -66,6 +66,23 @@ async function main() {
   check('seller signed up', Boolean(sellerToken));
   check('buyer signed up', Boolean(buyerToken));
 
+  const photoRes = await fetch(`${BASE}/api/uploads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'image/jpeg',
+      Authorization: `Bearer ${sellerToken}`,
+    },
+    body: Buffer.concat([
+      Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
+      Buffer.from('JFIF\0'),
+      Buffer.alloc(64, 0x20),
+      Buffer.from([0xff, 0xd9]),
+    ]),
+  });
+  const photoJson = await photoRes.json().catch(() => null);
+  const sellerPhoto = photoJson?.url || null;
+  check('seller uploaded a photo', Boolean(sellerPhoto), sellerPhoto);
+
   const created = await call('POST', '/api/listings', {
     token: sellerToken,
     body: {
@@ -78,6 +95,7 @@ async function main() {
       state: 'TX',
       postalCode: '78701',
       description: 'Smoke-test sale listing',
+      photos: [sellerPhoto],
     },
   });
   check('sale listing created', created.status === 201, `got ${created.status}`);

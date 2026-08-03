@@ -808,7 +808,7 @@
   "shop.category.woundCare": "Wound care",
   "photos.title": "Photos",
   "photos.count": "{count} / {max}",
-  "photos.hint": "The first photo is used as the cover. Show the overall equipment, any damage, and the model label.",
+  "photos.hint": "At least one photo is required. The first photo is used as the cover. Show the overall equipment, any damage, and the model label.",
   "photos.add": "Add",
   "photos.cover": "Cover",
   "photos.remove": "Remove",
@@ -828,7 +828,8 @@
   "shop.backToShop": "Back to shop",
   "photos.pending": "Photos are still uploading. Please wait.",
   "photos.failed": "Remove or retry failed photo uploads.",
-  "photos.requestHint": "Optional: add up to 5 photos that show the equipment you need, or a similar example.",
+  "photos.requestHint": "Add at least 1 photo (up to 5) that shows the equipment you need, or a similar example.",
   "photos.loginToUpload": "Sign in to upload photos with your listing.",
-  "photos.addSlot": "Add {n}"
+  "photos.addSlot": "Add {n}",
+  "photos.required": "Add at least one photo before publishing."
 }

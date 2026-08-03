@@ -237,6 +237,13 @@ async function create(req, res, next) {
     const urgency = clampText(req.body?.urgency, 10);
     const quantityRaw = Number(req.body?.quantity);
     const photos = await sanitizePhotos(req.body?.photos ?? req.body?.photoUrl);
+    if (photos.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'En az bir fotoğraf zorunludur.',
+        code: 'PHOTO_REQUIRED',
+      });
+    }
 
     const created = await createListing({
       kind,

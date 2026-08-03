@@ -951,6 +951,10 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
       _notify(loc.t('photos.failed'));
       return;
     }
+    if (!ListingPhotoPublishHelper.hasUploadedPhoto(_photos)) {
+      _notify(loc.t('photos.required'));
+      return;
+    }
 
     setState(() => _submitting = true);
     final result = await ListingApiService.instance.create(
