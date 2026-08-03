@@ -2,10 +2,13 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../config/app_config.dart';
 import '../models/us_address_models.dart';
 
 /// Free US ZIP → city/state lookup for any valid 5-digit postal code.
-/// Works without a Google API key (https://api.zippopotam.us).
+///
+/// Prefers MedGift's `/api/geo/zip/:zip` proxy (same-origin friendly on web),
+/// then falls back to Zippopotam directly.
 class UsZipLookupService {
   UsZipLookupService._();
 
@@ -34,9 +37,43 @@ class UsZipLookupService {
       return null;
     }
 
+    final fromApi = await _lookupViaMedGiftApi(normalized);
+    if (fromApi != null) return fromApi;
+
+    return _lookupViaZippopotam(normalized);
+  }
+
+  Future<_ZipData?> _lookupViaMedGiftApi(String zip) async {
+    try {
+      final base = AppConfig.apiBaseUrl.replaceAll(RegExp(r'/$'), '');
+      if (base.isEmpty) return null;
+      final response = await http
+          .get(Uri.parse('$base/api/geo/zip/$zip'))
+          .timeout(const Duration(seconds: 6));
+      if (response.statusCode != 200) return null;
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      if (data['success'] != true) return null;
+      final city = (data['city'] as String?)?.trim() ?? '';
+      final state = (data['state'] as String?)?.trim() ?? '';
+      final lat = (data['lat'] as num?)?.toDouble();
+      final lng = (data['lng'] as num?)?.toDouble();
+      if (city.isEmpty || state.isEmpty) return null;
+      return _ZipData(
+        zipCode: zip,
+        city: city,
+        state: state,
+        lat: lat ?? 0,
+        lng: lng ?? 0,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<_ZipData?> _lookupViaZippopotam(String zip) async {
     try {
       final response = await http
-          .get(Uri.parse('https://api.zippopotam.us/us/$normalized'))
+          .get(Uri.parse('https://api.zippopotam.us/us/$zip'))
           .timeout(const Duration(seconds: 6));
 
       if (response.statusCode != 200) return null;
@@ -55,7 +92,7 @@ class UsZipLookupService {
       }
 
       return _ZipData(
-        zipCode: normalized,
+        zipCode: zip,
         city: city,
         state: state,
         lat: lat,
