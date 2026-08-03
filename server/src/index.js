@@ -123,6 +123,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/compliance', require('./routes/compliance'));
 app.use('/api/health-records', require('./routes/healthRecords'));
+app.use('/api/geo', require('./routes/geo'));
 app.use('/api/listings', require('./routes/listings'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/orders', require('./routes/payments'));
