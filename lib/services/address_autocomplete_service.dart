@@ -25,6 +25,16 @@ class AddressAutocompleteService {
     }
 
     final offline = UsOfflineAddressCatalog.search(trimmed);
+    final digitsOnly = int.tryParse(trimmed) != null;
+
+    // ZIP / ZIP-prefix typing should never wait on Google Places — the offline
+    // catalog (and Zippopotam at 5 digits) already answers instantly, and Places
+    // frequently hangs or returns empty inside modal sheets on web.
+    if (digitsOnly && trimmed.length >= 2 && offline.isNotEmpty) {
+      return AddressSearchResult(
+        suggestions: UsAddressFilter.onlyUnitedStates(offline),
+      );
+    }
 
     if (!_lookup.isAvailable) {
       return AddressSearchResult(
