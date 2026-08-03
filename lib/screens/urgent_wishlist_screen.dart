@@ -190,6 +190,16 @@ class _UrgentWishlistScreenState extends State<UrgentWishlistScreen> {
                             );
                             return;
                           }
+                          if (!ListingPhotoPublishHelper.hasUploadedPhoto(
+                            photos,
+                          )) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(loc.t('photos.required')),
+                              ),
+                            );
+                            return;
+                          }
 
                           final label = labelController.text.trim().isEmpty &&
                                   selectedType != null

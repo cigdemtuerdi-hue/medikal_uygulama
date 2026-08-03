@@ -9,6 +9,7 @@ import '../models/listing.dart';
 import '../services/ai_vision_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/listing_api_service.dart';
+import '../services/listing_photo_publish_helper.dart';
 import '../widgets/listing_photo_picker.dart';
 
 /// Paid equipment marketplace — browse sales, publish your own, buy via Stripe.
@@ -630,6 +631,10 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
     }
     if (_photos.any((p) => p.error != null)) {
       _notify(loc.t('shop.photosFailed'));
+      return;
+    }
+    if (!ListingPhotoPublishHelper.hasUploadedPhoto(_photos)) {
+      _notify(loc.t('photos.required'));
       return;
     }
 

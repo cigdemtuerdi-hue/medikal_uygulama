@@ -26,6 +26,11 @@ class ListingPhotoPublishHelper {
     ];
   }
 
+  /// True when at least one photo finished uploading successfully.
+  static bool hasUploadedPhoto(List<ListingPhotoDraft> photos) {
+    return uploadedPaths(photos).isNotEmpty;
+  }
+
   static Future<String> upload(ListingPhotoDraft draft) async {
     final result = await ListingApiService.instance.uploadPhoto(
       bytes: draft.bytes,

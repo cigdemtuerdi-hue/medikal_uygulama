@@ -808,7 +808,7 @@
   "shop.category.woundCare": "伤口护理",
   "photos.title": "照片",
   "photos.count": "{count} / {max}",
-  "photos.hint": "第一张照片用作封面。请拍摄设备全貌、损坏处及型号标签。",
+  "photos.hint": "至少需要一张照片。第一张用作封面。请拍摄设备全貌、损坏处及型号标签。",
   "photos.add": "添加",
   "photos.cover": "封面",
   "photos.remove": "移除",
@@ -828,7 +828,8 @@
   "shop.backToShop": "返回商店",
   "photos.pending": "照片仍在上传中。请稍候。",
   "photos.failed": "请删除或重试上传失败的照片。",
-  "photos.requestHint": "可选：最多添加 5 张照片，展示您需要的设备或类似示例。",
+  "photos.requestHint": "请至少添加 1 张（最多 5 张）照片，展示您需要的设备或类似示例。",
   "photos.loginToUpload": "请登录后再为您的信息上传照片。",
-  "photos.addSlot": "添加 {n}"
+  "photos.addSlot": "添加 {n}",
+  "photos.required": "发布前请至少添加一张照片。"
 }

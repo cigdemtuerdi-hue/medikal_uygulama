@@ -59,6 +59,34 @@ async function register(role) {
   };
 }
 
+function fakeJpeg(padding = 64) {
+  return Buffer.concat([
+    Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
+    Buffer.from('JFIF\0'),
+    Buffer.alloc(padding, 0x20),
+    Buffer.from([0xff, 0xd9]),
+  ]);
+}
+
+async function uploadPhoto(token) {
+  const res = await fetch(`${BASE}/api/uploads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'image/jpeg',
+      Authorization: `Bearer ${token}`,
+    },
+    body: fakeJpeg(),
+  });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch (_) {
+    json = null;
+  }
+  return json?.url || null;
+}
+
 async function main() {
   console.log(`Testing ${BASE}\n`);
 
@@ -68,6 +96,9 @@ async function main() {
   check('seller registered', Boolean(seller.token), String(seller.status));
   check('buyer registered', Boolean(buyer.token), String(buyer.status));
   if (!seller.token || !buyer.token) process.exit(1);
+
+  const sellerPhoto = await uploadPhoto(seller.token);
+  check('seller uploaded a photo', Boolean(sellerPhoto), sellerPhoto);
 
   console.log('\ncreate sale');
   const created = await call('POST', '/api/listings', {
@@ -82,6 +113,7 @@ async function main() {
       city: 'Austin',
       state: 'TX',
       postalCode: '78701',
+      photos: [sellerPhoto],
     },
   });
   check('sale created', created.status === 201, String(created.status));
@@ -97,9 +129,21 @@ async function main() {
       kind: 'sale',
       title: 'No price',
       category: 'walker',
+      photos: [sellerPhoto],
     },
   });
   check('price required', noPrice.status === 400, String(noPrice.status));
+
+  const noPhoto = await call('POST', '/api/listings', {
+    token: seller.token,
+    body: {
+      kind: 'sale',
+      title: 'No photo',
+      category: 'walker',
+      priceCents: 5000,
+    },
+  });
+  check('photo required', noPhoto.status === 400, String(noPhoto.status));
 
   console.log('\nshop browse');
   const shop = await call('GET', '/api/listings/shop', { token: buyer.token });
@@ -140,6 +184,7 @@ async function main() {
       title: 'Self buy test',
       category: 'walker',
       priceCents: 5000,
+      photos: [sellerPhoto],
     },
   });
   const self = await call('POST', `/api/listings/${own.json?.listing?.id}/purchase`, {

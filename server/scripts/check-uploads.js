@@ -186,9 +186,22 @@ async function main() {
     },
   });
   check(
-    'external and unknown photo paths are dropped',
-    forged.json?.listing?.photos?.length === 0,
-    JSON.stringify(forged.json?.listing?.photos),
+    'listings with only invalid photos are rejected',
+    forged.status === 400 && forged.json?.code === 'PHOTO_REQUIRED',
+    `got ${forged.status} ${forged.json?.code}`,
+  );
+
+  const missingPhotos = await call('POST', '/api/listings', {
+    token: donorToken,
+    body: {
+      title: 'Fotosuz ilan',
+      category: 'walker',
+    },
+  });
+  check(
+    'listings without photos are rejected',
+    missingPhotos.status === 400 && missingPhotos.json?.code === 'PHOTO_REQUIRED',
+    `got ${missingPhotos.status} ${missingPhotos.json?.code}`,
   );
 
   console.log('\nduplicates');

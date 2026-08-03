@@ -49,6 +49,29 @@ async function signUp(email, role) {
   return res.json?.token;
 }
 
+/** Smallest structurally valid JPEG: SOI, APP0/JFIF, EOI. */
+function fakeJpeg(padding = 64) {
+  return Buffer.concat([
+    Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
+    Buffer.from('JFIF\0'),
+    Buffer.alloc(padding, 0x20),
+    Buffer.from([0xff, 0xd9]),
+  ]);
+}
+
+async function uploadPhoto(token) {
+  const res = await fetch(`${BASE}/api/uploads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'image/jpeg',
+      Authorization: `Bearer ${token}`,
+    },
+    body: fakeJpeg(),
+  });
+  const json = await res.json().catch(() => null);
+  return json?.url || null;
+}
+
 async function main() {
   console.log(`Testing ${BASE}`);
 
@@ -60,6 +83,15 @@ async function main() {
   );
   check('register returns a session token for donor', Boolean(donorToken));
   check('register returns a session token for recipient', Boolean(recipientToken));
+
+  const donorPhoto = await uploadPhoto(donorToken);
+  const recipientPhoto = await uploadPhoto(recipientToken);
+  check('donor can upload a listing photo', Boolean(donorPhoto), donorPhoto);
+  check(
+    'recipient can upload a listing photo',
+    Boolean(recipientPhoto),
+    recipientPhoto,
+  );
 
   console.log('\nlistings require a session');
   const anon = await call('GET', '/api/listings/browse');
@@ -85,13 +117,19 @@ async function main() {
       city: 'Austin',
       state: 'TX',
       postalCode: '78701',
+      photos: [donorPhoto],
     },
   });
   check('donor can publish an offer', offer.status === 201, `got ${offer.status}`);
 
   const badKind = await call('POST', '/api/listings', {
     token: donorToken,
-    body: { kind: 'request', title: 'Need a bed', category: 'hospitalBed' },
+    body: {
+      kind: 'request',
+      title: 'Need a bed',
+      category: 'hospitalBed',
+      photos: [donorPhoto],
+    },
   });
   check(
     'donor cannot publish a request',
@@ -109,12 +147,29 @@ async function main() {
       city: 'Austin',
       state: 'TX',
       postalCode: '78704',
+      photos: [recipientPhoto],
     },
   });
   check(
     'recipient can publish a request',
     request.status === 201,
     `got ${request.status}`,
+  );
+
+  const noPhoto = await call('POST', '/api/listings', {
+    token: donorToken,
+    body: {
+      title: 'Missing photo offer',
+      category: 'walker',
+      city: 'Austin',
+      state: 'TX',
+      postalCode: '78701',
+    },
+  });
+  check(
+    'offer without photos is rejected',
+    noPhoto.status === 400 && noPhoto.json?.code === 'PHOTO_REQUIRED',
+    `got ${noPhoto.status} ${noPhoto.json?.code}`,
   );
 
   console.log('\nprivacy');
