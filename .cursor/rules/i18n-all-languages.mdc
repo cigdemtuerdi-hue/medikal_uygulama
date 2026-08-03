@@ -1,0 +1,36 @@
+---
+description: Every user-facing UI string must ship in all site languages
+alwaysApply: true
+---
+
+# Multilingual UI is mandatory
+
+Do **not** wait for the user to ask. Any change that adds or changes user-visible text must be localized before the task is considered done.
+
+## Languages (all required)
+
+`en`, `es`, `tr`, `zh`, `ru`, `ar`, `ug` — files under [`assets/lang/`](assets/lang/).
+
+## Rules
+
+1. **No hardcoded UI copy** in Dart widgets/screens (Turkish, English, or other). Use `AppLocalizations.of(context).t('key')` / `loc.t('key', {…})`.
+2. **Add the same keys to every** `assets/lang/<code>.json` in the same change. Missing a language = incomplete work.
+3. Prefer existing keys (`dme.type.*`, `common.cancel`, `auth.logIn`, …) before inventing new ones.
+4. Placeholders use `{name}` and `loc.t('key', {'name': value})`.
+5. Server/API error `message` strings may stay Turkish for now; prefer stable `code` fields clients can map later. Do not leave new Flutter UI on API Turkish alone.
+6. Before finishing: key parity across all seven JSON files, and wire the UI to `loc.t`.
+
+## Example
+
+```dart
+// BAD
+Text('Satış ilanı oluştur')
+
+// GOOD
+Text(loc.t('shop.createTitle'))
+```
+
+```json
+// assets/lang/en.json AND tr/es/zh/ru/ar/ug.json — same key in all
+"shop.createTitle": "Create sale listing"
+```
