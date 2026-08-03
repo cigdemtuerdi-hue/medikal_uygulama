@@ -21,6 +21,7 @@ import '../widgets/handoff_option_badge.dart';
 import '../widgets/liability_waiver_widgets.dart';
 import '../widgets/listing_created_dialog.dart';
 import '../widgets/listing_photo_picker.dart';
+import '../widgets/us_address_autocomplete_field.dart';
 import '../widgets/urgent_need_badge.dart';
 import '../widgets/urgent_required_features.dart';
 
@@ -377,13 +378,14 @@ class _WoundCareDonateScreenState extends State<WoundCareDonateScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: UsAddressAutocompleteField(
                       controller: _zipController,
-                      decoration: InputDecoration(
-                        labelText: loc.t('common.pickupZip'),
-                      ),
+                      labelText: loc.t('common.pickupZip'),
+                      hintText: loc.t('dme.zipHint'),
+                      displayZipOnlyOnSelect: true,
                       validator: (value) {
-                        if (value == null || value.length != 5) {
+                        final zip = value?.trim() ?? '';
+                        if (zip.length != 5 || int.tryParse(zip) == null) {
                           return loc.t('common.zipValidation');
                         }
                         return null;

@@ -10,6 +10,7 @@ import '../services/ai_vision_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/listing_api_service.dart';
 import '../services/listing_photo_publish_helper.dart';
+import '../widgets/listing_location_fields.dart';
 import '../widgets/listing_photo_picker.dart';
 
 /// Paid equipment marketplace — browse sales, publish your own, buy via Stripe.
@@ -812,42 +813,11 @@ class _CreateSaleSheetState extends State<_CreateSaleSheet> {
               ),
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _city,
-                    decoration: InputDecoration(
-                      labelText: loc.t('shop.cityLabel'),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _state,
-                    maxLength: 2,
-                    decoration: InputDecoration(
-                      labelText: loc.t('shop.stateLabel'),
-                      border: const OutlineInputBorder(),
-                      counterText: '',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _postal,
-                    decoration: InputDecoration(
-                      labelText: loc.t('shop.zipLabel'),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
+            ListingLocationFields(
+              cityController: _city,
+              stateController: _state,
+              postalController: _postal,
+              enabled: !_submitting,
             ),
             const SizedBox(height: 16),
             FilledButton(

@@ -8,6 +8,7 @@ import '../services/auth_session_service.dart';
 import '../services/listing_api_service.dart';
 import '../services/listing_photo_publish_helper.dart';
 import '../services/onboarding_service.dart';
+import '../widgets/listing_location_fields.dart';
 import '../widgets/listing_photo_picker.dart';
 
 /// Counterpart browse + matching surface.
@@ -1092,42 +1093,11 @@ class _CreateListingSheetState extends State<_CreateListingSheet> {
               ),
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _city,
-                    decoration: const InputDecoration(
-                      labelText: 'Şehir',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _state,
-                    maxLength: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Eyalet',
-                      border: OutlineInputBorder(),
-                      counterText: '',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _postal,
-                    decoration: const InputDecoration(
-                      labelText: 'ZIP',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
+            ListingLocationFields(
+              cityController: _city,
+              stateController: _state,
+              postalController: _postal,
+              enabled: !_submitting,
             ),
             const SizedBox(height: 16),
             FilledButton(
