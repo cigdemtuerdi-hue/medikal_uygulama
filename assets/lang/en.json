@@ -92,6 +92,8 @@
   "language.russian": "Русский",
   "language.arabic": "العربية",
   "language.uyghur": "ئۇيغۇرچە",
+  "language.french": "Français",
+  "language.german": "Deutsch",
   "compliance.banner": "US Compliance: Do not share PHI. Only donate clean, safe items. 501(c)(3) tax receipts available for qualifying nonprofits.",
   "partner.title": "Partner with Us",
   "partner.subtitle": "Partner with Us: Interested in sponsorship or collaboration? Reach out to our team.",
@@ -730,7 +732,7 @@
   "aiSupport.reply.profile": "Profile is your hub: edit address/photo, wishlist, receipts, Instant Match alerts, impact cards, and privacy links. Wrong ZIP from autocomplete? Edit Profile and set city/ZIP carefully. Empty donation stats usually means no completed listings/handoffs yet. Photo upload failing? Try a smaller image and retry — then tell me if an error banner appears.",
   "aiSupport.reply.hipaa": "MedGift takes privacy seriously. On Sign Up / profile edit you’ll check the HIPAA consent box (Notice of Privacy Practices + Privacy Policy). You can read the full notices anytime under HIPAA Privacy Notice and Privacy Policy. Without consent, signup can’t finish — that’s intentional for PHI protection. Idle sessions time out so health-related screens stay locked. Questions about what we collect? Ask me specifically.",
   "aiSupport.reply.emergency": "Disaster & Emergency mode highlights crisis-priority needs. When it’s on, you’ll see the red banner and Disaster Relief Hub options for donors/recipients. If you expected urgent disaster matching but don’t see it, the mode may be off (Profile toggle / site setting) or listings may not be tagged for relief. Tell me whether you’re donating or requesting in a crisis and I’ll route you.",
-  "aiSupport.reply.language": "You can switch language anytime with the language menu in the app bar (Home, welcome, onboarding). We support English, Spanish, Turkish, Chinese, Russian, Arabic, and Uyghur. Pick your language — the UI updates for that session/preference. RTL layouts (Arabic/Uyghur) should flip automatically. Still seeing the wrong language? Tell me which one you selected.",
+  "aiSupport.reply.language": "You can switch language anytime with the language menu in the app bar (Home, welcome, onboarding). We support English, Spanish, Turkish, Chinese, Russian, Arabic, Uyghur, French, and German. Pick your language — the UI updates for that session/preference. RTL layouts (Arabic/Uyghur) should flip automatically. Still seeing the wrong language? Tell me which one you selected.",
   "inquiry.sheetSubtitle": "Your message goes to the MedGift admin inbox and is routed to {email}.",
   "inquiry.nameLabel": "Full name",
   "inquiry.emailLabel": "Email",
@@ -831,5 +833,12 @@
   "photos.requestHint": "Add at least 1 photo (up to 5) that shows the equipment you need, or a similar example.",
   "photos.loginToUpload": "Sign in to upload photos with your listing.",
   "photos.addSlot": "Add {n}",
-  "photos.required": "Add at least one photo before publishing."
+  "photos.required": "Add at least one photo before publishing.",
+  "profile.editEmailHelper": "This updates how your name appears in the app. Changing login email on the server may require support.",
+  "profile.editAddressSection": "Address",
+  "profile.streetAddress": "Street address",
+  "profile.streetAddressHint": "Optional — street and number",
+  "profile.cityRequired": "City is required",
+  "profile.stateRequired": "Enter a 2-letter US state code",
+  "profile.idOptionalHint": "Optional when editing — upload or replace your ID if needed."
 }

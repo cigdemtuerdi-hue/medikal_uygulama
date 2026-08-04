@@ -13,7 +13,7 @@ const { setUserModel, getUserModel } = require('./models/userModel');
 const { setListingModel } = require('./models/listingStore');
 const { setUploadModel } = require('./models/uploadStore');
 const { setOrderModel } = require('./models/orderStore');
-const { isStripeConfigured } = require('./services/stripeService');
+const { isStripeConfigured, stripeSecretMisconfig } = require('./services/stripeService');
 const { stripeWebhook } = require('./controllers/paymentController');
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -115,6 +115,7 @@ app.get('/api/health', (_req, res) => {
     },
     payments: {
       stripeConfigured: isStripeConfigured(),
+      stripeMisconfig: stripeSecretMisconfig(),
     },
   });
 });

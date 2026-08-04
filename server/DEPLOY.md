@@ -79,14 +79,18 @@ Buyers pay the full listing price on MedGift’s Stripe account. The API records
 
    | Key | Value |
    |-----|--------|
-   | `STRIPE_SECRET_KEY` | `sk_…` |
+   | `STRIPE_SECRET_KEY` | `sk_…` (**not** `whsec_…`) |
    | `STRIPE_WEBHOOK_SECRET` | `whsec_…` |
    | `APP_ORIGIN` | `https://medgift.us` |
+
+   Do **not** swap these. `whsec_` in `STRIPE_SECRET_KEY` makes Buy fail with
+   `Invalid API Key provided: whsec_…`. Health then shows
+   `stripeConfigured: false` and `stripeMisconfig: "webhook_secret_in_api_key_slot"`.
 
 4. Redeploy / restart. Health should show `"payments":{"stripeConfigured":true}`.
 5. Shop → **Buy** opens Stripe Checkout; success returns to `/shop/success`.
 
-Without these keys the API stays up; checkout returns `STRIPE_NOT_CONFIGURED` and the app falls back to a 48-hour hold.
+Without a valid `sk_` secret the API stays up; checkout returns `STRIPE_NOT_CONFIGURED` and the app falls back to a 48-hour hold.
 
 Local smoke (no Stripe key required):
 

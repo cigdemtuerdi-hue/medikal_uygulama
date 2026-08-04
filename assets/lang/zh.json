@@ -92,6 +92,8 @@
   "language.russian": "俄语",
   "language.arabic": "阿拉伯语",
   "language.uyghur": "维吾尔语",
+  "language.french": "法语",
+  "language.german": "德语",
   "compliance.banner": "美国合规性：请勿共享 PHI。只捐赠干净、安全的物品。 501(c)(3) 可供符合条件的非营利组织使用的税收收据。",
   "partner.title": "与我们合作",
   "partner.subtitle": "与我们合作：有兴趣赞助或合作吗？联系我们的团队。",
@@ -728,7 +730,7 @@
   "aiSupport.reply.profile": "个人资料是你的中心：编辑地址和头像、心愿单、收据、Instant Match 提醒、影响力卡片和隐私链接。自动补全填错邮编？进入编辑资料，仔细设置城市和邮编。统计为空通常表示还没有完成的发布或交接。头像上传失败？换小一点的图片再试——如果出现错误提示，请告诉我。",
   "aiSupport.reply.hipaa": "MedGift 非常重视隐私。注册或编辑资料时，你需要勾选 HIPAA 同意框（隐私实践通知 + 隐私政策）。完整文本随时可在 HIPAA 隐私通知与隐私政策页面查看。未同意则无法完成注册——这是为保护 PHI 的有意设计。闲置会话会超时，以便健康相关页面保持锁定。想了解我们收集哪些信息？具体问我。",
   "aiSupport.reply.emergency": "灾难与紧急模式会突出危机优先需求。开启时你会看到红色横幅以及面向捐赠者／接收者的灾难援助中心入口。如果你期待紧急匹配却看不到，可能是模式已关闭（个人资料开关／站点设置），或条目未标记为救援。告诉我你在危机中是捐赠还是申请，我为你指路。",
-  "aiSupport.reply.language": "你可以随时通过顶部栏的语言菜单切换语言（首页、欢迎页、注册页）。我们支持英语、西班牙语、土耳其语、中文、俄语、阿拉伯语和维吾尔语。选择语言后界面会按你的偏好更新。阿拉伯语／维吾尔语的 RTL 布局会自动翻转。仍显示错误语言？告诉我你选了哪一个。",
+  "aiSupport.reply.language": "你可以随时通过顶部栏的语言菜单切换语言（首页、欢迎页、注册页）。我们支持英语、西班牙语、土耳其语、中文、俄语、阿拉伯语、维吾尔语、法语和德语。选择语言后界面会按你的偏好更新。阿拉伯语／维吾尔语的 RTL 布局会自动翻转。仍显示错误语言？告诉我你选了哪一个。",
   "browseEquipment.entryTitle": "查找您附近的设备",
   "browseEquipment.entryBody": "浏览捐赠的轮椅、助行器等——查看您邮编范围内每件物品的距离。",
   "inquiry.sheetSubtitle": "您的留言会进入 MedGift 管理收件箱，并转发至 {email}。",
@@ -831,5 +833,12 @@
   "photos.requestHint": "请至少添加 1 张（最多 5 张）照片，展示您需要的设备或类似示例。",
   "photos.loginToUpload": "请登录后再为您的信息上传照片。",
   "photos.addSlot": "添加 {n}",
-  "photos.required": "发布前请至少添加一张照片。"
+  "photos.required": "发布前请至少添加一张照片。",
+  "profile.editEmailHelper": "这会更新应用中显示的资料。若要更改服务器上的登录邮箱，可能需要联系支持。",
+  "profile.editAddressSection": "地址",
+  "profile.streetAddress": "街道地址",
+  "profile.streetAddressHint": "可选 — 街道和门牌号",
+  "profile.cityRequired": "城市为必填项",
+  "profile.stateRequired": "请输入两位美国州代码",
+  "profile.idOptionalHint": "编辑时可选 — 如需可上传或更换身份证件。"
 }

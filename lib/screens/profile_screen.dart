@@ -63,15 +63,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadMemberProfile() async {
-    final profile = await _onboardingService.loadProfile();
+    await AuthSessionService.instance.ensureLoaded();
+    final sessionEmail = AuthSessionService.instance.email;
+    var profile =
+        await _onboardingService.loadProfileForEmail(sessionEmail);
+    // Stale local profile from a previous account on this browser.
+    if (profile == null && sessionEmail != null) {
+      final stale = await _onboardingService.loadProfile();
+      if (stale != null &&
+          stale.email.trim().toLowerCase() != sessionEmail.toLowerCase()) {
+        await _onboardingService.clearLocalProfile();
+        await ProfileAddressService.instance.clearSavedAddresses();
+      }
+    }
     if (!mounted) return;
     setState(() => _memberProfile = profile);
   }
 
   Future<void> _openEditProfile() async {
     final loc = AppLocalizations.of(context);
-    var profile = _memberProfile ?? await _onboardingService.loadProfile();
+    await AuthSessionService.instance.ensureLoaded();
+    final sessionEmail = AuthSessionService.instance.email;
+    var profile = _memberProfile ??
+        await _onboardingService.loadProfileForEmail(sessionEmail);
     if (!mounted) return;
+
+    // Logged-in user without a matching local profile: open editor with a stub
+    // so they can set their real name instead of inheriting demo data.
+    if (profile == null && sessionEmail != null && sessionEmail.isNotEmpty) {
+      profile = UserOnboardingProfile(
+        role: AuthSessionService.instance.role ?? UserRole.donor,
+        firstName: '',
+        lastName: '',
+        zipCode: '',
+        email: sessionEmail,
+        phone: '',
+        idDocumentPath: '',
+      );
+    }
 
     if (profile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final updated = await Navigator.of(context).push<UserOnboardingProfile>(
       MaterialPageRoute<UserOnboardingProfile>(
-        builder: (_) => EditProfileScreen(initialProfile: profile),
+        builder: (_) => EditProfileScreen(initialProfile: profile!),
       ),
     );
     if (!mounted) return;
@@ -204,16 +233,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final donor = DonationService.donorProfile;
+    final sessionEmail = AuthSessionService.instance.email?.trim();
     final member = _memberProfile;
-    final displayName = member?.fullName ??
-        _savedAddress?.name ??
-        donor.name;
-    final displayEmail = member?.email ?? donor.email;
+    final memberMatchesSession = member != null &&
+        sessionEmail != null &&
+        member.email.trim().toLowerCase() == sessionEmail.toLowerCase();
+    final displayName = memberMatchesSession
+        ? member.fullName.trim().isNotEmpty
+            ? member.fullName
+            : sessionEmail
+        : (sessionEmail ??
+            _savedAddress?.name ??
+            loc.t('profile.appBarTitle'));
+    final displayEmail = sessionEmail ??
+        (memberMatchesSession ? member.email : null) ??
+        '—';
     final address = _savedAddress;
-    final displayZip = address?.zipCode ?? member?.zipCode ?? donor.zipCode;
-    final displayLocation =
-        address?.shortLabel ?? loc.t('common.zipPrefix', {'zip': displayZip});
+    final displayZip = address?.zipCode.isNotEmpty == true
+        ? address!.zipCode
+        : (memberMatchesSession ? member.zipCode : '');
+    final displayLocation = displayZip.isEmpty
+        ? (address?.shortLabel ?? '—')
+        : (address?.shortLabel ??
+            loc.t('common.zipPrefix', {'zip': displayZip}));
     final totalDeductions = DonationService.totalTaxDeductionsUsd;
     final donationCount = DonationService.totalDonationCount;
     final isWide = MediaQuery.sizeOf(context).width > 900;
@@ -306,7 +348,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 loc.t('profile.memberSince', {
-                                  'since': donor.memberSince,
+                                  'since': DateTime.now().year.toString(),
                                   'location': displayLocation,
                                 }),
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(

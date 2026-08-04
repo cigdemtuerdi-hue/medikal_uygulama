@@ -1,6 +1,8 @@
 import '../models/donation_models.dart';
 import '../models/urgent_need_models.dart';
 
+/// Demo-only fallback used when no signed-in session exists.
+/// Never use this for a logged-in member's identity in Profile.
 class DonationService {
   static const donorProfile = DonorProfile(
     name: 'Cigdem Yeter',

@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user_onboarding_models.dart';
+import 'onboarding_service.dart';
 
 /// Local signed-in session so signup/login skip the auth landing next time.
 ///
@@ -77,6 +78,24 @@ class AuthSessionService {
     final prefs = await SharedPreferences.getInstance();
     final normalized = email.trim().toLowerCase();
     final now = DateTime.now();
+
+    // Drop local onboarding/address only when it belongs to a *different*
+    // account than the one signing in. Do not clear after a same-user
+    // email update — that would wipe the profile that was just saved.
+    final onboarding = OnboardingService();
+    final cached = await onboarding.loadProfile();
+    final cachedEmail = cached?.email.trim().toLowerCase();
+    if (cachedEmail != null && cachedEmail != normalized) {
+      await onboarding.clearLocalProfile();
+      final addressKeys = prefs
+          .getKeys()
+          .where((k) => k.startsWith('saved_profile_address_'))
+          .toList();
+      for (final key in addressKeys) {
+        await prefs.remove(key);
+      }
+    }
+
     await prefs.setBool(_loggedInKey, true);
     await prefs.setBool(_loggedOutKey, false);
     await prefs.setString(_emailKey, normalized);

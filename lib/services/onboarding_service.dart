@@ -31,12 +31,35 @@ class OnboardingService {
     return UserOnboardingProfile.fromStorageMap(map);
   }
 
+  /// Returns the local profile only when it belongs to [sessionEmail].
+  /// Prevents showing a previous browser user's name/email after login.
+  Future<UserOnboardingProfile?> loadProfileForEmail(String? sessionEmail) async {
+    final profile = await loadProfile();
+    if (profile == null) return null;
+    final session = sessionEmail?.trim().toLowerCase();
+    if (session == null || session.isEmpty) return profile;
+    if (profile.email.trim().toLowerCase() != session) return null;
+    return profile;
+  }
+
   Future<void> saveProfile(UserOnboardingProfile profile) async {
     final prefs = await SharedPreferences.getInstance();
     for (final entry in profile.toStorageMap().entries) {
       await prefs.setString('$_profilePrefix${entry.key}', entry.value);
     }
     await prefs.setBool(_completeKey, true);
+  }
+
+  /// Drops cached onboarding so a different account cannot inherit it.
+  Future<void> clearLocalProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs
+        .getKeys()
+        .where((k) => k.startsWith(_profilePrefix) || k == _completeKey)
+        .toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
   }
 
   Future<UserRole?> loadRole() async {

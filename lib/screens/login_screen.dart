@@ -70,7 +70,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result.success) {
       final email = _emailController.text.trim();
-      final role = await OnboardingService().loadRole();
+      UserRole? role;
+      final apiRole = result.role?.trim();
+      if (apiRole != null && apiRole.isNotEmpty) {
+        try {
+          role = UserRole.values.byName(apiRole);
+        } catch (_) {
+          role = null;
+        }
+      }
+      role ??= await OnboardingService().loadProfileForEmail(email).then(
+            (p) => p?.role,
+          );
       await AuthSessionService.instance.startSession(
         email: email,
         role: role,

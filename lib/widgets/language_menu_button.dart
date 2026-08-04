@@ -71,6 +71,18 @@ class LanguageMenuButton extends StatelessWidget {
       nativeName: 'ئۇيغۇرچە (UG)',
       code: 'UG',
     ),
+    _LangOption(
+      locale: Locale('fr'),
+      flag: '🇫🇷',
+      nativeName: 'Français (FR)',
+      code: 'FR',
+    ),
+    _LangOption(
+      locale: Locale('de'),
+      flag: '🇩🇪',
+      nativeName: 'Deutsch (DE)',
+      code: 'DE',
+    ),
   ];
 
   _LangOption get _current {
