@@ -54,9 +54,6 @@ class _BrowseListingsScreenState extends State<BrowseListingsScreen>
 
   bool get _isDonor => _role == UserRole.donor;
 
-  String get _browseTitle =>
-      _isDonor ? 'Hasta talepleri' : 'Bağış ilanları';
-
   @override
   Widget build(BuildContext context) {
     if (_bootstrapping) {
@@ -95,22 +92,38 @@ class _BrowseListingsScreenState extends State<BrowseListingsScreen>
       );
     }
 
+    final loc = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('İlanlar & Eşleşme'),
+        title: Text(loc.t('listings.appBarTitle')),
+        actions: [
+          // App bar (not a bottom FAB) so MeGi stays clear at bottom-right.
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: () => _openCreateSheet(context),
+              icon: const Icon(Icons.add),
+              label: Text(
+                _isDonor
+                    ? loc.t('listings.fabOffer')
+                    : loc.t('listings.fabRequest'),
+              ),
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabs,
           tabs: [
-            Tab(text: _browseTitle),
-            const Tab(text: 'İlanlarım'),
-            const Tab(text: 'Eşleşmeler'),
+            Tab(
+              text: _isDonor
+                  ? loc.t('listings.tabBrowseRequests')
+                  : loc.t('listings.tabBrowseOffers'),
+            ),
+            Tab(text: loc.t('listings.tabMine')),
+            Tab(text: loc.t('listings.tabMatches')),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openCreateSheet(context),
-        icon: const Icon(Icons.add),
-        label: Text(_isDonor ? 'Bağış ilanı' : 'Talep oluştur'),
       ),
       body: TabBarView(
         controller: _tabs,

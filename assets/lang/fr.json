@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "Facultatif — rue et numéro",
   "profile.cityRequired": "La ville est obligatoire",
   "profile.stateRequired": "Saisissez le code d’État US à 2 lettres",
-  "profile.idOptionalHint": "Facultatif en modification — ajoutez ou remplacez votre pièce d’identité si besoin."
+  "profile.idOptionalHint": "Facultatif en modification — ajoutez ou remplacez votre pièce d’identité si besoin.",
+  "listings.appBarTitle": "Annonces et correspondances",
+  "listings.tabBrowseRequests": "Demandes des patients",
+  "listings.tabBrowseOffers": "Annonces de don",
+  "listings.tabMine": "Mes annonces",
+  "listings.tabMatches": "Correspondances",
+  "listings.fabOffer": "Annonce de don",
+  "listings.fabRequest": "Créer une demande"
 }

@@ -166,11 +166,19 @@ class _NgoDashboardScreenState extends State<NgoDashboardScreen> {
     final loc = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.t('ngo.appBarTitle'))),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openBulkRequestDialog,
-        icon: const Icon(Icons.playlist_add),
-        label: Text(loc.t('ngo.bulkCta')),
+      appBar: AppBar(
+        title: Text(loc.t('ngo.appBarTitle')),
+        actions: [
+          // App bar (not a bottom FAB) so MeGi stays clear at bottom-right.
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: _openBulkRequestDialog,
+              icon: const Icon(Icons.playlist_add),
+              label: Text(loc.t('ngo.bulkCta')),
+            ),
+          ),
+        ],
       ),
       body: ListenableBuilder(
         listenable: NgoPartnerService.instance,

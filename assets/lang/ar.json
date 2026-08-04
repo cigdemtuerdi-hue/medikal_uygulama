@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "اختياري — الشارع والرقم",
   "profile.cityRequired": "المدينة مطلوبة",
   "profile.stateRequired": "أدخل رمز الولاية الأمريكي المكون من حرفين",
-  "profile.idOptionalHint": "اختياري عند التعديل — ارفع أو استبدل هويتك عند الحاجة."
+  "profile.idOptionalHint": "اختياري عند التعديل — ارفع أو استبدل هويتك عند الحاجة.",
+  "listings.appBarTitle": "الإعلانات والمطابقة",
+  "listings.tabBrowseRequests": "طلبات المرضى",
+  "listings.tabBrowseOffers": "إعلانات التبرع",
+  "listings.tabMine": "إعلاناتي",
+  "listings.tabMatches": "المطابقات",
+  "listings.fabOffer": "إعلان تبرع",
+  "listings.fabRequest": "إنشاء طلب"
 }

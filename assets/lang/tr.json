@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "İsteğe bağlı — sokak ve numara",
   "profile.cityRequired": "Şehir gerekli",
   "profile.stateRequired": "2 harfli ABD eyalet kodu girin",
-  "profile.idOptionalHint": "Düzenlerken isteğe bağlı — gerekirse kimliğinizi yükleyin veya değiştirin."
+  "profile.idOptionalHint": "Düzenlerken isteğe bağlı — gerekirse kimliğinizi yükleyin veya değiştirin.",
+  "listings.appBarTitle": "İlanlar & Eşleşme",
+  "listings.tabBrowseRequests": "Hasta talepleri",
+  "listings.tabBrowseOffers": "Bağış ilanları",
+  "listings.tabMine": "İlanlarım",
+  "listings.tabMatches": "Eşleşmeler",
+  "listings.fabOffer": "Bağış ilanı",
+  "listings.fabRequest": "Talep oluştur"
 }

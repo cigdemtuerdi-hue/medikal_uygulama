@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "可选 — 街道和门牌号",
   "profile.cityRequired": "城市为必填项",
   "profile.stateRequired": "请输入两位美国州代码",
-  "profile.idOptionalHint": "编辑时可选 — 如需可上传或更换身份证件。"
+  "profile.idOptionalHint": "编辑时可选 — 如需可上传或更换身份证件。",
+  "listings.appBarTitle": "信息与匹配",
+  "listings.tabBrowseRequests": "患者需求",
+  "listings.tabBrowseOffers": "捐赠信息",
+  "listings.tabMine": "我的信息",
+  "listings.tabMatches": "匹配",
+  "listings.fabOffer": "捐赠信息",
+  "listings.fabRequest": "创建请求"
 }
