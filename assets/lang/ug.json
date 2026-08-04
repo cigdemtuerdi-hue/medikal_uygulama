@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "ئىختىيارىي — كوچا ۋە نومۇر",
   "profile.cityRequired": "شەھەر زۆرۈر",
   "profile.stateRequired": "2 ھەرپلىك ئامېرىكا شىتات كودىنى كىرگۈزۈڭ",
-  "profile.idOptionalHint": "تەھرىرلىگەندە ئىختىيارىي — زۆرۈر بولسا كىملىكىڭىزنى يۈكلەڭ ياكى ئالماشتۇرۇڭ."
+  "profile.idOptionalHint": "تەھرىرلىگەندە ئىختىيارىي — زۆرۈر بولسا كىملىكىڭىزنى يۈكلەڭ ياكى ئالماشتۇرۇڭ.",
+  "listings.appBarTitle": "ئېلان ۋە ماسلاشتۇرۇش",
+  "listings.tabBrowseRequests": "بىمار تەلەپلىرى",
+  "listings.tabBrowseOffers": "ئىئانە ئېلانلىرى",
+  "listings.tabMine": "ئېلانلىرىم",
+  "listings.tabMatches": "ماسلىشىشلار",
+  "listings.fabOffer": "ئىئانە ئېلانى",
+  "listings.fabRequest": "تەلەپ قۇرۇش"
 }

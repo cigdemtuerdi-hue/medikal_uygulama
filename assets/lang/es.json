@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "Opcional — calle y número",
   "profile.cityRequired": "La ciudad es obligatoria",
   "profile.stateRequired": "Introduzca el código de estado de EE. UU. (2 letras)",
-  "profile.idOptionalHint": "Opcional al editar — suba o reemplace su ID si lo necesita."
+  "profile.idOptionalHint": "Opcional al editar — suba o reemplace su ID si lo necesita.",
+  "listings.appBarTitle": "Anuncios y coincidencias",
+  "listings.tabBrowseRequests": "Solicitudes de pacientes",
+  "listings.tabBrowseOffers": "Anuncios de donación",
+  "listings.tabMine": "Mis anuncios",
+  "listings.tabMatches": "Coincidencias",
+  "listings.fabOffer": "Anuncio de donación",
+  "listings.fabRequest": "Crear solicitud"
 }

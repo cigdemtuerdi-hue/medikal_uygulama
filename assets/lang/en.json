@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "Optional — street and number",
   "profile.cityRequired": "City is required",
   "profile.stateRequired": "Enter a 2-letter US state code",
-  "profile.idOptionalHint": "Optional when editing — upload or replace your ID if needed."
+  "profile.idOptionalHint": "Optional when editing — upload or replace your ID if needed.",
+  "listings.appBarTitle": "Listings & Matching",
+  "listings.tabBrowseRequests": "Patient requests",
+  "listings.tabBrowseOffers": "Donation listings",
+  "listings.tabMine": "My listings",
+  "listings.tabMatches": "Matches",
+  "listings.fabOffer": "Donation listing",
+  "listings.fabRequest": "Create request"
 }

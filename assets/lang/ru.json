@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "Необязательно — улица и номер",
   "profile.cityRequired": "Укажите город",
   "profile.stateRequired": "Введите 2-буквенный код штата США",
-  "profile.idOptionalHint": "При редактировании необязательно — загрузите или замените удостоверение при необходимости."
+  "profile.idOptionalHint": "При редактировании необязательно — загрузите или замените удостоверение при необходимости.",
+  "listings.appBarTitle": "Объявления и подбор",
+  "listings.tabBrowseRequests": "Запросы пациентов",
+  "listings.tabBrowseOffers": "Объявления о пожертвованиях",
+  "listings.tabMine": "Мои объявления",
+  "listings.tabMatches": "Совпадения",
+  "listings.fabOffer": "Объявление о пожертвовании",
+  "listings.fabRequest": "Создать запрос"
 }

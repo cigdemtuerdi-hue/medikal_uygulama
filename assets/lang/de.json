@@ -840,5 +840,12 @@
   "profile.streetAddressHint": "Optional — Straße und Nummer",
   "profile.cityRequired": "Stadt ist erforderlich",
   "profile.stateRequired": "2-stelligen US-Bundesstaatscode eingeben",
-  "profile.idOptionalHint": "Beim Bearbeiten optional — Ausweis bei Bedarf hochladen oder ersetzen."
+  "profile.idOptionalHint": "Beim Bearbeiten optional — Ausweis bei Bedarf hochladen oder ersetzen.",
+  "listings.appBarTitle": "Anzeigen & Matching",
+  "listings.tabBrowseRequests": "Patientenanfragen",
+  "listings.tabBrowseOffers": "Spendenanzeigen",
+  "listings.tabMine": "Meine Anzeigen",
+  "listings.tabMatches": "Treffer",
+  "listings.fabOffer": "Spendenanzeige",
+  "listings.fabRequest": "Anfrage erstellen"
 }

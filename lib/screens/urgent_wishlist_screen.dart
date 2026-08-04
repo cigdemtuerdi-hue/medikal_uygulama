@@ -283,14 +283,19 @@ class _UrgentWishlistScreenState extends State<UrgentWishlistScreen> {
             },
             icon: const Icon(Icons.refresh),
           ),
+          // App bar (not a bottom FAB) so MeGi stays clear at bottom-right.
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: _showAddUrgentDialog,
+              style: FilledButton.styleFrom(
+                foregroundColor: Colors.red.shade800,
+              ),
+              icon: const Icon(Icons.priority_high),
+              label: Text(loc.t('urgent.addUrgentRequest')),
+            ),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddUrgentDialog,
-        icon: const Icon(Icons.priority_high),
-        label: Text(loc.t('urgent.addUrgentRequest')),
-        backgroundColor: Colors.red.shade700,
-        foregroundColor: Colors.white,
       ),
       body: ListenableBuilder(
         listenable: WishlistService.instance,
