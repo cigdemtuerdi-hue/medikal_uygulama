@@ -6,18 +6,22 @@ import '../l10n/app_localizations.dart';
 import '../models/listing.dart';
 import '../services/listing_api_service.dart';
 
-/// Deep-link target after Stripe Checkout (`/shop/success`, `/shop/cancel`).
+/// Deep-link target after Stripe / PayPal Checkout (`/shop/success`, `/shop/cancel`).
 class ShopCheckoutResultScreen extends StatefulWidget {
   const ShopCheckoutResultScreen({
     super.key,
     required this.success,
     this.sessionId,
     this.orderId,
+    this.paypalToken,
   });
 
   final bool success;
   final String? sessionId;
   final String? orderId;
+
+  /// PayPal returns `token=<ORDER_ID>` on the success redirect.
+  final String? paypalToken;
 
   @override
   State<ShopCheckoutResultScreen> createState() =>
@@ -32,9 +36,7 @@ class _ShopCheckoutResultScreenState extends State<ShopCheckoutResultScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.success &&
-        widget.sessionId != null &&
-        widget.sessionId!.isNotEmpty) {
+    if (widget.success) {
       _load();
     }
   }
@@ -44,8 +46,22 @@ class _ShopCheckoutResultScreenState extends State<ShopCheckoutResultScreen> {
       _loading = true;
       _error = null;
     });
-    final result =
-        await ListingApiService.instance.orderBySession(widget.sessionId!);
+
+    ListingApiResult<SaleOrder> result;
+    final paypalToken = widget.paypalToken?.trim() ?? '';
+    if (paypalToken.isNotEmpty) {
+      result = await ListingApiService.instance.capturePayPal(paypalToken);
+    } else if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
+      result =
+          await ListingApiService.instance.orderBySession(widget.sessionId!);
+    } else {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+      });
+      return;
+    }
+
     if (!mounted) return;
     setState(() {
       _loading = false;

@@ -768,7 +768,7 @@
   "shop.buy": "Acheter",
   "shop.withdraw": "Supprimer l'annonce",
   "shop.purchaseTitle": "Paiement sécurisé",
-  "shop.purchaseBody": "{title} — {price}\n\nVous paierez en toute sécurité avec Stripe. MedGift conserve l'article pour vous jusqu'à la fin du paiement.",
+  "shop.purchaseBody": "{title} — {price}\n\nChoisissez un paiement sécurisé. MedGift réserve l’article pendant le paiement. Les paiements PayPal vont à info@medgift.us.",
   "shop.purchaseSend": "Payer avec Stripe",
   "shop.createTitle": "Créer une annonce de vente",
   "shop.createSubtitle": "MedGift prend une commission de {percent}% sur chaque vente. Les acheteurs ne voient pas vos coordonnées personnelles.",
@@ -847,5 +847,8 @@
   "listings.tabMine": "Mes annonces",
   "listings.tabMatches": "Correspondances",
   "listings.fabOffer": "Annonce de don",
-  "listings.fabRequest": "Créer une demande"
+  "listings.fabRequest": "Créer une demande",
+  "shop.payWithStripe": "Payer avec Stripe",
+  "shop.payWithPayPal": "Payer avec PayPal",
+  "shop.purchaseHold": "Demander une réservation de 48 h"
 }

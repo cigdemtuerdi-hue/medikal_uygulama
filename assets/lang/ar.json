@@ -770,7 +770,7 @@
   "shop.buy": "اشترِ",
   "shop.withdraw": "إزالة الإعلان",
   "shop.purchaseTitle": "دفع آمن",
-  "shop.purchaseBody": "{title} — {price}\n\nستدفع بأمان عبر Stripe. تحتفظ MedGift بالمنتج لك حتى يكتمل الدفع.",
+  "shop.purchaseBody": "{title} — {price}\n\nاختر طريقة دفع آمنة. تحتفظ MedGift بالمنتج أثناء إتمام الدفع. مدفوعات PayPal تذهب إلى info@medgift.us.",
   "shop.purchaseSend": "الدفع عبر Stripe",
   "shop.createTitle": "إنشاء إعلان بيع",
   "shop.createSubtitle": "تتقاضى MedGift عمولة {percent}٪ على كل عملية بيع. لا يرى المشترون بياناتك الشخصية.",
@@ -847,5 +847,8 @@
   "listings.tabMine": "إعلاناتي",
   "listings.tabMatches": "المطابقات",
   "listings.fabOffer": "إعلان تبرع",
-  "listings.fabRequest": "إنشاء طلب"
+  "listings.fabRequest": "إنشاء طلب",
+  "shop.payWithStripe": "الدفع عبر Stripe",
+  "shop.payWithPayPal": "الدفع عبر PayPal",
+  "shop.purchaseHold": "طلب حجز لمدة 48 ساعة"
 }

@@ -181,31 +181,72 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
 
   Future<void> _buy(Listing listing) async {
     final loc = AppLocalizations.of(context);
-    final ok = await showDialog<bool>(
+    final providers = await ListingApiService.instance.paymentProviders();
+    if (!mounted) return;
+
+    final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(loc.t('shop.purchaseTitle')),
-        content: Text(
-          loc.t('shop.purchaseBody', {
-            'title': listing.title,
-            'price': listing.priceLabel,
-          }),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              loc.t('shop.purchaseBody', {
+                'title': listing.title,
+                'price': listing.priceLabel,
+              }),
+            ),
+            const SizedBox(height: 16),
+            if (providers.stripe)
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(ctx, 'stripe'),
+                icon: const Icon(Icons.credit_card),
+                label: Text(loc.t('shop.payWithStripe')),
+              ),
+            if (providers.stripe && providers.paypal)
+              const SizedBox(height: 8),
+            if (providers.paypal)
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(ctx, 'paypal'),
+                icon: const Icon(Icons.account_balance_wallet_outlined),
+                label: Text(loc.t('shop.payWithPayPal')),
+              ),
+            if (!providers.stripe && !providers.paypal)
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, 'hold'),
+                child: Text(loc.t('shop.purchaseHold')),
+              ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(ctx),
             child: Text(loc.t('common.cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(loc.t('shop.purchaseSend')),
           ),
         ],
       ),
     );
-    if (ok != true || !mounted) return;
+    if (choice == null || !mounted) return;
 
-    final checkout = await ListingApiService.instance.checkout(listing.id);
+    if (choice == 'hold') {
+      final hold = await ListingApiService.instance.purchase(listing.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(hold.message)),
+      );
+      if (hold.success) {
+        widget.onChanged();
+        await _reload();
+      }
+      return;
+    }
+
+    final checkout = await ListingApiService.instance.checkout(
+      listing.id,
+      provider: choice,
+    );
     if (!mounted) return;
 
     if (checkout.success && checkout.data != null) {
@@ -224,7 +265,9 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
       return;
     }
 
-    if (checkout.code == 'STRIPE_NOT_CONFIGURED') {
+    if (checkout.code == 'STRIPE_NOT_CONFIGURED' ||
+        checkout.code == 'PAYPAL_NOT_CONFIGURED' ||
+        checkout.code == 'PAYMENT_NOT_CONFIGURED') {
       final hold = await ListingApiService.instance.purchase(listing.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

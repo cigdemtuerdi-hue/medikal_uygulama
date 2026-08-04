@@ -59,7 +59,14 @@ async function main() {
   const health = await call('GET', '/api/health');
   check('health ok', health.status === 200 && health.json?.ok === true);
   const stripeOn = Boolean(health.json?.payments?.stripeConfigured);
+  const paypalOn = Boolean(health.json?.payments?.paypalConfigured);
   console.log(`  info stripeConfigured=${stripeOn}`);
+  console.log(`  info paypalConfigured=${paypalOn}`);
+  if (paypalOn) {
+    console.log(
+      `  info paypalMerchantEmail=${health.json?.payments?.paypalMerchantEmail || ''}`,
+    );
+  }
 
   const sellerToken = await signUp(`seller.pay.${Date.now()}@example.com`, 'donor');
   const buyerToken = await signUp(`buyer.pay.${Date.now()}@example.com`, 'recipient');
@@ -103,11 +110,15 @@ async function main() {
   check('listing id present', Boolean(listingId), listingId);
 
   console.log('\ncheckout');
+  const onlineOn = stripeOn || paypalOn;
   const checkout = await call('POST', `/api/listings/${listingId}/checkout`, {
     token: buyerToken,
+    body: {
+      provider: stripeOn ? 'stripe' : paypalOn ? 'paypal' : 'stripe',
+    },
   });
 
-  if (stripeOn) {
+  if (onlineOn) {
     check(
       'checkout creates a session',
       checkout.status === 201 && Boolean(checkout.json?.checkoutUrl),
@@ -115,8 +126,11 @@ async function main() {
     );
   } else {
     check(
-      'checkout reports STRIPE_NOT_CONFIGURED',
-      checkout.status === 503 && checkout.json?.code === 'STRIPE_NOT_CONFIGURED',
+      'checkout reports not configured',
+      checkout.status === 503 &&
+        (checkout.json?.code === 'STRIPE_NOT_CONFIGURED' ||
+          checkout.json?.code === 'PAYPAL_NOT_CONFIGURED' ||
+          checkout.json?.code === 'PAYMENT_NOT_CONFIGURED'),
       `got ${checkout.status} ${checkout.json?.code}`,
     );
 

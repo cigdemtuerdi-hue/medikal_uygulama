@@ -770,8 +770,8 @@
   "shop.buy": "购买",
   "shop.withdraw": "下架",
   "shop.purchaseTitle": "安全结账",
-  "shop.purchaseBody": "{title} — {price}\n\n您将通过 Stripe 安全付款。结账完成前，MedGift 会为您预留该商品。",
-  "shop.purchaseSend": "使用 Stripe 付款",
+  "shop.purchaseBody": "{title} — {price}\n\n请选择安全支付方式。结账完成前 MedGift 会为您预留商品。PayPal 付款至 info@medgift.us。",
+  "shop.purchaseSend": "使用 Stripe 支付",
   "shop.createTitle": "创建出售信息",
   "shop.createSubtitle": "每笔销售 MedGift 收取 {percent}% 佣金。买家看不到您的个人联系方式。",
   "shop.priceLabel": "售价（美元）",
@@ -847,5 +847,8 @@
   "listings.tabMine": "我的信息",
   "listings.tabMatches": "匹配",
   "listings.fabOffer": "捐赠信息",
-  "listings.fabRequest": "创建请求"
+  "listings.fabRequest": "创建请求",
+  "shop.payWithStripe": "使用 Stripe 支付",
+  "shop.payWithPayPal": "使用 PayPal 支付",
+  "shop.purchaseHold": "申请 48 小时预留"
 }

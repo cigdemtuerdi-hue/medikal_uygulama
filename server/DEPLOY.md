@@ -90,9 +90,32 @@ Buyers pay the full listing price on MedGift’s Stripe account. The API records
 4. Redeploy / restart. Health should show `"payments":{"stripeConfigured":true}`.
 5. Shop → **Buy** opens Stripe Checkout; success returns to `/shop/success`.
 
-Without a valid `sk_` secret the API stays up; checkout returns `STRIPE_NOT_CONFIGURED` and the app falls back to a 48-hour hold.
+Without a valid `sk_` secret the API stays up; checkout returns `STRIPE_NOT_CONFIGURED` and the app falls back to a 48-hour hold (or PayPal if configured).
 
-Local smoke (no Stripe key required):
+## PayPal Checkout (sales marketplace)
+
+Payments settle to the PayPal Business account for **`info@medgift.us`**.
+
+1. [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/applications) → create a **REST API** app under the Business account that owns `info@medgift.us`.
+2. Copy **Client ID** and **Secret** (Live or Sandbox).
+3. **Webhooks → Add webhook**
+   - URL: `https://medgift-us-api.onrender.com/api/payments/paypal/webhook`
+   - Events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`
+   - Copy the **Webhook ID**.
+4. Render → **medgift-us-api** → **Environment**:
+
+   | Key | Value |
+   |-----|--------|
+   | `PAYPAL_CLIENT_ID` | from Developer Dashboard |
+   | `PAYPAL_CLIENT_SECRET` | from Developer Dashboard |
+   | `PAYPAL_MODE` | `live` or `sandbox` |
+   | `PAYPAL_MERCHANT_EMAIL` | `info@medgift.us` |
+   | `PAYPAL_WEBHOOK_ID` | webhook ID |
+
+5. Redeploy / restart. Health should show `"paypalConfigured":true` and `"paypalMerchantEmail":"info@medgift.us"`.
+6. Shop → **Buy** → **Pay with PayPal** opens PayPal; return hits `/shop/success?provider=paypal&token=…` and the app captures the order.
+
+Local smoke (no PayPal key required):
 
 ```bash
 cd server

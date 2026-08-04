@@ -60,6 +60,19 @@ async function findOrderBySessionId(sessionId) {
   );
 }
 
+async function findOrderByPaypalOrderId(paypalOrderId) {
+  if (!paypalOrderId) return null;
+  if (useMongo()) {
+    const doc = await state.mongoModel
+      .findOne({ paypalOrderId: String(paypalOrderId) })
+      .lean();
+    return normalize(doc);
+  }
+  return normalize(
+    state.memory.find((r) => r.paypalOrderId === String(paypalOrderId)),
+  );
+}
+
 async function updateOrder(id, patch) {
   if (useMongo()) {
     const doc = await state.mongoModel
@@ -78,5 +91,6 @@ module.exports = {
   createOrder,
   findOrderById,
   findOrderBySessionId,
+  findOrderByPaypalOrderId,
   updateOrder,
 };

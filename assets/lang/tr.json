@@ -770,7 +770,7 @@
   "shop.buy": "Satın al",
   "shop.withdraw": "İlanı kaldır",
   "shop.purchaseTitle": "Güvenli ödeme",
-  "shop.purchaseBody": "{title} — {price}\n\nStripe ile güvenli ödeme yapacaksınız. Ödeme tamamlanırken MedGift ürünü sizin için ayırır.",
+  "shop.purchaseBody": "{title} — {price}\n\nGüvenli bir ödeme yöntemi seçin. Ödeme tamamlanırken MedGift ürünü sizin için tutar. PayPal ödemeleri info@medgift.us hesabına gider.",
   "shop.purchaseSend": "Stripe ile öde",
   "shop.createTitle": "Satış ilanı oluştur",
   "shop.createSubtitle": "Her satışta MedGift %{percent} komisyon alır. Alıcı kişisel bilgilerinizi görmez.",
@@ -847,5 +847,8 @@
   "listings.tabMine": "İlanlarım",
   "listings.tabMatches": "Eşleşmeler",
   "listings.fabOffer": "Bağış ilanı",
-  "listings.fabRequest": "Talep oluştur"
+  "listings.fabRequest": "Talep oluştur",
+  "shop.payWithStripe": "Stripe ile öde",
+  "shop.payWithPayPal": "PayPal ile öde",
+  "shop.purchaseHold": "48 saatlik rezervasyon iste"
 }

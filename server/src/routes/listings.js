@@ -26,8 +26,8 @@ const router = express.Router();
  * GET    /shop            → active paid sale listings (PII stripped)
  * GET    /:id/matches     → ranked counterparts for one of the caller's listings
  * POST   /:id/reserve     → 48-hour hold on a donate counterpart listing
- * POST   /:id/checkout    → Stripe Checkout Session for a sale listing
- * POST   /:id/purchase    → hold-only fallback when Stripe is not configured
+ * POST   /:id/checkout    → Stripe or PayPal Checkout for a sale listing
+ * POST   /:id/purchase    → hold-only fallback when online pay is not configured
  * PATCH  /:id             → owner-only edit / status change
  */
 router.use(requireUser);
