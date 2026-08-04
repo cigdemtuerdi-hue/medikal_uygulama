@@ -92,6 +92,8 @@
   "language.russian": "Русский",
   "language.arabic": "العربية",
   "language.uyghur": "ئۇيغۇرچە",
+  "language.french": "Français",
+  "language.german": "Deutsch",
   "compliance.banner": "Cumplimiento de EE. UU.: No comparta información de salud (PHI). Done solo artículos limpios y seguros. Recibos de impuestos 501(c)(3) disponibles para organizaciones calificadas.",
   "partner.title": "Asóciate con Nosotros",
   "partner.subtitle": "¿Interesado en patrocinio o colaboración? Ponte en contacto con nuestro equipo.",
@@ -728,7 +730,7 @@
   "aiSupport.reply.profile": "Perfil es su centro: editar dirección y foto, lista de deseos, recibos, alertas de Instant Match, tarjetas de impacto y enlaces de privacidad. ¿El autocompletado puso un código postal incorrecto? Edite el perfil y ajuste ciudad y ZIP con cuidado. Las estadísticas vacías suelen significar que aún no hay publicaciones o entregas completadas. ¿Falla la carga de la foto? Pruebe con una imagen más pequeña y dígame si aparece un aviso de error.",
   "aiSupport.reply.hipaa": "MedGift se toma la privacidad en serio. Al registrarse o editar el perfil marcará la casilla de consentimiento HIPAA (Aviso de Prácticas de Privacidad + Política de Privacidad). Puede leer los avisos completos cuando quiera en Aviso de Privacidad HIPAA y Política de Privacidad. Sin consentimiento el registro no se completa — es intencional para proteger la PHI. Las sesiones inactivas se cierran para mantener bloqueadas las pantallas de salud. ¿Preguntas sobre qué recopilamos? Dígamelo concretamente.",
   "aiSupport.reply.emergency": "El modo Desastre y Emergencia destaca las necesidades prioritarias de crisis. Cuando está activo verá la franja roja y las opciones del Centro de Ayuda ante Desastres para donantes y beneficiarios. Si esperaba coincidencias urgentes y no las ve, el modo puede estar desactivado (interruptor en Perfil / ajuste del sitio) o las publicaciones no están marcadas para ayuda. Dígame si dona o solicita en una crisis y le indico el camino.",
-  "aiSupport.reply.language": "Puede cambiar el idioma cuando quiera con el menú de idioma en la barra superior (Inicio, bienvenida, registro). Admitimos inglés, español, turco, chino, ruso, árabe y uigur. Elija su idioma y la interfaz se actualiza según su preferencia. Los diseños RTL (árabe/uigur) se invierten automáticamente. ¿Sigue viendo el idioma equivocado? Dígame cuál seleccionó.",
+  "aiSupport.reply.language": "Puede cambiar el idioma cuando quiera con el menú de idioma en la barra superior (Inicio, bienvenida, registro). Admitimos inglés, español, turco, chino, ruso, árabe, uigur, francés y alemán. Elija su idioma y la interfaz se actualiza según su preferencia. Los diseños RTL (árabe/uigur) se invierten automáticamente. ¿Sigue viendo el idioma equivocado? Dígame cuál seleccionó.",
   "browseEquipment.entryTitle": "Encuentre equipo cerca de usted",
   "browseEquipment.entryBody": "Explore sillas de ruedas, andadores y más donados — vea la distancia a cada artículo desde su código postal.",
   "inquiry.sheetSubtitle": "Su mensaje llega a la bandeja de administración de MedGift y se dirige a {email}.",
@@ -831,5 +833,12 @@
   "photos.requestHint": "Añada al menos 1 foto (hasta 5) del equipo que necesita o un ejemplo similar.",
   "photos.loginToUpload": "Inicie sesión para subir fotos con su anuncio.",
   "photos.addSlot": "Añadir {n}",
-  "photos.required": "Añada al menos una foto antes de publicar."
+  "photos.required": "Añada al menos una foto antes de publicar.",
+  "profile.editEmailHelper": "Esto actualiza cómo aparece su nombre en la app. Cambiar el correo de inicio de sesión en el servidor puede requerir asistencia.",
+  "profile.editAddressSection": "Dirección",
+  "profile.streetAddress": "Dirección",
+  "profile.streetAddressHint": "Opcional — calle y número",
+  "profile.cityRequired": "La ciudad es obligatoria",
+  "profile.stateRequired": "Introduzca el código de estado de EE. UU. (2 letras)",
+  "profile.idOptionalHint": "Opcional al editar — suba o reemplace su ID si lo necesita."
 }

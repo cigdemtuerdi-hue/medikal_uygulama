@@ -13,6 +13,7 @@ class AuthApiResult {
     this.statusCode,
     this.code,
     this.token,
+    this.role,
   });
 
   final bool success;
@@ -20,6 +21,7 @@ class AuthApiResult {
   final int? statusCode;
   final String? code;
   final String? token;
+  final String? role;
 }
 
 /// HTTP client for MedGift US auth endpoints on the Node API.
@@ -185,6 +187,7 @@ class AuthApiService {
       final message = (parsed?['message'] as String?)?.trim();
       final code = parsed?['code'] as String?;
       final token = parsed?['token'] as String?;
+      final role = parsed?['role'] as String?;
       final ok = response.statusCode >= 200 &&
           response.statusCode < 300 &&
           (parsed?['success'] != false);
@@ -198,6 +201,7 @@ class AuthApiService {
           statusCode: response.statusCode,
           code: code,
           token: token,
+          role: role,
         );
       }
 
@@ -209,6 +213,7 @@ class AuthApiService {
         statusCode: response.statusCode,
         code: code,
         token: token,
+        role: role,
       );
     } catch (err, stack) {
       debugPrint('[AuthApiService] $path failed: $err\n$stack');

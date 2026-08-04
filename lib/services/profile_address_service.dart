@@ -6,6 +6,7 @@ import '../models/us_address_models.dart';
 import '../models/user_onboarding_models.dart';
 import '../services/donation_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/auth_session_service.dart';
 
 class ProfileAddressService {
   ProfileAddressService._();
@@ -38,13 +39,24 @@ class ProfileAddressService {
   }
 
   Future<ProfileAddress> loadDonorAddress() async {
-    final saved = await _loadSavedAddress('donor');
-    if (saved != null) return saved;
+    await AuthSessionService.instance.ensureLoaded();
+    final sessionEmail = AuthSessionService.instance.email;
 
-    final onboarding = await OnboardingService().loadProfile();
+    final saved = await _loadSavedAddress('donor');
+    final onboarding =
+        await OnboardingService().loadProfileForEmail(sessionEmail);
     if (onboarding != null &&
         (onboarding.role == UserRole.donor ||
             onboarding.role == UserRole.ngoPartner)) {
+      // Prefer onboarding identity; keep saved street/ZIP if present.
+      if (saved != null) {
+        return saved.copyWith(
+          name: onboarding.fullName,
+          zipCode: saved.zipCode.isNotEmpty ? saved.zipCode : onboarding.zipCode,
+          city: saved.city ?? onboarding.city,
+          state: saved.state ?? onboarding.state,
+        );
+      }
       return ProfileAddress(
         roleLabel: onboarding.role == UserRole.ngoPartner
             ? 'Verified NGO Partner'
@@ -53,6 +65,19 @@ class ProfileAddressService {
         city: onboarding.city,
         state: onboarding.state,
         name: onboarding.fullName,
+      );
+    }
+
+    if (saved != null && sessionEmail != null) {
+      return saved.copyWith(name: saved.name ?? sessionEmail);
+    }
+
+    // Never fall back to the demo donor when a real session exists.
+    if (sessionEmail != null) {
+      return ProfileAddress(
+        roleLabel: 'Donor',
+        zipCode: '',
+        name: sessionEmail,
       );
     }
 
@@ -65,17 +90,39 @@ class ProfileAddressService {
   }
 
   Future<ProfileAddress> loadRecipientAddress() async {
-    final saved = await _loadSavedAddress('recipient');
-    if (saved != null) return saved;
+    await AuthSessionService.instance.ensureLoaded();
+    final sessionEmail = AuthSessionService.instance.email;
 
-    final onboarding = await OnboardingService().loadProfile();
+    final saved = await _loadSavedAddress('recipient');
+    final onboarding =
+        await OnboardingService().loadProfileForEmail(sessionEmail);
     if (onboarding != null && onboarding.role == UserRole.recipient) {
+      if (saved != null) {
+        return saved.copyWith(
+          name: onboarding.fullName,
+          zipCode: saved.zipCode.isNotEmpty ? saved.zipCode : onboarding.zipCode,
+          city: saved.city ?? onboarding.city,
+          state: saved.state ?? onboarding.state,
+        );
+      }
       return ProfileAddress(
         roleLabel: 'Recipient',
         zipCode: onboarding.zipCode,
         city: onboarding.city,
         state: onboarding.state,
         name: onboarding.fullName,
+      );
+    }
+
+    if (saved != null && sessionEmail != null) {
+      return saved.copyWith(name: saved.name ?? sessionEmail);
+    }
+
+    if (sessionEmail != null) {
+      return ProfileAddress(
+        roleLabel: 'Recipient',
+        zipCode: '',
+        name: sessionEmail,
       );
     }
 
@@ -122,6 +169,15 @@ class ProfileAddressService {
       fullAddressLine: suggestion.primaryLine,
       name: name,
     );
+  }
+
+  Future<void> clearSavedAddresses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys =
+        prefs.getKeys().where((k) => k.startsWith(_savedPrefix)).toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
   }
 
   Future<ProfileAddress?> _loadSavedAddress(String roleKey) async {

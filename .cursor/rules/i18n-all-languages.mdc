@@ -9,7 +9,7 @@ Do **not** wait for the user to ask. Any change that adds or changes user-visibl
 
 ## Languages (all required)
 
-`en`, `es`, `tr`, `zh`, `ru`, `ar`, `ug` — files under [`assets/lang/`](assets/lang/).
+`en`, `es`, `tr`, `zh`, `ru`, `ar`, `ug`, `fr`, `de` — files under [`assets/lang/`](assets/lang/).
 
 ## Rules
 
@@ -18,7 +18,7 @@ Do **not** wait for the user to ask. Any change that adds or changes user-visibl
 3. Prefer existing keys (`dme.type.*`, `common.cancel`, `auth.logIn`, …) before inventing new ones.
 4. Placeholders use `{name}` and `loc.t('key', {'name': value})`.
 5. Server/API error `message` strings may stay Turkish for now; prefer stable `code` fields clients can map later. Do not leave new Flutter UI on API Turkish alone.
-6. Before finishing: key parity across all seven JSON files, and wire the UI to `loc.t`.
+5. Before finishing: key parity across all nine JSON files, and wire the UI to `loc.t`.
 
 ## Example
 
@@ -31,6 +31,6 @@ Text(loc.t('shop.createTitle'))
 ```
 
 ```json
-// assets/lang/en.json AND tr/es/zh/ru/ar/ug.json — same key in all
+// assets/lang/en.json AND tr/es/zh/ru/ar/ug/fr/de.json — same key in all
 "shop.createTitle": "Create sale listing"
 ```

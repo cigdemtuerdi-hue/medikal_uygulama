@@ -19,6 +19,8 @@ class AppLocalizations {
     Locale('ru'),
     Locale('ar'),
     Locale('ug'),
+    Locale('fr'),
+    Locale('de'),
   ];
 
   /// Locales that use right-to-left text direction.

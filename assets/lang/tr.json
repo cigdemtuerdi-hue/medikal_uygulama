@@ -92,6 +92,8 @@
   "language.russian": "Rusça",
   "language.arabic": "Arapça",
   "language.uyghur": "Uygurca",
+  "language.french": "Fransızca",
+  "language.german": "Almanca",
   "compliance.banner": "ABD Uyumluluğu: PHI'yi paylaşmayın. Yalnızca temiz ve güvenli ürünler bağışlayın. Kâr amacı gütmeyen kuruluşlar için 501(c )( 3) vergi makbuzu mevcuttur.",
   "partner.title": "Ortağımız olun",
   "partner.subtitle": "Bizimle İş Ortağı Olun: Sponsorluk veya işbirliği ile ilgileniyor musunuz? Ekibimize ulaşın.",
@@ -730,7 +732,7 @@
   "aiSupport.reply.profile": "Profile merkezin: adres/foto, wishlist, makbuzlar, Instant Match, etki kartları, gizlilik linkleri. Yanlış ZIP varsa Edit Profile’dan düzelt. Boş istatistik genelde henüz tamamlanmış bağış/teslim yok demektir. Foto yüklenmiyorsa daha küçük dosya dene.",
   "aiSupport.reply.hipaa": "MedGift gizliliği ciddiye alır. Kayıt/profilde HIPAA onay kutusu şarttır (Privacy Notice + Privacy Policy). Tam metinleri HIPAA Privacy Notice ve Privacy Policy sayfalarında okuyabilirsin. Onaysız kayıt bitmez; boşta oturumlar kapanır. Ne toplandığına dair net sorun varsa sor.",
   "aiSupport.reply.emergency": "Afet / Emergency modu kriz öncelikli ihtiyaçları öne çıkarır; kırmızı banner ve Disaster Relief Hub görünür. Görmüyorsan mod kapalı olabilir (Profile / site ayarı) veya ilanlar crisis olarak işaretlenmemiştir. Krizde bağış mı talep mi yapıyorsun, söyle.",
-  "aiSupport.reply.language": "Dil menüsünden (üst çubuk) istediğin zaman değiştir: İngilizce, İspanyolca, Türkçe, Çince, Rusça, Arapça, Uygurca. RTL diller otomatik döner. Hâlâ yanlış dil görüyorsan hangi dili seçtiğini yaz.",
+  "aiSupport.reply.language": "Dil menüsünden (üst çubuk) istediğin zaman değiştir: İngilizce, İspanyolca, Türkçe, Çince, Rusça, Arapça, Uygurca, Fransızca, Almanca. RTL diller otomatik döner. Hâlâ yanlış dil görüyorsan hangi dili seçtiğini yaz.",
   "inquiry.sheetSubtitle": "Mesajınız MedGift yönetim kutusuna düşer ve {email} adresine yönlendirilir.",
   "inquiry.nameLabel": "Ad soyad",
   "inquiry.emailLabel": "E-posta",
@@ -831,5 +833,12 @@
   "photos.requestHint": "İhtiyacınız olan ekipmanı veya benzer bir örneği gösteren en az 1 (en fazla 5) fotoğraf ekleyin.",
   "photos.loginToUpload": "İlanınıza fotoğraf yüklemek için giriş yapın.",
   "photos.addSlot": "Ekle {n}",
-  "photos.required": "Yayınlamadan önce en az bir fotoğraf ekleyin."
+  "photos.required": "Yayınlamadan önce en az bir fotoğraf ekleyin.",
+  "profile.editEmailHelper": "Bu, uygulamada görünen bilgilerinizi günceller. Giriş e-postasını sunucuda değiştirmek destek gerektirebilir.",
+  "profile.editAddressSection": "Adres",
+  "profile.streetAddress": "Sokak adresi",
+  "profile.streetAddressHint": "İsteğe bağlı — sokak ve numara",
+  "profile.cityRequired": "Şehir gerekli",
+  "profile.stateRequired": "2 harfli ABD eyalet kodu girin",
+  "profile.idOptionalHint": "Düzenlerken isteğe bağlı — gerekirse kimliğinizi yükleyin veya değiştirin."
 }

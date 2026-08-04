@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/profile_address.dart';
 import '../models/user_onboarding_models.dart';
 import '../services/auth_session_service.dart';
+import '../services/compliance_api_service.dart';
 import '../services/ngo_partner_service.dart';
 import '../services/onboarding_document_service.dart';
 import '../services/onboarding_service.dart';
@@ -14,9 +15,11 @@ import '../widgets/async_state_widgets.dart';
 import '../widgets/document_upload_card.dart';
 import '../widgets/hipaa_consent_widgets.dart';
 import '../widgets/us_address_autocomplete_field.dart';
-import '../services/compliance_api_service.dart';
 
-/// Edit the same personal details collected during signup.
+/// Edit personal details for the signed-in member.
+///
+/// Unlike signup, fields stay freely editable (ZIP/city/state are never locked)
+/// and identity docs are optional unless the user is adding new PHI uploads.
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key, required this.initialProfile});
 
@@ -36,6 +39,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
+  final _streetController = TextEditingController();
   final _orgNameController = TextEditingController();
   final _einController = TextEditingController();
 
@@ -47,12 +51,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _doctorReportPath;
   String? _conditionVideoPath;
   bool _isSubmitting = false;
-  bool _manualAddressEntry = false;
   bool _hipaaConsentAccepted = false;
   String? _hipaaConsentError;
 
   bool get _isRecipient => widget.initialProfile.role == UserRole.recipient;
   bool get _isNgo => widget.initialProfile.role == UserRole.ngoPartner;
+
+  bool get _addingNewHealthDocs {
+    final hadDoctor = widget.initialProfile.doctorReportPath?.isNotEmpty == true;
+    final hadVideo =
+        widget.initialProfile.conditionVideoPath?.isNotEmpty == true;
+    final newDoctor = _doctorReportPath != null &&
+        _doctorReportPath!.isNotEmpty &&
+        _doctorReportPath != widget.initialProfile.doctorReportPath;
+    final newVideo = _conditionVideoPath != null &&
+        _conditionVideoPath!.isNotEmpty &&
+        _conditionVideoPath != widget.initialProfile.conditionVideoPath;
+    return (!hadDoctor && newDoctor) || (!hadVideo && newVideo);
+  }
 
   @override
   void initState() {
@@ -60,7 +76,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final p = widget.initialProfile;
     _firstNameController.text = p.firstName;
     _lastNameController.text = p.lastName;
-    _emailController.text = p.email;
+    _emailController.text = p.email.isNotEmpty
+        ? p.email
+        : (AuthSessionService.instance.email ?? '');
     _phoneController.text = p.phone;
     _zipController.text = p.zipCode;
     _cityController.text = p.city ?? '';
@@ -78,6 +96,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } else if (p.zipCode.isNotEmpty) {
       _addressSearchController.text = p.zipCode;
     }
+
+    _loadSavedStreet();
+  }
+
+  Future<void> _loadSavedStreet() async {
+    final address = await _addressService.loadCurrentAddress();
+    if (!mounted) return;
+    if (address.streetAddress != null && address.streetAddress!.isNotEmpty) {
+      _streetController.text = address.streetAddress!;
+    }
+    if (_zipController.text.isEmpty && address.zipCode.isNotEmpty) {
+      setState(() {
+        _zipController.text = address.zipCode;
+        if (_cityController.text.isEmpty) {
+          _cityController.text = address.city ?? '';
+        }
+        if (_stateController.text.isEmpty) {
+          _stateController.text = address.state ?? '';
+        }
+      });
+    }
   }
 
   @override
@@ -90,6 +129,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController.dispose();
     _cityController.dispose();
     _stateController.dispose();
+    _streetController.dispose();
     _orgNameController.dispose();
     _einController.dispose();
     super.dispose();
@@ -122,14 +162,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    if (_idDocumentPath.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.t('onboarding.idUploadTitle'))),
-      );
-      return;
-    }
-
-    if (_isRecipient && !_hipaaConsentAccepted) {
+    if (_isRecipient && _addingNewHealthDocs && !_hipaaConsentAccepted) {
       setState(() => _hipaaConsentError = loc.t('hipaa.requiredError'));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.t('hipaa.requiredError'))),
@@ -139,10 +172,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _isSubmitting = true);
 
+    final email = _emailController.text.trim().toLowerCase();
     final updated = widget.initialProfile.copyWith(
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      email: _emailController.text.trim(),
+      email: email,
       phone: _phoneController.text.trim(),
       zipCode: _zipController.text.trim(),
       city: _cityController.text.trim().isEmpty
@@ -158,13 +192,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       organizationEin: _isNgo ? _einController.text.trim() : null,
     );
 
-    await _onboardingService.saveProfile(updated);
+    // Refresh session first (may clear a *different* account's cache), then
+    // write this profile so a same-user email change cannot wipe the save.
+    await AuthSessionService.instance.ensureLoaded();
     await AuthSessionService.instance.startSession(
       email: updated.email,
       role: updated.role,
+      token: AuthSessionService.instance.token,
     );
+    await _onboardingService.saveProfile(updated);
 
-    if (_isRecipient && _hipaaConsentAccepted) {
+    if (_isRecipient && _hipaaConsentAccepted && _addingNewHealthDocs) {
       await ComplianceApiService.instance.recordConsent(
         email: updated.email,
         consentType: ComplianceApiService.consentTypeHealthSubmit,
@@ -195,13 +233,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       UserRole.ngoPartner => 'Verified NGO Partner',
       UserRole.donor => 'Donor',
     };
+    final street = _streetController.text.trim();
     await _addressService.saveAddress(
       ProfileAddress(
         roleLabel: roleLabel,
         zipCode: updated.zipCode,
         city: updated.city,
         state: updated.state,
-        name: updated.fullName,
+        name: updated.fullName.trim().isEmpty ? email : updated.fullName,
+        streetAddress: street.isEmpty ? null : street,
       ),
     );
 
@@ -229,178 +269,223 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-          child: ContentConstrained(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  loc.t('onboarding.personalInfo'),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryDeepBlue,
-                      ),
-                ),
-                if (_isNgo) ...[
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _orgNameController,
-                    decoration: InputDecoration(
-                      labelText: loc.t('onboarding.orgName'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                loc.t('onboarding.personalInfo'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryDeepBlue,
                     ),
-                    textCapitalization: TextCapitalization.words,
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? loc.t('onboarding.orgNameRequired')
-                        : null,
+              ),
+              if (_isNgo) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _orgNameController,
+                  decoration: InputDecoration(
+                    labelText: loc.t('onboarding.orgName'),
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _einController,
-                    decoration: InputDecoration(
-                      labelText: loc.t('onboarding.ein'),
-                      hintText: loc.t('onboarding.einHint'),
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? loc.t('onboarding.orgNameRequired')
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _einController,
+                  decoration: InputDecoration(
+                    labelText: loc.t('onboarding.ein'),
+                    hintText: loc.t('onboarding.einHint'),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? loc.t('onboarding.einRequired')
+                      : null,
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _firstNameController,
+                      decoration: InputDecoration(
+                        labelText: loc.t('onboarding.firstName'),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) =>
+                          value == null || value.trim().isEmpty
+                              ? loc.t('onboarding.firstNameRequired')
+                              : null,
                     ),
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? loc.t('onboarding.einRequired')
-                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lastNameController,
+                      decoration: InputDecoration(
+                        labelText: loc.t('onboarding.lastName'),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) =>
+                          value == null || value.trim().isEmpty
+                              ? loc.t('onboarding.lastNameRequired')
+                              : null,
+                    ),
                   ),
                 ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _firstNameController,
-                        decoration: InputDecoration(
-                          labelText: loc.t('onboarding.firstName'),
-                        ),
-                        textCapitalization: TextCapitalization.words,
-                        validator: (value) =>
-                            value == null || value.trim().isEmpty
-                                ? loc.t('onboarding.firstNameRequired')
-                                : null,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _lastNameController,
-                        decoration: InputDecoration(
-                          labelText: loc.t('onboarding.lastName'),
-                        ),
-                        textCapitalization: TextCapitalization.words,
-                        validator: (value) =>
-                            value == null || value.trim().isEmpty
-                                ? loc.t('onboarding.lastNameRequired')
-                                : null,
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: loc.t('onboarding.email'),
+                  hintText: loc.t('onboarding.emailHint'),
+                  helperText: loc.t('profile.editEmailHelper'),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: loc.t('onboarding.email'),
-                    hintText: loc.t('onboarding.emailHint'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  final email = value?.trim() ?? '';
+                  if (email.isEmpty || !email.contains('@')) {
+                    return loc.t('onboarding.emailInvalid');
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(
+                  labelText: loc.t('onboarding.phone'),
+                  hintText: loc.t('onboarding.phoneHint'),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  final phone = value?.trim() ?? '';
+                  if (phone.isEmpty) return loc.t('onboarding.phoneInvalid');
+                  final digits = phone.replaceAll(RegExp(r'\D'), '');
+                  if (digits.length < 10) {
+                    return loc.t('onboarding.phoneInvalid');
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              Text(
+                loc.t('profile.editAddressSection'),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primaryDeepBlue,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              UsAddressAutocompleteField(
+                controller: _addressSearchController,
+                labelText: loc.t('onboarding.addressOrZip'),
+                hintText: loc.t('onboarding.addressHint'),
+                onAddressSelected: (suggestion) {
+                  setState(() {
+                    _addressSearchController.text = suggestion.primaryLine;
+                    _zipController.text = suggestion.zipCode;
+                    _cityController.text = suggestion.city;
+                    _stateController.text = suggestion.state;
+                    if (suggestion.streetAddress != null &&
+                        suggestion.streetAddress!.isNotEmpty) {
+                      _streetController.text = suggestion.streetAddress!;
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _streetController,
+                decoration: InputDecoration(
+                  labelText: loc.t('profile.streetAddress'),
+                  hintText: loc.t('profile.streetAddressHint'),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _zipController,
+                      decoration: InputDecoration(
+                        labelText: loc.t('onboarding.zipCode'),
+                        hintText: loc.t('onboarding.zipHint'),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        final zip = value?.trim() ?? '';
+                        if (zip.length != 5 || int.tryParse(zip) == null) {
+                          return loc.t('onboarding.zipInvalid');
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    final email = value?.trim() ?? '';
-                    if (email.isEmpty || !email.contains('@')) {
-                      return loc.t('onboarding.emailInvalid');
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: InputDecoration(
-                    labelText: loc.t('onboarding.phone'),
-                    hintText: loc.t('onboarding.phoneHint'),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    final phone = value?.trim() ?? '';
-                    if (phone.length < 10) {
-                      return loc.t('onboarding.phoneInvalid');
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                UsAddressAutocompleteField(
-                  controller: _addressSearchController,
-                  labelText: loc.t('onboarding.addressOrZip'),
-                  hintText: loc.t('onboarding.addressHint'),
-                  onManualFallback: () =>
-                      setState(() => _manualAddressEntry = true),
-                  validator: (value) {
-                    final zip = _zipController.text.trim();
-                    if (zip.length == 5 && int.tryParse(zip) != null) {
-                      return null;
-                    }
-                    if (_manualAddressEntry) {
-                      return loc.t('onboarding.zipInvalid');
-                    }
-                    return loc.t('onboarding.addressSelectOrZip');
-                  },
-                  onAddressSelected: (suggestion) {
-                    setState(() {
-                      _addressSearchController.text = suggestion.primaryLine;
-                      _zipController.text = suggestion.zipCode;
-                      _cityController.text = suggestion.city;
-                      _stateController.text = suggestion.state;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _zipController,
-                        decoration: InputDecoration(
-                          labelText: loc.t('onboarding.zipCode'),
-                          hintText: loc.t('onboarding.zipHint'),
-                        ),
-                        keyboardType: TextInputType.number,
-                        readOnly: !_manualAddressEntry,
-                        enabled: _manualAddressEntry ||
-                            _zipController.text.isNotEmpty,
-                        validator: (value) {
-                          final zip = value?.trim() ?? '';
-                          if (zip.length != 5 || int.tryParse(zip) == null) {
-                            return loc.t('onboarding.zipInvalid');
-                          }
-                          return null;
-                        },
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _cityController,
+                      decoration: InputDecoration(
+                        labelText: loc.t('onboarding.city'),
                       ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) =>
+                          value == null || value.trim().isEmpty
+                              ? loc.t('profile.cityRequired')
+                              : null,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _cityController,
-                        decoration: InputDecoration(
-                          labelText: loc.t('onboarding.city'),
-                        ),
-                        textCapitalization: TextCapitalization.words,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _stateController,
-                  decoration: InputDecoration(
-                    labelText: loc.t('onboarding.state'),
-                    hintText: loc.t('onboarding.stateHint'),
                   ),
-                  textCapitalization: TextCapitalization.characters,
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _stateController,
+                decoration: InputDecoration(
+                  labelText: loc.t('onboarding.state'),
+                  hintText: loc.t('onboarding.stateHint'),
                 ),
+                textCapitalization: TextCapitalization.characters,
+                validator: (value) {
+                  final state = value?.trim() ?? '';
+                  if (state.length != 2) {
+                    return loc.t('profile.stateRequired');
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+              Text(
+                loc.t('onboarding.identityVerification'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryDeepBlue,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                loc.t('profile.idOptionalHint'),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.primaryDeepBlue.withValues(alpha: 0.7),
+                    ),
+              ),
+              const SizedBox(height: 12),
+              DocumentUploadCard(
+                title: loc.t('onboarding.idUploadTitle'),
+                subtitle: loc.t('onboarding.idUploadSubtitle'),
+                icon: Icons.badge_outlined,
+                isUploaded: _idDocumentPath.trim().isNotEmpty,
+                fileName: _documentService.fileLabel(_idDocumentPath),
+                onPickFromGallery: () => _pickId(ImageSource.gallery),
+                onPickFromCamera: () => _pickId(ImageSource.camera),
+              ),
+              if (_isRecipient) ...[
                 const SizedBox(height: 32),
                 Text(
-                  loc.t('onboarding.identityVerification'),
+                  loc.t('onboarding.medicalDocs'),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryDeepBlue,
@@ -408,41 +493,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 12),
                 DocumentUploadCard(
-                  title: loc.t('onboarding.idUploadTitle'),
-                  subtitle: loc.t('onboarding.idUploadSubtitle'),
-                  icon: Icons.badge_outlined,
-                  isUploaded: _idDocumentPath.trim().isNotEmpty,
-                  fileName: _documentService.fileLabel(_idDocumentPath),
-                  onPickFromGallery: () => _pickId(ImageSource.gallery),
-                  onPickFromCamera: () => _pickId(ImageSource.camera),
+                  title: loc.t('onboarding.doctorReportTitle'),
+                  subtitle: loc.t('onboarding.doctorReportSubtitle'),
+                  icon: Icons.description_outlined,
+                  isUploaded: _doctorReportPath != null &&
+                      _doctorReportPath!.isNotEmpty,
+                  fileName: _documentService.fileLabel(_doctorReportPath),
+                  onPickFile: _pickDoctorReport,
                 ),
-                if (_isRecipient) ...[
-                  const SizedBox(height: 32),
-                  Text(
-                    loc.t('onboarding.medicalDocs'),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryDeepBlue,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  DocumentUploadCard(
-                    title: loc.t('onboarding.doctorReportTitle'),
-                    subtitle: loc.t('onboarding.doctorReportSubtitle'),
-                    icon: Icons.description_outlined,
-                    isUploaded: _doctorReportPath != null,
-                    fileName: _documentService.fileLabel(_doctorReportPath),
-                    onPickFile: _pickDoctorReport,
-                  ),
-                  const SizedBox(height: 16),
-                  DocumentUploadCard(
-                    title: loc.t('onboarding.videoTitle'),
-                    subtitle: loc.t('onboarding.videoSubtitle'),
-                    icon: Icons.videocam_outlined,
-                    isUploaded: _conditionVideoPath != null,
-                    fileName: _documentService.fileLabel(_conditionVideoPath),
-                    onPickVideo: _pickConditionVideo,
-                  ),
+                const SizedBox(height: 16),
+                DocumentUploadCard(
+                  title: loc.t('onboarding.videoTitle'),
+                  subtitle: loc.t('onboarding.videoSubtitle'),
+                  icon: Icons.videocam_outlined,
+                  isUploaded: _conditionVideoPath != null &&
+                      _conditionVideoPath!.isNotEmpty,
+                  fileName: _documentService.fileLabel(_conditionVideoPath),
+                  onPickVideo: _pickConditionVideo,
+                ),
+                if (_addingNewHealthDocs) ...[
                   const SizedBox(height: 24),
                   HipaaConsentCheckbox(
                     value: _hipaaConsentAccepted,
@@ -456,7 +525,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ],
               ],
-            ),
+            ],
           ),
         ),
       ),
