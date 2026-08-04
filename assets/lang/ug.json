@@ -770,7 +770,7 @@
   "shop.buy": "سېتىۋېلىش",
   "shop.withdraw": "ئېلاننى ئۆچۈرۈش",
   "shop.purchaseTitle": "بىخەتەر چىقىم قىلىش",
-  "shop.purchaseBody": "{title} — {price}\n\nStripe ئارقىلىق بىخەتەر پۇل تۆلەيسىز. چىقىم تاماملانغۇچە MedGift بۇ مەھسۇلاتنى سىز ئۈچۈن تۇتۇپ تۇرىدۇ.",
+  "shop.purchaseBody": "{title} — {price}\n\nبىخەتەر چىقىم ئۇسۇلىنى تاللاڭ. چىقىم تاماملانغۇچە MedGift بۇيۇمنى ساقلايدۇ. PayPal چىقىملىرى info@medgift.us غا كىرىدۇ.",
   "shop.purchaseSend": "Stripe بىلەن تۆلەش",
   "shop.createTitle": "سېتىش ئېلانى قۇرۇش",
   "shop.createSubtitle": "ھەر بىر سېتىشتا MedGift {percent}٪ كومىسسىيە ئالىدۇ. سېتىۋالغۇچى شەخسىي ئالاقە ئۇچۇرلىرىڭىزنى كۆرمەيدۇ.",
@@ -847,5 +847,8 @@
   "listings.tabMine": "ئېلانلىرىم",
   "listings.tabMatches": "ماسلىشىشلار",
   "listings.fabOffer": "ئىئانە ئېلانى",
-  "listings.fabRequest": "تەلەپ قۇرۇش"
+  "listings.fabRequest": "تەلەپ قۇرۇش",
+  "shop.payWithStripe": "Stripe بىلەن تۆلەش",
+  "shop.payWithPayPal": "PayPal بىلەن تۆلەش",
+  "shop.purchaseHold": "48 سائەتلىك ساقلاش تەلەپ قىلىش"
 }

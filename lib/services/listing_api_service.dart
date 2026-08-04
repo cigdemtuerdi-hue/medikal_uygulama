@@ -262,16 +262,22 @@ class ListingApiService {
     );
   }
 
-  /// Starts Stripe Checkout for a sale listing.
+  /// Starts Stripe or PayPal Checkout for a sale listing.
   ///
   /// On success [ListingApiResult.data] is the hosted Checkout URL. When the
-  /// API returns [code] `STRIPE_NOT_CONFIGURED`, call [purchase] instead.
-  Future<ListingApiResult<String>> checkout(String listingId) async {
+  /// API returns [code] `STRIPE_NOT_CONFIGURED` / `PAYPAL_NOT_CONFIGURED` /
+  /// `PAYMENT_NOT_CONFIGURED`, call [purchase] instead (or try the other
+  /// provider).
+  Future<ListingApiResult<String>> checkout(
+    String listingId, {
+    String provider = 'stripe',
+  }) async {
     try {
       final response = await http
           .post(
             _uri('/api/listings/$listingId/checkout'),
             headers: _headers(await _sessionToken()),
+            body: jsonEncode({'provider': provider}),
           )
           .timeout(_timeout);
 
@@ -291,6 +297,54 @@ class ListingApiService {
       debugPrint('[ListingApi] checkout failed: $err\n$stack');
       return _offline<String>();
     }
+  }
+
+  /// Captures a PayPal order after the buyer returns from PayPal.
+  Future<ListingApiResult<SaleOrder>> capturePayPal(String paypalOrderId) async {
+    try {
+      final response = await http
+          .post(
+            _uri('/api/orders/paypal/capture'),
+            headers: _headers(await _sessionToken()),
+            body: jsonEncode({'paypalOrderId': paypalOrderId}),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final raw = _parse(response.body)?['order'] as Map?;
+        return ListingApiResult<SaleOrder>(
+          success: true,
+          message: '',
+          data: raw == null
+              ? null
+              : SaleOrder.fromJson(raw.cast<String, dynamic>()),
+          statusCode: response.statusCode,
+        );
+      }
+      return _failure<SaleOrder>(response, 'PayPal ödemesi tamamlanamadı.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] capturePayPal failed: $err\n$stack');
+      return _offline<SaleOrder>();
+    }
+  }
+
+  /// Which checkout providers the API currently has credentials for.
+  Future<({bool stripe, bool paypal})> paymentProviders() async {
+    try {
+      final response = await http
+          .get(_uri('/api/health'))
+          .timeout(const Duration(seconds: 12));
+      final payments = _parse(response.body)?['payments'];
+      if (payments is Map) {
+        return (
+          stripe: payments['stripeConfigured'] == true,
+          paypal: payments['paypalConfigured'] == true,
+        );
+      }
+    } catch (err, stack) {
+      debugPrint('[ListingApi] paymentProviders failed: $err\n$stack');
+    }
+    return (stripe: false, paypal: false);
   }
 
   Future<ListingApiResult<SaleOrder>> orderBySession(String sessionId) async {

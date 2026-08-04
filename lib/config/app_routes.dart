@@ -268,6 +268,7 @@ class AppRoutes {
           child: ShopCheckoutResultScreen(
             success: true,
             sessionId: q['session_id'],
+            paypalToken: q['token'] ?? q['paypal_order_id'],
           ),
         ),
       );

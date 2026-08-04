@@ -770,7 +770,7 @@
   "shop.buy": "Купить",
   "shop.withdraw": "Снять объявление",
   "shop.purchaseTitle": "Безопасная оплата",
-  "shop.purchaseBody": "{title} — {price}\n\nВы оплатите безопасно через Stripe. MedGift удерживает товар, пока оплата не завершится.",
+  "shop.purchaseBody": "{title} — {price}\n\nВыберите безопасный способ оплаты. MedGift резервирует товар на время оплаты. Платежи PayPal поступают на info@medgift.us.",
   "shop.purchaseSend": "Оплатить через Stripe",
   "shop.createTitle": "Создать объявление о продаже",
   "shop.createSubtitle": "С каждой продажи MedGift берёт комиссию {percent}%. Покупатели не видят ваши контакты.",
@@ -847,5 +847,8 @@
   "listings.tabMine": "Мои объявления",
   "listings.tabMatches": "Совпадения",
   "listings.fabOffer": "Объявление о пожертвовании",
-  "listings.fabRequest": "Создать запрос"
+  "listings.fabRequest": "Создать запрос",
+  "shop.payWithStripe": "Оплатить через Stripe",
+  "shop.payWithPayPal": "Оплатить через PayPal",
+  "shop.purchaseHold": "Запросить резерв на 48 часов"
 }

@@ -62,3 +62,14 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      # PayPal Checkout — REST app for info@medgift.us (Developer Dashboard).
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_MODE
+        value: live
+      - key: PAYPAL_MERCHANT_EMAIL
+        value: info@medgift.us
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false

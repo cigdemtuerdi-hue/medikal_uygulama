@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 /**
  * A marketplace purchase against a `sale` listing.
  *
- * Money lands on MedGift's Stripe account first; `commissionCents` is our take
- * and `sellerNetCents` is what we owe the seller (payouts / Connect later).
+ * Money lands on MedGift's Stripe or PayPal account first; `commissionCents`
+ * is our take and `sellerNetCents` is what we owe the seller (payouts later).
  */
 const orderSchema = new mongoose.Schema(
   {
@@ -21,8 +21,12 @@ const orderSchema = new mongoose.Schema(
     currency: { type: String, default: 'USD', uppercase: true },
     /** pending | paid | failed | canceled | refunded */
     status: { type: String, default: 'pending', index: true },
+    /** stripe | paypal | null (hold) */
+    paymentProvider: { type: String, default: null, index: true },
     stripeCheckoutSessionId: { type: String, default: null, index: true },
     stripePaymentIntentId: { type: String, default: null },
+    paypalOrderId: { type: String, default: null, index: true },
+    paypalCaptureId: { type: String, default: null },
     paidAt: { type: Date, default: null },
   },
   { timestamps: true },

@@ -14,7 +14,11 @@ const { setListingModel } = require('./models/listingStore');
 const { setUploadModel } = require('./models/uploadStore');
 const { setOrderModel } = require('./models/orderStore');
 const { isStripeConfigured, stripeSecretMisconfig } = require('./services/stripeService');
-const { stripeWebhook } = require('./controllers/paymentController');
+const { isPayPalConfigured, paypalMerchantEmail, paypalMode } = require('./services/paypalService');
+const {
+  stripeWebhook,
+  paypalWebhook,
+} = require('./controllers/paymentController');
 
 const PORT = Number(process.env.PORT) || 3001;
 const MONGODB_URI =
@@ -58,6 +62,13 @@ app.post(
   '/api/payments/webhook',
   express.raw({ type: 'application/json' }),
   stripeWebhook,
+);
+
+// PayPal webhook (JSON). Verify via PAYPAL_WEBHOOK_ID when set.
+app.post(
+  '/api/payments/paypal/webhook',
+  express.json({ type: 'application/json', limit: '256kb' }),
+  paypalWebhook,
 );
 
 app.use(express.json({ limit: '128kb' }));
@@ -116,6 +127,11 @@ app.get('/api/health', (_req, res) => {
     payments: {
       stripeConfigured: isStripeConfigured(),
       stripeMisconfig: stripeSecretMisconfig(),
+      paypalConfigured: isPayPalConfigured(),
+      paypalMode: isPayPalConfigured() ? paypalMode() : null,
+      paypalMerchantEmail: isPayPalConfigured()
+        ? paypalMerchantEmail()
+        : null,
     },
   });
 });
@@ -269,6 +285,8 @@ async function start() {
     console.info('[api] POST /api/uploads, GET /api/uploads/:id');
     console.info('[api] POST /api/listings/:id/checkout');
     console.info('[api] POST /api/payments/webhook');
+    console.info('[api] POST /api/payments/paypal/webhook');
+    console.info('[api] POST /api/orders/paypal/capture');
     console.info(
       `[api] Stripe: ${isStripeConfigured() ? 'configured' : 'not configured'}`,
     );
