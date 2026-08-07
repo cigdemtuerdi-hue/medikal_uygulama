@@ -930,9 +930,70 @@ async function paypalWebhook(req, res) {
   return res.status(200).json({ received: true });
 }
 
+/**
+ * POST /api/orders/cancel-pending
+ * Body: { orderId?: string, cartCheckoutId?: string }
+ * Buyer cancels checkout — release soft-holds so items reappear in the shop.
+ */
+async function cancelPendingCheckout(req, res, next) {
+  try {
+    const orderId = String(req.body?.orderId || '').trim();
+    const cartCheckoutId = String(req.body?.cartCheckoutId || '').trim();
+    if (!orderId && !cartCheckoutId) {
+      return res.status(400).json({
+        success: false,
+        message: 'orderId veya cartCheckoutId gerekli.',
+        code: 'CANCEL_ID_REQUIRED',
+      });
+    }
+
+    let orders = [];
+    if (cartCheckoutId) {
+      orders = await findOrdersByCartCheckoutId(cartCheckoutId);
+    } else if (orderId) {
+      const one = await findOrderById(orderId);
+      if (one) {
+        orders = one.cartCheckoutId
+          ? await findOrdersByCartCheckoutId(one.cartCheckoutId)
+          : [one];
+      }
+    }
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sipariş bulunamadı.',
+        code: 'ORDER_NOT_FOUND',
+      });
+    }
+
+    const uid = req.user.userId;
+    const mine = orders.filter((o) => o.buyerUserId === uid);
+    if (mine.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bu siparişe erişemezsiniz.',
+        code: 'FORBIDDEN',
+      });
+    }
+
+    for (const order of mine) {
+      await releasePendingOrder(order);
+    }
+
+    return res.status(200).json({
+      success: true,
+      released: mine.length,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   createCheckout,
   createCartCheckout,
+  cancelPendingCheckout,
   getOrder,
   getOrderBySession,
   capturePayPalOrder,

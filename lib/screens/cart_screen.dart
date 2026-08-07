@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 import '../config/app_routes.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/cart_item.dart';
 import '../services/cart_service.dart';
+import '../services/checkout_launcher.dart';
 import '../services/listing_api_service.dart';
 
 /// Shopping cart ("Sepetim") — review items and pay via Stripe / PayPal.
@@ -85,20 +86,47 @@ class _CartScreenState extends State<CartScreen> {
     setState(() => _checkingOut = false);
 
     if (result.success && result.data != null) {
-      final uri = Uri.tryParse(result.data!);
-      if (uri == null ||
-          !(await canLaunchUrl(uri)) ||
-          !(await launchUrl(uri, mode: LaunchMode.externalApplication))) {
+      final url = result.data!;
+      final uri = Uri.tryParse(url);
+      if (uri == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(loc.t('shop.checkoutOpenFailed'))),
         );
         return;
       }
-      await cart.clear();
+
+      final opened = await openCheckoutUrl(uri);
       if (!mounted) return;
+
+      // Keep cart until /shop/success — if the payment tab fails to open,
+      // the buyer must still see their items.
+      if (!opened) {
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(loc.t('shop.checkoutOpenFailed')),
+            content: SelectableText(url),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: url));
+                  Navigator.pop(ctx);
+                },
+                child: Text(loc.t('cart.copyCheckoutLink')),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(loc.t('common.close')),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.t('cart.checkoutOpened'))),
+        SnackBar(content: Text(loc.t('cart.checkoutOpenedKeep'))),
       );
       return;
     }

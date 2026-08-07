@@ -334,6 +334,38 @@ class ListingApiService {
     }
   }
 
+  /// Releases soft-holds when the buyer cancels hosted checkout.
+  Future<ListingApiResult<void>> cancelPendingCheckout({
+    String? orderId,
+    String? cartCheckoutId,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            _uri('/api/orders/cancel-pending'),
+            headers: _headers(await _sessionToken()),
+            body: jsonEncode({
+              if (orderId != null && orderId.isNotEmpty) 'orderId': orderId,
+              if (cartCheckoutId != null && cartCheckoutId.isNotEmpty)
+                'cartCheckoutId': cartCheckoutId,
+            }),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        return ListingApiResult<void>(
+          success: true,
+          message: '',
+          statusCode: response.statusCode,
+        );
+      }
+      return _failure<void>(response, 'Rezervasyon kaldırılamadı.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] cancelPendingCheckout failed: $err\n$stack');
+      return _offline<void>();
+    }
+  }
+
   /// Captures a PayPal order after the buyer returns from PayPal.
   Future<ListingApiResult<SaleOrder>> capturePayPal(String paypalOrderId) async {
     try {

@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "Pay for cart",
   "cart.checkoutBody": "{count} item(s) · {total}\n\nYou will pay securely. Items are held while checkout completes.",
   "cart.checkoutOpened": "Payment page opened. Complete checkout to finish.",
-  "cart.paymentUnavailable": "Online payment is not configured yet."
+  "cart.paymentUnavailable": "Online payment is not configured yet.",
+  "cart.copyCheckoutLink": "Copy payment link",
+  "cart.checkoutOpenedKeep": "Payment page opened. Your cart stays until payment succeeds."
 }

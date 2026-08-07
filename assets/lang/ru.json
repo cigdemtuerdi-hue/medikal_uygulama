@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "Оплата корзины",
   "cart.checkoutBody": "{count} товар(ов) · {total}\n\nБезопасная оплата. Товары резервируются на время оплаты.",
   "cart.checkoutOpened": "Страница оплаты открыта. Завершите платёж.",
-  "cart.paymentUnavailable": "Онлайн-оплата ещё не настроена."
+  "cart.paymentUnavailable": "Онлайн-оплата ещё не настроена.",
+  "cart.copyCheckoutLink": "Скопировать ссылку на оплату",
+  "cart.checkoutOpenedKeep": "Страница оплаты открыта. Корзина сохранится до успешной оплаты."
 }

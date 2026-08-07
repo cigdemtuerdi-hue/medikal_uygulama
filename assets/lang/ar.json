@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "دفع السلة",
   "cart.checkoutBody": "{count} عنصر · {total}\n\nستدفع بأمان. تُحجز العناصر أثناء الدفع.",
   "cart.checkoutOpened": "فُتحت صفحة الدفع. أكمل العملية.",
-  "cart.paymentUnavailable": "الدفع عبر الإنترنت غير مُعد بعد."
+  "cart.paymentUnavailable": "الدفع عبر الإنترنت غير مُعد بعد.",
+  "cart.copyCheckoutLink": "نسخ رابط الدفع",
+  "cart.checkoutOpenedKeep": "فُتحت صفحة الدفع. تبقى السلة حتى يكتمل الدفع."
 }

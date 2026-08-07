@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "ھارۋا چىقىمى",
   "cart.checkoutBody": "{count} دانە · {total}\n\nبىخەتەر چىقىم قىلىسىز. چىقىم جەريانىدا تاۋارلار ساقلىنىدۇ.",
   "cart.checkoutOpened": "چىقىم بېتى ئاچىلدى. داۋاملاشتۇرۇڭ.",
-  "cart.paymentUnavailable": "تور چىقىمى تېخى تەڭشەلمىگەن."
+  "cart.paymentUnavailable": "تور چىقىمى تېخى تەڭشەلمىگەن.",
+  "cart.copyCheckoutLink": "چىقىم ئۇلانمىسىنى كۆچۈر",
+  "cart.checkoutOpenedKeep": "چىقىم بېتى ئاچىلدى. چىقىم تاماملانغۇچە ھارۋا ساقلىنىدۇ."
 }

@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "Pagar el carrito",
   "cart.checkoutBody": "{count} artículo(s) · {total}\n\nPagarás de forma segura. Los artículos se reservan durante el pago.",
   "cart.checkoutOpened": "Se abrió la página de pago. Completa el proceso.",
-  "cart.paymentUnavailable": "El pago en línea aún no está configurado."
+  "cart.paymentUnavailable": "El pago en línea aún no está configurado.",
+  "cart.copyCheckoutLink": "Copiar enlace de pago",
+  "cart.checkoutOpenedKeep": "Se abrió la página de pago. El carrito se mantiene hasta completar el pago."
 }

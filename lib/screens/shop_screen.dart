@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_routes.dart';
 import '../config/app_theme.dart';
@@ -10,6 +9,7 @@ import '../models/listing.dart';
 import '../services/ai_vision_service.dart';
 import '../services/auth_session_service.dart';
 import '../services/cart_service.dart';
+import '../services/checkout_launcher.dart';
 import '../services/listing_api_service.dart';
 import '../services/listing_photo_publish_helper.dart';
 import '../widgets/cart_icon_button.dart';
@@ -256,16 +256,14 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
 
     if (checkout.success && checkout.data != null) {
       final uri = Uri.tryParse(checkout.data!);
-      if (uri == null ||
-          !(await canLaunchUrl(uri)) ||
-          !(await launchUrl(uri, mode: LaunchMode.externalApplication))) {
+      if (uri == null || !(await openCheckoutUrl(uri))) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(loc.t('shop.checkoutOpenFailed'))),
         );
         return;
       }
-      await CartService.instance.remove(listing.id);
+      // Keep cart lines until /shop/success clears after paid checkout.
       widget.onChanged();
       await _reload();
       return;
