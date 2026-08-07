@@ -1,0 +1,22 @@
+# MedGift US — https://medgift.us
+# Authenticated app screens and auth flows are excluded: they render nothing
+# useful to a crawler and would dilute the indexable surface.
+
+User-agent: *
+Allow: /$
+Allow: /browse
+Allow: /privacy-policy
+Allow: /hipaa-privacy-notice
+
+Disallow: /admin
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /onboarding
+Disallow: /profile
+Disallow: /my-items
+Disallow: /recipient
+Disallow: /exchange
+Disallow: /ngo-portal
+
+Sitemap: https://medgift.us/sitemap.xml

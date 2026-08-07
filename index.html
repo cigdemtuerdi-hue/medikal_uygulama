@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MedGift US — Donate &amp; Receive Durable Medical Equipment Nationwide</title>
+  <meta name="description" content="MedGift US connects surplus medical equipment with people and clinics who need it — cutting waste, empowering communities, and building a greener care ecosystem. Free DME donation and matching across the United States.">
+  <link rel="canonical" href="https://medgift.us/">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <meta name="author" content="MedGift LLC">
+
+  <!-- Open Graph (Facebook, LinkedIn, WhatsApp link previews) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MedGift US">
+  <meta property="og:title" content="MedGift US — Donate &amp; Receive Durable Medical Equipment">
+  <meta property="og:description" content="Turn unused wheelchairs, hospital beds and wound care supplies into life-changing mobility for someone who needs them. Secure, tax-ready, nationwide.">
+  <meta property="og:url" content="https://medgift.us/">
+  <meta property="og:image" content="https://medgift.us/icons/social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MedGift US logo — a blue heart seated in a wheelchair">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MedGift US — Donate &amp; Receive Durable Medical Equipment">
+  <meta name="twitter:description" content="Turn unused wheelchairs, hospital beds and wound care supplies into life-changing mobility for someone who needs them.">
+  <meta name="twitter:image" content="https://medgift.us/icons/social-card.png">
+  <meta name="twitter:image:alt" content="MedGift US logo — a blue heart seated in a wheelchair">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="MedGift US">
+  <meta name="theme-color" content="#1A5FA8">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
+
+  <!--
+    Favicon. Browsers cache the address-bar icon aggressively, so the query
+    string forces a refetch for anyone who already saw the old default icon.
+  -->
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png?v=2"/>
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png?v=2"/>
+
+  <link rel="manifest" href="manifest.json">
+
+  <!--
+    Structured data. Type is Organization rather than NGO on purpose: MedGift
+    LLC is a for-profit platform that facilitates donations to 501(c)(3)
+    recipients — it is not itself tax-exempt, and claiming otherwise in
+    structured data would be a misrepresentation to Google.
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://medgift.us/#organization",
+    "name": "MedGift US",
+    "legalName": "MedGift LLC",
+    "url": "https://medgift.us/",
+    "logo": "https://medgift.us/icons/Icon-512.png",
+    "image": "https://medgift.us/icons/Icon-512.png",
+    "description": "MedGift US connects surplus durable medical equipment (DME) and wound care supplies with people, clinics and nonprofits who need them — cutting waste, empowering communities, and building a greener care ecosystem.",
+    "email": "info@medgift.us",
+    "areaServed": {
+      "@type": "Country",
+      "name": "United States"
+    },
+    "knowsLanguage": ["en", "es", "tr", "zh", "ru", "ar", "ug", "fr", "de"],
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "support@medgift.us",
+        "areaServed": "US",
+        "availableLanguage": ["English", "Spanish", "Turkish", "Chinese", "Russian", "Arabic", "Uyghur", "French", "German"]
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "email": "partnerships@medgift.us",
+        "areaServed": "US"
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "privacy",
+        "email": "privacy@medgift.us",
+        "areaServed": "US"
+      }
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://medgift.us/#website",
+    "url": "https://medgift.us/",
+    "name": "MedGift US",
+    "publisher": { "@id": "https://medgift.us/#organization" },
+    "inLanguage": "en-US"
+  }
+  </script>
+  <!-- Maps JS key: allow http://localhost:* for local dev in Google Cloud Console. -->
+  <script>
+    window.googleMapsReady = false;
+    window.googleMapsLoadError = null;
+    window.initGoogleMaps = function () {
+      window.googleMapsReady = true;
+    };
+    window.gm_authFailure = function () {
+      window.googleMapsLoadError = 'Google Maps authentication failed. Check API key restrictions and billing.';
+    };
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFUphMYjehwgdozhZcElbEq0FMnGo6UVQ&libraries=places&region=US&language=en&callback=initGoogleMaps">
+  </script>
+  <!-- UserWay accessibility widget — bottom-left so it never covers
+       AppBar actions (logout / language) or MeGi (bottom-right). -->
+  <script
+    src="https://cdn.userway.org/widget.js"
+    data-account="NFWJF1Hh3e"
+    data-position="5"></script>
+  <style>
+    /*
+      UserWay default is top-right and sits on Flutter AppBar actions
+      (Çıkış / language). Pin the trigger to the bottom-left corner and
+      keep it clear of MeGi (bottom-right) and the AppBar.
+    */
+    .uwy .userway_buttons_wrapper,
+    .uai .userway_buttons_wrapper,
+    .userway_buttons_wrapper {
+      top: auto !important;
+      bottom: 24px !important;
+      right: auto !important;
+      left: 16px !important;
+      transform: none !important;
+    }
+
+    @media (max-width: 600px) {
+      .uwy .userway_buttons_wrapper,
+      .uai .userway_buttons_wrapper,
+      .userway_buttons_wrapper {
+        bottom: 88px !important; /* above bottom nav when present */
+        left: 12px !important;
+      }
+    }
+
+    /*
+      Crawlable content layer. Deliberately left in normal document flow:
+      giving it `position: fixed; inset: 0` turns it into an opaque overlay on
+      top of <flutter-view>, and the engine then never paints a scene at all
+      (empty flt-glass-pane, blank app). Flutter's own view is absolutely
+      positioned over this, so it stays hidden from users regardless.
+    */
+    #seo-content {
+      margin: 0;
+      padding: 48px 24px 96px;
+      background: #0D3B6E;
+      color: #E8F1FA;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+    }
+    #seo-content header,
+    #seo-content main {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    #seo-logo {
+      display: block;
+      width: 88px;
+      height: 88px;
+      margin: 0 0 20px;
+      border-radius: 20px;
+    }
+    #seo-content h1 {
+      font-size: 1.9rem;
+      line-height: 1.25;
+      margin: 0 0 16px;
+    }
+    #seo-content h2 {
+      font-size: 1.25rem;
+      margin: 32px 0 8px;
+      color: #9FC7EE;
+    }
+    #seo-content h3 {
+      font-size: 1.05rem;
+      margin: 20px 0 4px;
+      color: #9FC7EE;
+    }
+    #seo-content .lede {
+      font-size: 1.1rem;
+      color: #C6DDF3;
+    }
+    #seo-content a {
+      color: #9FC7EE;
+    }
+    #seo-spinner {
+      width: 28px;
+      height: 28px;
+      margin: 40px auto 0;
+      border: 3px solid rgba(255, 255, 255, 0.25);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: seo-spin 0.9s linear infinite;
+    }
+    @keyframes seo-spin {
+      to { transform: rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #seo-spinner { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+    Crawlable content layer. Flutter paints into a canvas, so without this a
+    search engine sees an empty document and has nothing to rank. It doubles as
+    the loading screen and is removed as soon as Flutter paints its first frame.
+  -->
+  <div id="seo-content">
+    <header>
+      <img id="seo-logo" src="icons/Icon-192.png?v=2" width="88" height="88"
+           alt="MedGift US logo — a blue heart seated in a wheelchair">
+      <h1>MedGift US — Donate and Receive Durable Medical Equipment</h1>
+      <p class="lede">
+        We connect surplus medical equipment with people and clinics who need it —
+        cutting waste, empowering communities, and building a greener care ecosystem.
+      </p>
+    </header>
+
+    <main>
+      <h2>Donate DME &amp; Wound Care Supplies</h2>
+      <p>
+        Connect surplus medical equipment with US nonprofits, clinics, and disaster
+        relief partners. Donate and receive durable medical equipment across the
+        United States — securely, and with tax-ready records.
+      </p>
+
+      <h2>What you can donate or request</h2>
+      <ul>
+        <li>Wheelchairs and transport chairs</li>
+        <li>Walkers, rollators and mobility aids</li>
+        <li>Hospital beds</li>
+        <li>Oxygen equipment and nebulizers</li>
+        <li>Commodes and shower chairs</li>
+        <li>Wound care supplies, sterile dressings and compression wraps</li>
+      </ul>
+
+      <h2>The MedGift Manifesto: Reuse, Empower, Heal the Planet</h2>
+      <p>
+        Every year, thousands of fully functional medical devices are left unused in
+        storage, while millions of individuals with disabilities lack access to
+        essential mobility equipment. MedGift US bridges this gap by turning unused
+        medical items into life-changing mobility solutions.
+      </p>
+
+      <h3>Stop Overconsumption</h3>
+      <p>
+        We end the cycle of waste by reclaiming usable equipment and connecting it
+        directly with those in need — stopping overconsumption at its root.
+      </p>
+
+      <h3>Empowered Community</h3>
+      <p>
+        A global, transparent solidarity network built by and for the disability
+        community. We break down financial barriers and offer dignified,
+        peer-to-peer access to mobility tools, ensuring no one is left behind.
+      </p>
+
+      <h3>Clean Energy &amp; ESG</h3>
+      <p>
+        Medical equipment recycling is clean energy in action. By extending the
+        lifecycle of existing items, we cut factory emissions, reduce electronic and
+        plastic waste, and track real-time CO2 savings on our live ESG dashboard.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        General enquiries: <a href="mailto:info@medgift.us">info@medgift.us</a><br>
+        Sponsorship and partnerships: <a href="mailto:partnerships@medgift.us">partnerships@medgift.us</a><br>
+        Support: <a href="mailto:support@medgift.us">support@medgift.us</a><br>
+        Privacy requests: <a href="mailto:privacy@medgift.us">privacy@medgift.us</a>
+      </p>
+      <p>
+        Available in English, Spanish, Turkish, Chinese, Russian, Arabic, Uyghur, French and German.
+        We typically respond within 2 business days.
+      </p>
+    </main>
+
+    <div id="seo-spinner" aria-hidden="true"></div>
+    <noscript>
+      <p><strong>JavaScript is required to use the MedGift US application.</strong></p>
+    </noscript>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    (function () {
+      var removed = false;
+      function dismissSeoContent() {
+        if (removed) return;
+        removed = true;
+        var node = document.getElementById('seo-content');
+        if (node && node.parentNode) node.parentNode.removeChild(node);
+      }
+      window.addEventListener('flutter-first-frame', dismissSeoContent);
+      // Safety net: never let the fallback outlive a slow or failed boot check.
+      setTimeout(dismissSeoContent, 12000);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{
+    "name": "MedGift US",
+    "short_name": "MedGift",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0D3B6E",
+    "theme_color": "#1A5FA8",
+    "description": "Donate and receive durable medical equipment (DME) and wound care supplies across the United States. MedGift US connects surplus equipment with people and clinics who need it.",
+    "categories": ["health", "medical", "lifestyle"],
+    "lang": "en-US",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
