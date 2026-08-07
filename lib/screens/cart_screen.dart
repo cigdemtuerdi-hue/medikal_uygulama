@@ -143,7 +143,24 @@ class _CartScreenState extends State<CartScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: loc.t('nav.home'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutes.home,
+            (route) => false,
+          ),
+        ),
         title: Text(loc.t('cart.appBarTitle')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutes.home,
+              (route) => false,
+            ),
+            child: Text(loc.t('shop.backToHome')),
+          ),
+        ],
       ),
       body: ListenableBuilder(
         listenable: CartService.instance,

@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "Zahlungsseite geöffnet. Bitte abschließen.",
   "cart.paymentUnavailable": "Online-Zahlung ist noch nicht eingerichtet.",
   "cart.copyCheckoutLink": "Zahlungslink kopieren",
-  "cart.checkoutOpenedKeep": "Zahlungsseite geöffnet. Der Warenkorb bleibt bis zur erfolgreichen Zahlung."
+  "cart.checkoutOpenedKeep": "Zahlungsseite geöffnet. Der Warenkorb bleibt bis zur erfolgreichen Zahlung.",
+  "shop.backToHome": "Zur Startseite"
 }

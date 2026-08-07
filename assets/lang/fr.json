@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "Page de paiement ouverte. Terminez l’achat.",
   "cart.paymentUnavailable": "Le paiement en ligne n’est pas encore configuré.",
   "cart.copyCheckoutLink": "Copier le lien de paiement",
-  "cart.checkoutOpenedKeep": "Page de paiement ouverte. Le panier reste jusqu’au paiement réussi."
+  "cart.checkoutOpenedKeep": "Page de paiement ouverte. Le panier reste jusqu’au paiement réussi.",
+  "shop.backToHome": "Retour à l’accueil"
 }

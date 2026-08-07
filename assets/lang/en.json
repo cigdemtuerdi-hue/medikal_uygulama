@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "Payment page opened. Complete checkout to finish.",
   "cart.paymentUnavailable": "Online payment is not configured yet.",
   "cart.copyCheckoutLink": "Copy payment link",
-  "cart.checkoutOpenedKeep": "Payment page opened. Your cart stays until payment succeeds."
+  "cart.checkoutOpenedKeep": "Payment page opened. Your cart stays until payment succeeds.",
+  "shop.backToHome": "Back to home"
 }

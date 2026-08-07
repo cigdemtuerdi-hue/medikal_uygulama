@@ -47,13 +47,27 @@ class _ShopScreenState extends State<ShopScreen>
 
   void _bump() => setState(() => _reloadToken++);
 
+  void _goHome() {
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.home,
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final token = AuthSessionService.instance.token;
     if (token == null || token.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text(loc.t('shop.appBarTitle'))),
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: loc.t('nav.home'),
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _goHome,
+          ),
+          title: Text(loc.t('shop.appBarTitle')),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -72,6 +86,11 @@ class _ShopScreenState extends State<ShopScreen>
                       Navigator.of(context).pushReplacementNamed('/login'),
                   child: Text(loc.t('auth.logIn')),
                 ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: _goHome,
+                  child: Text(loc.t('shop.backToHome')),
+                ),
               ],
             ),
           ),
@@ -81,6 +100,11 @@ class _ShopScreenState extends State<ShopScreen>
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: loc.t('nav.home'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goHome,
+        ),
         title: Text(loc.t('shop.appBarTitle')),
         actions: [
           const CartIconButton(),
