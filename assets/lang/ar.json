@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "فُتحت صفحة الدفع. أكمل العملية.",
   "cart.paymentUnavailable": "الدفع عبر الإنترنت غير مُعد بعد.",
   "cart.copyCheckoutLink": "نسخ رابط الدفع",
-  "cart.checkoutOpenedKeep": "فُتحت صفحة الدفع. تبقى السلة حتى يكتمل الدفع."
+  "cart.checkoutOpenedKeep": "فُتحت صفحة الدفع. تبقى السلة حتى يكتمل الدفع.",
+  "shop.backToHome": "العودة إلى الصفحة الرئيسية"
 }

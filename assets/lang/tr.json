@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "Ödeme sayfası açıldı. İşlemi tamamlayın.",
   "cart.paymentUnavailable": "Online ödeme henüz yapılandırılmadı.",
   "cart.copyCheckoutLink": "Ödeme linkini kopyala",
-  "cart.checkoutOpenedKeep": "Ödeme sayfası açıldı. Ödeme tamamlanana kadar sepetiniz durur."
+  "cart.checkoutOpenedKeep": "Ödeme sayfası açıldı. Ödeme tamamlanana kadar sepetiniz durur.",
+  "shop.backToHome": "Ana sayfaya dön"
 }

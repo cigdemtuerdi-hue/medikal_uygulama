@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "Страница оплаты открыта. Завершите платёж.",
   "cart.paymentUnavailable": "Онлайн-оплата ещё не настроена.",
   "cart.copyCheckoutLink": "Скопировать ссылку на оплату",
-  "cart.checkoutOpenedKeep": "Страница оплаты открыта. Корзина сохранится до успешной оплаты."
+  "cart.checkoutOpenedKeep": "Страница оплаты открыта. Корзина сохранится до успешной оплаты.",
+  "shop.backToHome": "На главную"
 }

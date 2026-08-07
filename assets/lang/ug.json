@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "چىقىم بېتى ئاچىلدى. داۋاملاشتۇرۇڭ.",
   "cart.paymentUnavailable": "تور چىقىمى تېخى تەڭشەلمىگەن.",
   "cart.copyCheckoutLink": "چىقىم ئۇلانمىسىنى كۆچۈر",
-  "cart.checkoutOpenedKeep": "چىقىم بېتى ئاچىلدى. چىقىم تاماملانغۇچە ھارۋا ساقلىنىدۇ."
+  "cart.checkoutOpenedKeep": "چىقىم بېتى ئاچىلدى. چىقىم تاماملانغۇچە ھارۋا ساقلىنىدۇ.",
+  "shop.backToHome": "باش بەتكە قايت"
 }

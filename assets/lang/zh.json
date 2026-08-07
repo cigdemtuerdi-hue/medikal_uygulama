@@ -873,5 +873,6 @@
   "cart.checkoutOpened": "已打开支付页面，请完成支付。",
   "cart.paymentUnavailable": "在线支付尚未配置。",
   "cart.copyCheckoutLink": "复制付款链接",
-  "cart.checkoutOpenedKeep": "已打开付款页面。付款成功前购物车会保留。"
+  "cart.checkoutOpenedKeep": "已打开付款页面。付款成功前购物车会保留。",
+  "shop.backToHome": "返回首页"
 }
