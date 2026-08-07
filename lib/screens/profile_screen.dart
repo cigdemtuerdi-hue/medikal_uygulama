@@ -266,10 +266,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(loc.t('profile.appBarTitle')),
         actions: [
           const LanguageMenuButton(),
-          IconButton(
-            onPressed: _logOut,
-            icon: const Icon(Icons.logout),
-            tooltip: loc.t('auth.logOut'),
+          // Extra end padding so the logout control stays clear of any
+          // floating web overlays (UserWay ADA icon) at the screen edge.
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: IconButton(
+              onPressed: _logOut,
+              icon: const Icon(Icons.logout),
+              tooltip: loc.t('auth.logOut'),
+            ),
           ),
         ],
       ),
