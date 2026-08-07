@@ -137,13 +137,35 @@
   <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFUphMYjehwgdozhZcElbEq0FMnGo6UVQ&libraries=places&region=US&language=en&callback=initGoogleMaps">
   </script>
-  <!-- UserWay accessibility widget -->
-  <script src="https://cdn.userway.org/widget.js" data-account="NFWJF1Hh3e"></script>
+  <!-- UserWay accessibility widget — bottom-left so it never covers
+       AppBar actions (logout / language) or MeGi (bottom-right). -->
+  <script
+    src="https://cdn.userway.org/widget.js"
+    data-account="NFWJF1Hh3e"
+    data-position="5"></script>
   <style>
-    /* UserWay anchors its trigger 13px from the top, which lands on top of the
-       AppBar actions (language menu, log out). Drop it below the 56px bar. */
-    .uwy.userway_p1 .userway_buttons_wrapper {
-      top: 80px !important;
+    /*
+      UserWay default is top-right and sits on Flutter AppBar actions
+      (Çıkış / language). Pin the trigger to the bottom-left corner and
+      keep it clear of MeGi (bottom-right) and the AppBar.
+    */
+    .uwy .userway_buttons_wrapper,
+    .uai .userway_buttons_wrapper,
+    .userway_buttons_wrapper {
+      top: auto !important;
+      bottom: 24px !important;
+      right: auto !important;
+      left: 16px !important;
+      transform: none !important;
+    }
+
+    @media (max-width: 600px) {
+      .uwy .userway_buttons_wrapper,
+      .uai .userway_buttons_wrapper,
+      .userway_buttons_wrapper {
+        bottom: 88px !important; /* above bottom nav when present */
+        left: 12px !important;
+      }
     }
 
     /*
