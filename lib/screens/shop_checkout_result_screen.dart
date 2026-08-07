@@ -14,12 +14,14 @@ class ShopCheckoutResultScreen extends StatefulWidget {
     required this.success,
     this.sessionId,
     this.orderId,
+    this.cartCheckoutId,
     this.paypalToken,
   });
 
   final bool success;
   final String? sessionId;
   final String? orderId;
+  final String? cartCheckoutId;
 
   /// PayPal returns `token=<ORDER_ID>` on the success redirect.
   final String? paypalToken;
@@ -39,7 +41,19 @@ class _ShopCheckoutResultScreenState extends State<ShopCheckoutResultScreen> {
     super.initState();
     if (widget.success) {
       _load();
+    } else {
+      _releaseHolds();
     }
+  }
+
+  Future<void> _releaseHolds() async {
+    final orderId = widget.orderId?.trim() ?? '';
+    final cartId = widget.cartCheckoutId?.trim() ?? '';
+    if (orderId.isEmpty && cartId.isEmpty) return;
+    await ListingApiService.instance.cancelPendingCheckout(
+      orderId: orderId.isEmpty ? null : orderId,
+      cartCheckoutId: cartId.isEmpty ? null : cartId,
+    );
   }
 
   Future<void> _load() async {
@@ -152,6 +166,14 @@ class _ShopCheckoutResultScreenState extends State<ShopCheckoutResultScreen> {
                       Navigator.of(context).pushReplacementNamed(AppRoutes.shop),
                   child: Text(loc.t('shop.backToShop')),
                 ),
+                if (!widget.success) ...[
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.of(context).pushReplacementNamed(AppRoutes.cart),
+                    child: Text(loc.t('cart.viewCart')),
+                  ),
+                ],
               ],
             ),
           ),

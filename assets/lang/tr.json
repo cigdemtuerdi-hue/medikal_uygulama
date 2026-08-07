@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "Sepet ödemesi",
   "cart.checkoutBody": "{count} ürün · {total}\n\nGüvenli ödeme yapacaksınız. Ödeme tamamlanırken ürünler ayrılır.",
   "cart.checkoutOpened": "Ödeme sayfası açıldı. İşlemi tamamlayın.",
-  "cart.paymentUnavailable": "Online ödeme henüz yapılandırılmadı."
+  "cart.paymentUnavailable": "Online ödeme henüz yapılandırılmadı.",
+  "cart.copyCheckoutLink": "Ödeme linkini kopyala",
+  "cart.checkoutOpenedKeep": "Ödeme sayfası açıldı. Ödeme tamamlanana kadar sepetiniz durur."
 }

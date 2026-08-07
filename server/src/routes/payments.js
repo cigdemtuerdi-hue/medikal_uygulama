@@ -5,6 +5,7 @@ const {
   getOrderBySession,
   capturePayPalOrder,
   createCartCheckout,
+  cancelPendingCheckout,
 } = require('../controllers/paymentController');
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
  * (Stripe webhook: /api/payments/webhook; PayPal webhook: /api/payments/paypal/webhook)
  */
 router.post('/cart/checkout', requireUser, createCartCheckout);
+router.post('/cancel-pending', requireUser, cancelPendingCheckout);
 router.post('/paypal/capture', requireUser, capturePayPalOrder);
 router.use(requireUser);
 router.get('/by-session/:sessionId', getOrderBySession);

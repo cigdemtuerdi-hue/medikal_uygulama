@@ -871,5 +871,7 @@
   "cart.checkoutTitle": "购物车结账",
   "cart.checkoutBody": "{count} 件 · {total}\n\n将安全支付。结账期间商品会被预留。",
   "cart.checkoutOpened": "已打开支付页面，请完成支付。",
-  "cart.paymentUnavailable": "在线支付尚未配置。"
+  "cart.paymentUnavailable": "在线支付尚未配置。",
+  "cart.copyCheckoutLink": "复制付款链接",
+  "cart.checkoutOpenedKeep": "已打开付款页面。付款成功前购物车会保留。"
 }
