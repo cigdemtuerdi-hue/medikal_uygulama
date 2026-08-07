@@ -2,7 +2,7 @@ import 'listing.dart';
 
 /// A sale listing snapshot saved in the local shopping cart.
 class CartItem {
-  const CartItem({
+  CartItem({
     required this.listingId,
     required this.title,
     required this.priceCents,
