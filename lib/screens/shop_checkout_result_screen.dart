@@ -4,6 +4,7 @@ import '../config/app_routes.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/listing.dart';
+import '../services/cart_service.dart';
 import '../services/listing_api_service.dart';
 
 /// Deep-link target after Stripe / PayPal Checkout (`/shop/success`, `/shop/cancel`).
@@ -67,6 +68,7 @@ class _ShopCheckoutResultScreenState extends State<ShopCheckoutResultScreen> {
       _loading = false;
       if (result.success) {
         _order = result.data;
+        CartService.instance.clear();
       } else {
         _error = result.message;
       }

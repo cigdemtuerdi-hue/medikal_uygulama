@@ -7,6 +7,8 @@ import '../models/donation_models.dart';
 import '../services/donation_service.dart';
 import '../services/site_settings_service.dart';
 import '../widgets/browse_equipment_entry_card.dart';
+import '../widgets/cart_entry_card.dart';
+import '../widgets/cart_icon_button.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/corporate_esg_badge_cards.dart';
 import '../widgets/impact_esg_dashboard_card.dart';
@@ -40,6 +42,7 @@ class HomeScreen extends StatelessWidget {
               cms.text(s.brand.displayName, loc.t('app.title')),
             ),
             actions: [
+              const CartIconButton(),
               const LanguageMenuButton(),
               TextButton.icon(
                 onPressed: () {},
@@ -78,6 +81,8 @@ class HomeScreen extends StatelessWidget {
                   const SalesEntryCard(),
                   const SizedBox(height: 16),
                 ],
+                const CartEntryCard(),
+                const SizedBox(height: 16),
                 if (f.showPassItOnEntry) ...[
                   const PassItOnEntryCard(),
                   const SizedBox(height: 24),
@@ -196,6 +201,13 @@ class HomeScreen extends StatelessWidget {
                         },
                         icon: const Icon(Icons.storefront_outlined),
                         label: Text(loc.t('shop.entryTitle')),
+                      ),
+                      FilledButton.tonalIcon(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRoutes.cart);
+                        },
+                        icon: const Icon(Icons.shopping_cart_outlined),
+                        label: Text(loc.t('cart.entryTitle')),
                       ),
                     ],
                   ),

@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../config/app_routes.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/donation_models.dart';
 import '../models/listing.dart';
 import '../services/ai_vision_service.dart';
 import '../services/auth_session_service.dart';
+import '../services/cart_service.dart';
 import '../services/listing_api_service.dart';
 import '../services/listing_photo_publish_helper.dart';
+import '../widgets/cart_icon_button.dart';
 import '../widgets/listing_location_fields.dart';
 import '../widgets/listing_photo_picker.dart';
 
@@ -30,6 +33,7 @@ class _ShopScreenState extends State<ShopScreen>
   void initState() {
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
+    CartService.instance.ensureLoaded();
     AuthSessionService.instance.ensureLoaded().then((_) {
       if (mounted) setState(() {});
     });
@@ -79,6 +83,7 @@ class _ShopScreenState extends State<ShopScreen>
       appBar: AppBar(
         title: Text(loc.t('shop.appBarTitle')),
         actions: [
+          const CartIconButton(),
           // App bar (not a bottom FAB) so MeGi stays clear at bottom-right.
           Padding(
             padding: const EdgeInsetsDirectional.only(end: 8),
@@ -260,6 +265,7 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
         );
         return;
       }
+      await CartService.instance.remove(listing.id);
       widget.onChanged();
       await _reload();
       return;
@@ -282,6 +288,30 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(checkout.message)),
+    );
+  }
+
+  Future<void> _addToCart(Listing listing) async {
+    final loc = AppLocalizations.of(context);
+    final code = await CartService.instance.addListing(listing);
+    if (!mounted) return;
+    final message = switch (code) {
+      'added' => loc.t('cart.added'),
+      'duplicate' => loc.t('cart.alreadyInCart'),
+      'full' => loc.t('cart.full'),
+      _ => loc.t('cart.addFailed'),
+    };
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: code == 'added'
+            ? SnackBarAction(
+                label: loc.t('cart.viewCart'),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.cart),
+              )
+            : null,
+      ),
     );
   }
 
@@ -324,6 +354,8 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
                 listing: listing,
                 actionLabel: loc.t('shop.buy'),
                 onAction: () => _buy(listing),
+                secondaryLabel: loc.t('cart.add'),
+                onSecondary: () => _addToCart(listing),
               );
             },
           );
@@ -437,12 +469,16 @@ class _SaleCard extends StatelessWidget {
     required this.listing,
     this.actionLabel,
     this.onAction,
+    this.secondaryLabel,
+    this.onSecondary,
     this.showCommission = false,
   });
 
   final Listing listing;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
   final bool showCommission;
 
   @override
@@ -526,14 +562,26 @@ class _SaleCard extends StatelessWidget {
               }),
               style: theme.textTheme.labelMedium,
             ),
-            if (actionLabel != null && onAction != null) ...[
+            if ((actionLabel != null && onAction != null) ||
+                (secondaryLabel != null && onSecondary != null)) ...[
               const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton(
-                  onPressed: onAction,
-                  child: Text(actionLabel!),
-                ),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (secondaryLabel != null && onSecondary != null)
+                    OutlinedButton.icon(
+                      onPressed: onSecondary,
+                      icon: const Icon(Icons.add_shopping_cart_outlined),
+                      label: Text(secondaryLabel!),
+                    ),
+                  if (actionLabel != null && onAction != null)
+                    FilledButton(
+                      onPressed: onAction,
+                      child: Text(actionLabel!),
+                    ),
+                ],
               ),
             ],
           ],

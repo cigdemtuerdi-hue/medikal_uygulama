@@ -299,6 +299,41 @@ class ListingApiService {
     }
   }
 
+  /// Starts Stripe / PayPal Checkout for multiple sale listings in one session.
+  Future<ListingApiResult<String>> checkoutCart(
+    List<String> listingIds, {
+    String provider = 'stripe',
+  }) async {
+    try {
+      final response = await http
+          .post(
+            _uri('/api/orders/cart/checkout'),
+            headers: _headers(await _sessionToken()),
+            body: jsonEncode({
+              'listingIds': listingIds,
+              'provider': provider,
+            }),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 201) {
+        final url = _parse(response.body)?['checkoutUrl']?.toString();
+        if (url != null && url.isNotEmpty) {
+          return ListingApiResult<String>(
+            success: true,
+            message: '',
+            data: url,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+      return _failure<String>(response, 'Sepet ödemesi açılamadı.');
+    } catch (err, stack) {
+      debugPrint('[ListingApi] checkoutCart failed: $err\n$stack');
+      return _offline<String>();
+    }
+  }
+
   /// Captures a PayPal order after the buyer returns from PayPal.
   Future<ListingApiResult<SaleOrder>> capturePayPal(String paypalOrderId) async {
     try {

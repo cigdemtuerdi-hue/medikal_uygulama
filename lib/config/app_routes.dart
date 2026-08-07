@@ -8,6 +8,7 @@ import '../screens/browse_listings_screen.dart';
 import '../screens/dme_donate_screen.dart';
 import '../screens/shop_screen.dart';
 import '../screens/shop_checkout_result_screen.dart';
+import '../screens/cart_screen.dart';
 import '../screens/exchange_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/home_screen.dart';
@@ -149,6 +150,7 @@ class AppRoutes {
   static const myItems = '/my-items';
   static const browse = '/browse';
   static const shop = '/shop';
+  static const cart = '/cart';
   static const shopSuccess = '/shop/success';
   static const shopCancel = '/shop/cancel';
   static const ngoPortal = '/ngo-portal';
@@ -236,6 +238,7 @@ class AppRoutes {
         AppRoutes.browse: (_) =>
             const AiSupportHost(child: BrowseListingsScreen()),
         AppRoutes.shop: (_) => const AiSupportHost(child: ShopScreen()),
+        AppRoutes.cart: (_) => const AiSupportHost(child: CartScreen()),
         AppRoutes.roleSelection: (_) =>
             const AiSupportHost(child: RoleSelectionScreen()),
         AppRoutes.forgotPassword: (_) => const ForgotPasswordHost(),
