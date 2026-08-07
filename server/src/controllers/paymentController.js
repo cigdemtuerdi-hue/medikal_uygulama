@@ -6,7 +6,10 @@ const {
   createOrder,
   findOrderById,
   findOrderBySessionId,
+  findOrdersBySessionId,
   findOrderByPaypalOrderId,
+  findOrdersByPaypalOrderId,
+  findOrdersByCartCheckoutId,
   updateOrder,
 } = require('../models/orderStore');
 const { COMMISSION_RATE } = require('./listingController');
@@ -16,6 +19,7 @@ const {
   appOrigin,
 } = require('../services/stripeService');
 const paypal = require('../services/paypalService');
+const crypto = require('crypto');
 
 const RESERVATION_WINDOW_MS = 48 * 60 * 60 * 1000;
 
@@ -32,13 +36,13 @@ function toOrderJson(row) {
     currency: row.currency || 'USD',
     status: row.status,
     paymentProvider: row.paymentProvider || null,
+    cartCheckoutId: row.cartCheckoutId || null,
     paidAt: row.paidAt || null,
     createdAt: row.createdAt,
   };
 }
 
-async function loadSaleListingForCheckout(req, res) {
-  const listing = await findListingById(req.params.id);
+async function validateSaleListingForBuyer(listing, userId, res) {
   if (!listing || listing.hidden || listing.kind !== 'sale') {
     res.status(404).json({
       success: false,
@@ -47,7 +51,7 @@ async function loadSaleListingForCheckout(req, res) {
     });
     return null;
   }
-  if (listing.ownerUserId === req.user.userId) {
+  if (listing.ownerUserId === userId) {
     res.status(400).json({
       success: false,
       message: 'Kendi satış ilanınızı satın alamazsınız.',
@@ -75,6 +79,11 @@ async function loadSaleListingForCheckout(req, res) {
   }
 
   return { listing, priceCents };
+}
+
+async function loadSaleListingForCheckout(req, res) {
+  const listing = await findListingById(req.params.id);
+  return validateSaleListingForBuyer(listing, req.user.userId, res);
 }
 
 function resolveProvider(req) {
@@ -174,6 +183,235 @@ async function createCheckout(req, res, next) {
     });
   } catch (err) {
     return next(err);
+  }
+}
+
+/**
+ * POST /api/orders/cart/checkout
+ * Body: { listingIds: string[], provider?: 'stripe' | 'paypal' }
+ */
+async function createCartCheckout(req, res, next) {
+  try {
+    const provider = resolveProvider(req);
+    if (!provider) {
+      return res.status(503).json({
+        success: false,
+        message:
+          'Online ödeme henüz yapılandırılmadı. Satın alma talebi ile devam edebilirsiniz.',
+        code: 'PAYMENT_NOT_CONFIGURED',
+      });
+    }
+
+    if (provider === 'stripe' && !isStripeConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Stripe henüz yapılandırılmadı.',
+        code: 'STRIPE_NOT_CONFIGURED',
+      });
+    }
+
+    if (provider === 'paypal' && !paypal.isPayPalConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'PayPal henüz yapılandırılmadı.',
+        code: 'PAYPAL_NOT_CONFIGURED',
+      });
+    }
+
+    const rawIds = Array.isArray(req.body?.listingIds)
+      ? req.body.listingIds
+      : [];
+    const listingIds = [
+      ...new Set(
+        rawIds
+          .map((id) => String(id || '').trim())
+          .filter((id) => id.length > 0),
+      ),
+    ];
+
+    if (listingIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sepet boş.',
+        code: 'CART_EMPTY',
+      });
+    }
+    if (listingIds.length > 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sepette en fazla 10 ürün olabilir.',
+        code: 'CART_TOO_LARGE',
+      });
+    }
+
+    const loaded = [];
+    for (const listingId of listingIds) {
+      const listing = await findListingById(listingId);
+      const validated = await validateSaleListingForBuyer(
+        listing,
+        req.user.userId,
+        res,
+      );
+      if (!validated) return;
+      loaded.push(validated);
+    }
+
+    const cartCheckoutId = crypto.randomBytes(12).toString('hex');
+    const orders = [];
+
+    for (const { listing, priceCents } of loaded) {
+      const rate =
+        typeof listing.commissionRate === 'number'
+          ? listing.commissionRate
+          : COMMISSION_RATE;
+      const commissionCents = Math.round(priceCents * rate);
+      const sellerNetCents = priceCents - commissionCents;
+      const order = await createOrder({
+        listingId: listing.id,
+        buyerUserId: req.user.userId,
+        buyerEmail: req.user.email,
+        sellerUserId: listing.ownerUserId,
+        sellerEmail: listing.ownerEmail,
+        title: listing.title,
+        priceCents,
+        commissionRate: rate,
+        commissionCents,
+        sellerNetCents,
+        currency: listing.currency || 'USD',
+        status: 'pending',
+        paymentProvider: provider,
+        cartCheckoutId,
+      });
+      orders.push({ order, listing, priceCents, rate, commissionCents, sellerNetCents });
+    }
+
+    if (provider === 'paypal') {
+      return createPayPalCartCheckout({ req, res, cartCheckoutId, orders });
+    }
+
+    return createStripeCartCheckout({ req, res, cartCheckoutId, orders });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+async function createStripeCartCheckout({ req, res, cartCheckoutId, orders }) {
+  const stripe = getStripe();
+  const origin = appOrigin();
+  const first = orders[0];
+  const orderIds = orders.map((row) => row.order.id).join(',');
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    customer_email: req.user.email,
+    line_items: orders.map(({ listing, priceCents, rate }) => ({
+      quantity: 1,
+      price_data: {
+        currency: (listing.currency || 'usd').toLowerCase(),
+        unit_amount: priceCents,
+        product_data: {
+          name: listing.title.slice(0, 120),
+          description: `MedGift marketplace · ${rate * 100}% platform fee included in settlement`,
+        },
+      },
+    })),
+    metadata: {
+      cartCheckoutId,
+      orderId: first.order.id,
+      orderIds: orderIds.slice(0, 500),
+      buyerUserId: req.user.userId,
+      itemCount: String(orders.length),
+    },
+    success_url: `${origin}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/shop/cancel?cart_id=${encodeURIComponent(cartCheckoutId)}`,
+  });
+
+  for (const { order, listing } of orders) {
+    await updateOrder(order.id, {
+      stripeCheckoutSessionId: session.id,
+      paymentProvider: 'stripe',
+    });
+    await updateListing(listing.id, {
+      status: 'reserved',
+      reservedByUserId: req.user.userId,
+      reservedUntil: new Date(Date.now() + RESERVATION_WINDOW_MS),
+    });
+  }
+
+  return res.status(201).json({
+    success: true,
+    provider: 'stripe',
+    checkoutUrl: session.url,
+    cartCheckoutId,
+    orders: orders.map(({ order }) =>
+      toOrderJson({
+        ...order,
+        paymentProvider: 'stripe',
+        stripeCheckoutSessionId: session.id,
+        cartCheckoutId,
+      }),
+    ),
+  });
+}
+
+async function createPayPalCartCheckout({ req, res, cartCheckoutId, orders }) {
+  try {
+    const created = await paypal.createCheckoutOrder({
+      orderId: cartCheckoutId,
+      listingId: orders.map((row) => row.listing.id).join(','),
+      title:
+        orders.length === 1
+          ? orders[0].listing.title
+          : `MedGift cart (${orders.length} items)`,
+      priceCents: orders.reduce((sum, row) => sum + row.priceCents, 0),
+      currency: orders[0].listing.currency || 'USD',
+      buyerEmail: req.user.email,
+      items: orders.map(({ listing, priceCents }) => ({
+        name: listing.title,
+        priceCents,
+        quantity: 1,
+      })),
+      cancelOrderId: orders[0].order.id,
+    });
+
+    for (const { order, listing } of orders) {
+      await updateOrder(order.id, {
+        paypalOrderId: created.paypalOrderId,
+        paymentProvider: 'paypal',
+      });
+      await updateListing(listing.id, {
+        status: 'reserved',
+        reservedByUserId: req.user.userId,
+        reservedUntil: new Date(Date.now() + RESERVATION_WINDOW_MS),
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      provider: 'paypal',
+      checkoutUrl: created.checkoutUrl,
+      paypalOrderId: created.paypalOrderId,
+      merchantEmail: created.merchantEmail,
+      cartCheckoutId,
+      orders: orders.map(({ order }) =>
+        toOrderJson({
+          ...order,
+          paymentProvider: 'paypal',
+          paypalOrderId: created.paypalOrderId,
+          cartCheckoutId,
+        }),
+      ),
+    });
+  } catch (err) {
+    for (const { order } of orders) {
+      await updateOrder(order.id, { status: 'canceled' });
+    }
+    console.error('[paypal] cart checkout failed:', err.message);
+    return res.status(err.status || 502).json({
+      success: false,
+      message: err.message || 'PayPal oturumu açılamadı.',
+      code: err.code || 'PAYPAL_CREATE_FAILED',
+    });
   }
 }
 
@@ -417,14 +655,27 @@ async function capturePayPalOrder(req, res, next) {
       });
     }
 
-    const updated = await markOrderPaid(order, {
-      paymentProvider: 'paypal',
-      paypalCaptureId: captureId,
-    });
+    const relatedByPaypal = await findOrdersByPaypalOrderId(paypalOrderId);
+    const related =
+      relatedByPaypal.length > 0
+        ? relatedByPaypal
+        : order.cartCheckoutId
+          ? await findOrdersByCartCheckoutId(order.cartCheckoutId)
+          : [order];
+
+    let updated = order;
+    for (const row of related) {
+      const paid = await markOrderPaid(row, {
+        paymentProvider: 'paypal',
+        paypalCaptureId: captureId,
+      });
+      if (row.id === order.id) updated = paid;
+    }
 
     return res.status(200).json({
       success: true,
       order: toOrderJson(updated),
+      orders: related.map((row) => toOrderJson(row)),
     });
   } catch (err) {
     console.error('[paypal] capture failed:', err.message);
@@ -510,30 +761,59 @@ async function stripeWebhook(req, res) {
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const orderId = session.metadata?.orderId;
-      let order = orderId ? await findOrderById(orderId) : null;
-      if (!order && session.id) {
-        order = await findOrderBySessionId(session.id);
+      const paymentIntentId =
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id;
+
+      let orders = session.id
+        ? await findOrdersBySessionId(session.id)
+        : [];
+      if (orders.length === 0 && session.metadata?.cartCheckoutId) {
+        orders = await findOrdersByCartCheckoutId(
+          session.metadata.cartCheckoutId,
+        );
       }
-      if (order) {
+      if (orders.length === 0 && session.metadata?.orderId) {
+        const one = await findOrderById(session.metadata.orderId);
+        if (one) orders = [one];
+      }
+      if (orders.length === 0 && session.metadata?.orderIds) {
+        const ids = String(session.metadata.orderIds)
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean);
+        for (const id of ids) {
+          const one = await findOrderById(id);
+          if (one) orders.push(one);
+        }
+      }
+
+      for (const order of orders) {
         await markOrderPaid(order, {
           paymentProvider: 'stripe',
-          stripePaymentIntentId:
-            typeof session.payment_intent === 'string'
-              ? session.payment_intent
-              : session.payment_intent?.id,
+          stripePaymentIntentId: paymentIntentId,
         });
       }
     }
 
     if (event.type === 'checkout.session.expired') {
       const session = event.data.object;
-      const order =
-        (await findOrderBySessionId(session.id)) ||
-        (session.metadata?.orderId
-          ? await findOrderById(session.metadata.orderId)
-          : null);
-      if (order) await releasePendingOrder(order);
+      let orders = session.id
+        ? await findOrdersBySessionId(session.id)
+        : [];
+      if (orders.length === 0 && session.metadata?.cartCheckoutId) {
+        orders = await findOrdersByCartCheckoutId(
+          session.metadata.cartCheckoutId,
+        );
+      }
+      if (orders.length === 0 && session.metadata?.orderId) {
+        const one = await findOrderById(session.metadata.orderId);
+        if (one) orders = [one];
+      }
+      for (const order of orders) {
+        await releasePendingOrder(order);
+      }
     }
   } catch (err) {
     console.error('[stripe] webhook handler error:', err.message);
@@ -590,6 +870,11 @@ async function paypalWebhook(req, res) {
         null;
 
       let order = customId ? await findOrderById(customId) : null;
+      let orders = [];
+      if (!order && customId) {
+        orders = await findOrdersByCartCheckoutId(customId);
+        order = orders[0] || null;
+      }
       if (!order && paypalOrderId) {
         // For capture events, resource.id is capture id; try related order id.
         if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
@@ -597,27 +882,43 @@ async function paypalWebhook(req, res) {
             resource.supplementary_data?.related_ids?.order_id || null;
         }
         if (paypalOrderId) {
-          order = await findOrderByPaypalOrderId(paypalOrderId);
+          orders = await findOrdersByPaypalOrderId(paypalOrderId);
+          order = orders[0] || null;
+        }
+      }
+      if (orders.length === 0 && order) {
+        if (order.cartCheckoutId) {
+          orders = await findOrdersByCartCheckoutId(order.cartCheckoutId);
+        } else if (order.paypalOrderId) {
+          orders = await findOrdersByPaypalOrderId(order.paypalOrderId);
+        } else {
+          orders = [order];
         }
       }
 
-      if (order && order.status !== 'paid') {
+      if (orders.length > 0) {
         if (eventType === 'CHECKOUT.ORDER.APPROVED' && paypalOrderId) {
           try {
             const captured = await paypal.captureOrder(paypalOrderId);
             const captureId = paypal.extractCaptureId(captured);
-            await markOrderPaid(order, {
-              paymentProvider: 'paypal',
-              paypalCaptureId: captureId || resource.id,
-            });
+            for (const row of orders) {
+              if (row.status === 'paid') continue;
+              await markOrderPaid(row, {
+                paymentProvider: 'paypal',
+                paypalCaptureId: captureId || resource.id,
+              });
+            }
           } catch (capErr) {
             console.error('[paypal] webhook capture:', capErr.message);
           }
         } else {
-          await markOrderPaid(order, {
-            paymentProvider: 'paypal',
-            paypalCaptureId: resource.id || order.paypalCaptureId,
-          });
+          for (const row of orders) {
+            if (row.status === 'paid') continue;
+            await markOrderPaid(row, {
+              paymentProvider: 'paypal',
+              paypalCaptureId: resource.id || row.paypalCaptureId,
+            });
+          }
         }
       }
     }
@@ -631,6 +932,7 @@ async function paypalWebhook(req, res) {
 
 module.exports = {
   createCheckout,
+  createCartCheckout,
   getOrder,
   getOrderBySession,
   capturePayPalOrder,

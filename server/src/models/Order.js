@@ -23,6 +23,8 @@ const orderSchema = new mongoose.Schema(
     status: { type: String, default: 'pending', index: true },
     /** stripe | paypal | null (hold) */
     paymentProvider: { type: String, default: null, index: true },
+    /** Shared id when several listings checkout in one Stripe/PayPal session. */
+    cartCheckoutId: { type: String, default: null, index: true },
     stripeCheckoutSessionId: { type: String, default: null, index: true },
     stripePaymentIntentId: { type: String, default: null },
     paypalOrderId: { type: String, default: null, index: true },

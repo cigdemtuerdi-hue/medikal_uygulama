@@ -284,6 +284,7 @@ async function start() {
     console.info('[api] /api/listings (session token required)');
     console.info('[api] POST /api/uploads, GET /api/uploads/:id');
     console.info('[api] POST /api/listings/:id/checkout');
+    console.info('[api] POST /api/orders/cart/checkout');
     console.info('[api] POST /api/payments/webhook');
     console.info('[api] POST /api/payments/paypal/webhook');
     console.info('[api] POST /api/orders/paypal/capture');

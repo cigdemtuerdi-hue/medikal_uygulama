@@ -9,6 +9,7 @@ import 'config/configure_url_strategy_stub.dart'
     if (dart.library.html) 'config/configure_url_strategy_web.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/locale_controller.dart';
+import 'services/cart_service.dart';
 import 'services/emergency_mode_service.dart';
 import 'services/item_lifecycle_service.dart';
 import 'services/site_settings_service.dart';
@@ -27,6 +28,9 @@ Future<void> main() async {
   // ignore: unnecessary_statements
   EmergencyModeService.instance;
   await SiteSettingsService.instance.ensureLoaded();
+  // Warm cart badge counts on first paint.
+  // ignore: unawaited_futures
+  CartService.instance.ensureLoaded();
 
   if (!AppConfig.hasGoogleMapsApiKey) {
     debugPrint('WARNING: ${AppConfig.missingApiKeyMessage}');

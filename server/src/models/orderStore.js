@@ -48,29 +48,55 @@ async function findOrderById(id) {
 }
 
 async function findOrderBySessionId(sessionId) {
-  if (!sessionId) return null;
+  const rows = await findOrdersBySessionId(sessionId);
+  return rows[0] || null;
+}
+
+async function findOrdersBySessionId(sessionId) {
+  if (!sessionId) return [];
   if (useMongo()) {
-    const doc = await state.mongoModel
-      .findOne({ stripeCheckoutSessionId: sessionId })
+    const docs = await state.mongoModel
+      .find({ stripeCheckoutSessionId: sessionId })
       .lean();
-    return normalize(doc);
+    return docs.map(normalize).filter(Boolean);
   }
-  return normalize(
-    state.memory.find((r) => r.stripeCheckoutSessionId === sessionId),
-  );
+  return state.memory
+    .filter((r) => r.stripeCheckoutSessionId === sessionId)
+    .map(normalize)
+    .filter(Boolean);
 }
 
 async function findOrderByPaypalOrderId(paypalOrderId) {
-  if (!paypalOrderId) return null;
+  const rows = await findOrdersByPaypalOrderId(paypalOrderId);
+  return rows[0] || null;
+}
+
+async function findOrdersByPaypalOrderId(paypalOrderId) {
+  if (!paypalOrderId) return [];
   if (useMongo()) {
-    const doc = await state.mongoModel
-      .findOne({ paypalOrderId: String(paypalOrderId) })
+    const docs = await state.mongoModel
+      .find({ paypalOrderId: String(paypalOrderId) })
       .lean();
-    return normalize(doc);
+    return docs.map(normalize).filter(Boolean);
   }
-  return normalize(
-    state.memory.find((r) => r.paypalOrderId === String(paypalOrderId)),
-  );
+  return state.memory
+    .filter((r) => r.paypalOrderId === String(paypalOrderId))
+    .map(normalize)
+    .filter(Boolean);
+}
+
+async function findOrdersByCartCheckoutId(cartCheckoutId) {
+  if (!cartCheckoutId) return [];
+  if (useMongo()) {
+    const docs = await state.mongoModel
+      .find({ cartCheckoutId: String(cartCheckoutId) })
+      .lean();
+    return docs.map(normalize).filter(Boolean);
+  }
+  return state.memory
+    .filter((r) => r.cartCheckoutId === String(cartCheckoutId))
+    .map(normalize)
+    .filter(Boolean);
 }
 
 async function updateOrder(id, patch) {
@@ -91,6 +117,9 @@ module.exports = {
   createOrder,
   findOrderById,
   findOrderBySessionId,
+  findOrdersBySessionId,
   findOrderByPaypalOrderId,
+  findOrdersByPaypalOrderId,
+  findOrdersByCartCheckoutId,
   updateOrder,
 };

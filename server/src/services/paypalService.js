@@ -102,6 +102,9 @@ async function paypalFetch(path, { method = 'GET', body } = {}) {
 
 /**
  * Create a PayPal Checkout order and return the buyer approval URL.
+ *
+ * Optional [items] builds an itemized purchase unit (cart checkout).
+ * [cancelOrderId] is used on cancel_url when [orderId] is a cart group id.
  */
 async function createCheckoutOrder({
   orderId,
@@ -110,17 +113,20 @@ async function createCheckoutOrder({
   priceCents,
   currency = 'USD',
   buyerEmail,
+  items,
+  cancelOrderId,
 }) {
   const origin = appOrigin();
   const amount = (Number(priceCents) / 100).toFixed(2);
   const merchantEmail = paypalMerchantEmail();
+  const currencyCode = String(currency || 'USD').toUpperCase();
 
   const purchaseUnit = {
     reference_id: String(orderId).slice(0, 127),
     custom_id: String(orderId).slice(0, 127),
     description: String(title || 'MedGift purchase').slice(0, 127),
     amount: {
-      currency_code: String(currency || 'USD').toUpperCase(),
+      currency_code: currencyCode,
       value: amount,
     },
     payee: {
@@ -128,6 +134,25 @@ async function createCheckoutOrder({
     },
   };
 
+  if (Array.isArray(items) && items.length > 0) {
+    purchaseUnit.items = items.map((item) => ({
+      name: String(item.name || 'MedGift item').slice(0, 127),
+      quantity: String(item.quantity || 1),
+      unit_amount: {
+        currency_code: currencyCode,
+        value: (Number(item.priceCents) / 100).toFixed(2),
+      },
+      category: 'PHYSICAL_GOODS',
+    }));
+    purchaseUnit.amount.breakdown = {
+      item_total: {
+        currency_code: currencyCode,
+        value: amount,
+      },
+    };
+  }
+
+  const cancelId = cancelOrderId || orderId;
   const body = {
     intent: 'CAPTURE',
     purchase_units: [purchaseUnit],
@@ -138,7 +163,7 @@ async function createCheckoutOrder({
       shipping_preference: 'NO_SHIPPING',
       // PayPal appends ?token=<ORDER_ID> on return.
       return_url: `${origin}/shop/success?provider=paypal`,
-      cancel_url: `${origin}/shop/cancel?order_id=${encodeURIComponent(orderId)}`,
+      cancel_url: `${origin}/shop/cancel?order_id=${encodeURIComponent(cancelId)}`,
     },
   };
 
