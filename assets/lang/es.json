@@ -886,5 +886,14 @@
   "shop.saveEdits": "Guardar cambios",
   "shop.editSaved": "Anuncio actualizado.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "No se pudo abrir LinkedIn."
+  "partner.linkedinOpenFailed": "No se pudo abrir LinkedIn.",
+  "common.confirm": "Confirmar",
+  "shop.markSold": "Marcar como vendido",
+  "shop.reactivate": "Volver a publicar",
+  "shop.withdrawConfirmTitle": "¿Quitar anuncio?",
+  "shop.withdrawConfirmBody": "El anuncio se ocultará de la tienda. Podrás publicarlo de nuevo más tarde.",
+  "shop.markSoldConfirmTitle": "¿Marcar como vendido?",
+  "shop.markSoldConfirmBody": "Los compradores ya no verán este anuncio en la tienda.",
+  "shop.reactivateConfirmTitle": "¿Volver a publicar?",
+  "shop.reactivateConfirmBody": "El anuncio volverá a aparecer activo en la tienda."
 }

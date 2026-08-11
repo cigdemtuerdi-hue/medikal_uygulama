@@ -442,6 +442,32 @@ class _ShopMineTabState extends State<_ShopMineTab> {
     }
   }
 
+  Future<void> _markSold(Listing listing) async {
+    final result =
+        await ListingApiService.instance.updateStatus(listing.id, 'fulfilled');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.message)),
+    );
+    if (result.success) {
+      widget.onChanged();
+      await _reload();
+    }
+  }
+
+  Future<void> _reactivate(Listing listing) async {
+    final result =
+        await ListingApiService.instance.updateStatus(listing.id, 'active');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.message)),
+    );
+    if (result.success) {
+      widget.onChanged();
+      await _reload();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -496,10 +522,20 @@ class _ShopMineTabState extends State<_ShopMineTab> {
                 },
                 actionLabel: listing.status == 'active'
                     ? loc.t('shop.withdraw')
-                    : null,
+                    : (listing.status == 'withdrawn' ||
+                            listing.status == 'fulfilled')
+                        ? loc.t('shop.reactivate')
+                        : null,
                 onAction: listing.status == 'active'
                     ? () => _withdraw(listing)
-                    : null,
+                    : (listing.status == 'withdrawn' ||
+                            listing.status == 'fulfilled')
+                        ? () => _reactivate(listing)
+                        : null,
+                secondaryLabel:
+                    listing.status == 'active' ? loc.t('shop.markSold') : null,
+                onSecondary:
+                    listing.status == 'active' ? () => _markSold(listing) : null,
               );
             },
           );
@@ -521,6 +557,7 @@ class _SaleCard extends StatelessWidget {
     this.onAction,
     this.secondaryLabel,
     this.onSecondary,
+    this.secondaryIcon,
     this.showCommission = false,
   });
 
@@ -530,6 +567,7 @@ class _SaleCard extends StatelessWidget {
   final VoidCallback? onAction;
   final String? secondaryLabel;
   final VoidCallback? onSecondary;
+  final IconData? secondaryIcon;
   final bool showCommission;
 
   @override

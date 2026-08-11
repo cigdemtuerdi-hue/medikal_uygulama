@@ -886,5 +886,14 @@
   "shop.saveEdits": "ئۆزگەرتىشلەرنى ساقلا",
   "shop.editSaved": "ئېلان يېڭىلاندى.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "LinkedIn ئېچىلمىدى."
+  "partner.linkedinOpenFailed": "LinkedIn ئېچىلمىدى.",
+  "common.confirm": "جەزملە",
+  "shop.markSold": "سېتىلدى دەپ بەلگە قوي",
+  "shop.reactivate": "قايتا ئېلان قىل",
+  "shop.withdrawConfirmTitle": "ئېلاننى ئۆچۈرەمسىز؟",
+  "shop.withdrawConfirmBody": "ئېلان دۇكاندىن يوشۇرۇلىدۇ. كېيىن قايتا ئېلان قىلالايسىز.",
+  "shop.markSoldConfirmTitle": "سېتىلدى دەپ بەلگە قويامسىز؟",
+  "shop.markSoldConfirmBody": "سېتىۋالغۇچىلار بۇ ئېلاننى ئەمدى كۆرمەيدۇ.",
+  "shop.reactivateConfirmTitle": "قايتا ئېلان قىلامسىز؟",
+  "shop.reactivateConfirmBody": "ئېلان دۇكاندا قايتا ئاكتىپ كۆرۈنىدۇ."
 }

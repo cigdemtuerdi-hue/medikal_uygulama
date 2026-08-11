@@ -886,5 +886,14 @@
   "shop.saveEdits": "Save changes",
   "shop.editSaved": "Listing updated.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "Could not open LinkedIn."
+  "partner.linkedinOpenFailed": "Could not open LinkedIn.",
+  "common.confirm": "Confirm",
+  "shop.markSold": "Mark as sold",
+  "shop.reactivate": "Relist",
+  "shop.withdrawConfirmTitle": "Remove listing?",
+  "shop.withdrawConfirmBody": "This listing will be hidden from the Shop. You can relist it later.",
+  "shop.markSoldConfirmTitle": "Mark as sold?",
+  "shop.markSoldConfirmBody": "Buyers will no longer see this listing in the Shop.",
+  "shop.reactivateConfirmTitle": "Relist this item?",
+  "shop.reactivateConfirmBody": "The listing will appear in the Shop again as active."
 }

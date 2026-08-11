@@ -886,5 +886,14 @@
   "shop.saveEdits": "Сохранить",
   "shop.editSaved": "Объявление обновлено.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "Не удалось открыть LinkedIn."
+  "partner.linkedinOpenFailed": "Не удалось открыть LinkedIn.",
+  "common.confirm": "Подтвердить",
+  "shop.markSold": "Отметить как проданное",
+  "shop.reactivate": "Опубликовать снова",
+  "shop.withdrawConfirmTitle": "Снять объявление?",
+  "shop.withdrawConfirmBody": "Объявление скрывается из магазина. Позже можно опубликовать снова.",
+  "shop.markSoldConfirmTitle": "Отметить как проданное?",
+  "shop.markSoldConfirmBody": "Покупатели больше не увидят это объявление в магазине.",
+  "shop.reactivateConfirmTitle": "Опубликовать снова?",
+  "shop.reactivateConfirmBody": "Объявление снова появится в магазине как активное."
 }
