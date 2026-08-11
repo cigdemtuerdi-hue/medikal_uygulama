@@ -43,8 +43,8 @@
   "auth.showPassword": "Passwort anzeigen",
   "auth.hidePassword": "Passwort verbergen",
   "about.appBarTitle": "Über uns",
-  "about.title": "Über MedGift US",
-  "about.intro": "Wir verbinden überschüssige medizinische Ausrüstung mit Menschen und Kliniken, die sie benötigen – um Abfall zu reduzieren, Gemeinden zu stärken und ein umweltfreundlicheres Pflegeökosystem aufzubauen.",
+  "about.title": "Über uns & Unsere Geschichte",
+  "about.intro": "MedGift LLC wurde gegründet, um den Zugang zu medizinischen Lösungen mit transparentem, schnellem und sicherem Service zu erleichtern.",
   "about.openLink": "Über uns",
   "manifesto.eyebrow": "UNSER MANIFEST",
   "manifesto.title": "DAS MEDGIFT-MANIFEST: Den Planeten wiederverwenden, stärken und heilen",
@@ -895,5 +895,15 @@
   "shop.markSoldConfirmTitle": "Als verkauft markieren?",
   "shop.markSoldConfirmBody": "Käufer sehen diese Anzeige im Shop nicht mehr.",
   "shop.reactivateConfirmTitle": "Erneut einstellen?",
-  "shop.reactivateConfirmBody": "Die Anzeige erscheint wieder aktiv im Shop."
+  "shop.reactivateConfirmBody": "Die Anzeige erscheint wieder aktiv im Shop.",
+  "story.title": "Über uns & Unsere Geschichte",
+  "story.greeting": "Willkommen bei MedGift US",
+  "story.whoTitle": "Wer wir sind und warum wir gestartet sind",
+  "story.whoBody1": "MedGift LLC wurde gegründet, um den Zugang zu Gesundheits- und Medizinlösungen zu erleichtern und vertrauenswürdige Servicestandards mit der Geschwindigkeit der digitalen Welt zu verbinden. Als US-basiertes Unternehmen starten wir mit einem klaren Ziel: Menschen den Zugang zu ihren medizinischen Bedürfnissen so transparent, schnell und sicher wie möglich zu ermöglichen.",
+  "story.whoBody2": "Wir haben die Plattform MedGift.us mit der Vision gestartet, komplexe Prozesse, Zugangsbarrieren und Vertrauenslücken im Gesundheitswesen zu beseitigen. Durch die Integration von Technologie mit rechtlichen Anforderungen, hohen Datensicherheitsstandards (HIPAA) und einem nutzerorientierten Serviceanspruch wollen wir einen echten Unterschied machen.",
+  "story.missionTitle": "Unsere Mission",
+  "story.missionBody": "Das Leben unserer Nutzer zu erleichtern, indem wir eine innovative, zugängliche und vollständig sichere digitale Infrastruktur für medizinische und Gesundheitsdienste bereitstellen.",
+  "story.visionTitle": "Unsere Vision",
+  "story.visionBody": "Ausgehend vom US-Markt eine der ersten, vertrauenswürdigsten und ethischsten Plattformen weltweit für Gesundheitstechnologie und medizinische Dienstleistungen zu werden.",
+  "story.continueCta": "Weiter"
 }

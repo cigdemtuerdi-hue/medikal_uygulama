@@ -43,8 +43,8 @@
   "auth.showPassword": "显示密码",
   "auth.hidePassword": "隐藏密码",
   "about.appBarTitle": "关于我们",
-  "about.title": "关于美国 MedGift",
-  "about.intro": "我们将多余的医疗设备与需要的人和诊所联系起来——减少浪费、增强社区能力并建立更绿色的护理生态系统。",
+  "about.title": "关于我们与创立故事",
+  "about.intro": "MedGift LLC 致力于让医疗解决方案更易获得，并以透明、快速、安全的服务为承诺。",
   "about.openLink": "关于我们",
   "manifesto.eyebrow": "我们的宣言",
   "manifesto.title": "MEDGIFT 宣言：再利用、赋权、治愈地球",
@@ -895,5 +895,15 @@
   "shop.markSoldConfirmTitle": "标记为已售出？",
   "shop.markSoldConfirmBody": "买家将无法再在商店中看到此商品。",
   "shop.reactivateConfirmTitle": "重新上架？",
-  "shop.reactivateConfirmBody": "商品将再次以在售状态出现在商店中。"
+  "shop.reactivateConfirmBody": "商品将再次以在售状态出现在商店中。",
+  "story.title": "关于我们与创立故事",
+  "story.greeting": "欢迎来到 MedGift US",
+  "story.whoTitle": "我们是谁，为何出发",
+  "story.whoBody1": "MedGift LLC 的成立，是为了让人们更便捷地获得医疗与健康解决方案，并把可靠的服务标准与数字世界的速度结合起来。作为一家总部位于美国的公司，我们从一开始就只有一个核心目标：以最透明、快速且安全的方式，帮助人们满足医疗与健康需求。",
+  "story.whoBody2": "我们推出 MedGift.us 平台，旨在消除医疗领域中的复杂流程、获取障碍与信任缺口。通过把技术与法规要求、高标准数据安全（HIPAA）以及以用户为中心的服务理念相结合，我们希望在行业中真正带来改变。",
+  "story.missionTitle": "我们的使命",
+  "story.missionBody": "通过提供创新、易用且全面安全的数字化医疗基础设施，让用户的生活更轻松。",
+  "story.visionTitle": "我们的愿景",
+  "story.visionBody": "从美国市场起步，成为全球谈及健康科技与医疗服务时，人们最先想到、最值得信赖、最具伦理的平台之一。",
+  "story.continueCta": "继续"
 }

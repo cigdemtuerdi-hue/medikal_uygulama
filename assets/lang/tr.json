@@ -43,8 +43,8 @@
   "auth.showPassword": "Şifreyi göster",
   "auth.hidePassword": "Şifreyi gizle",
   "about.appBarTitle": "Hakkımızda",
-  "about.title": "MedGift hakkımızda",
-  "about.intro": "Fazlalık tıbbi ekipmanı, israfı azaltarak, toplulukları güçlendirerek ve daha yeşil bir bakım ekosistemi oluşturarak ihtiyacı olan insanlarla ve kliniklerle buluşturuyoruz.",
+  "about.title": "Hakkımızda & Kuruluş Hikayemiz",
+  "about.intro": "Medgift LLC, sağlık ve medikal çözümlere erişimi kolaylaştırmak için kuruldu. Şeffaf, hızlı ve güvenli hizmet sunuyoruz.",
   "about.openLink": "Hakkımızda",
   "manifesto.eyebrow": "Manifestomuz",
   "manifesto.title": "MEDGIFT Manifestosu: Gezegeni Yeniden Kullan, Güçlendir, İyileştir",
@@ -895,5 +895,15 @@
   "shop.markSoldConfirmTitle": "Satıldı olarak işaretlensin mi?",
   "shop.markSoldConfirmBody": "Alıcılar bu ilanı Shop’ta artık görmez.",
   "shop.reactivateConfirmTitle": "İlan yeniden yayınlansın mı?",
-  "shop.reactivateConfirmBody": "İlan Shop’ta tekrar aktif görünür."
+  "shop.reactivateConfirmBody": "İlan Shop’ta tekrar aktif görünür.",
+  "story.title": "Hakkımızda & Kuruluş Hikayemiz",
+  "story.greeting": "MedGift US’e hoş geldiniz",
+  "story.whoTitle": "Biz Kimiz ve Neden Yola Çıktık?",
+  "story.whoBody1": "Medgift LLC, sağlık ve medikal çözümlere erişimi kolaylaştırmak, güvenilir hizmet standartlarını dijital dünyanın hızıyla buluşturmak amacıyla kuruldu. ABD merkezli bir yapılanma olarak yola çıkarken tek bir temel amacımız vardı: İnsanların sağlık ve medikal ihtiyaçlarına en şeffaf, hızlı ve güvenli şekilde ulaşabilmelerini sağlamak.",
+  "story.whoBody2": "Sağlık alanında yaşanan karmaşık süreçleri, erişim zorluklarını ve güven eksikliğini ortadan kaldırma vizyonuyla Medgift.us platformunu hayata geçirdik. Teknolojinin sunduğu imkanları yasal mevzuatlara, yüksek veri güvenliği standartlarına (HIPAA) ve kullanıcı odaklı bir hizmet anlayışına entegre ederek sektörde fark yaratmayı hedefliyoruz.",
+  "story.missionTitle": "Misyonumuz",
+  "story.missionBody": "Medikal ve sağlık alanında yenilikçi, erişilebilir ve tam güvenli bir dijital altyapı sunarak kullanıcılarımızın hayatını kolaylaştırmak.",
+  "story.visionTitle": "Vizyonumuz",
+  "story.visionBody": "ABD pazarından başlayarak küresel ölçekte sağlık teknolojileri ve medikal hizmetler denildiğinde akla gelen ilk, en güvenilir ve en etik platformlardan biri olmak.",
+  "story.continueCta": "Devam et"
 }

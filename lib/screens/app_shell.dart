@@ -4,6 +4,7 @@ import '../config/app_routes.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/a11y.dart';
 import '../widgets/async_state_widgets.dart';
+import '../widgets/founding_story_welcome.dart';
 import '../widgets/medgift_logo.dart';
 
 enum _BottomNavItem { home, recipient, profile, myItems }
@@ -24,6 +25,10 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialTab?.tabIndex ?? AppTab.home.tabIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      maybeShowFoundingStoryWelcome(context);
+    });
   }
 
   void _onDestinationSelected(int index) {
