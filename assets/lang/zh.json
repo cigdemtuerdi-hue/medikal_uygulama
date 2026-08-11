@@ -874,5 +874,15 @@
   "cart.paymentUnavailable": "在线支付尚未配置。",
   "cart.copyCheckoutLink": "复制付款链接",
   "cart.checkoutOpenedKeep": "已打开付款页面。付款成功前购物车会保留。",
-  "shop.backToHome": "返回首页"
+  "shop.backToHome": "返回首页",
+  "shop.detailTitle": "商品详情",
+  "shop.detailLocation": "地点",
+  "shop.detailNoDescription": "暂无描述。",
+  "shop.photoIndex": "图片 {current} / {total}",
+  "shop.tapForDetails": "点击查看详情",
+  "shop.buyNow": "立即购买",
+  "shop.editListing": "编辑商品",
+  "shop.editSubtitle": "更新您的销售信息。保存后立即生效。",
+  "shop.saveEdits": "保存更改",
+  "shop.editSaved": "商品已更新。"
 }

@@ -874,5 +874,15 @@
   "cart.paymentUnavailable": "Le paiement en ligne n’est pas encore configuré.",
   "cart.copyCheckoutLink": "Copier le lien de paiement",
   "cart.checkoutOpenedKeep": "Page de paiement ouverte. Le panier reste jusqu’au paiement réussi.",
-  "shop.backToHome": "Retour à l’accueil"
+  "shop.backToHome": "Retour à l’accueil",
+  "shop.detailTitle": "Détails de l’annonce",
+  "shop.detailLocation": "Lieu",
+  "shop.detailNoDescription": "Aucune description.",
+  "shop.photoIndex": "Photo {current} sur {total}",
+  "shop.tapForDetails": "Appuyez pour les détails",
+  "shop.buyNow": "Acheter",
+  "shop.editListing": "Modifier l’annonce",
+  "shop.editSubtitle": "Mettez à jour votre annonce. Les changements sont publiés après enregistrement.",
+  "shop.saveEdits": "Enregistrer",
+  "shop.editSaved": "Annonce mise à jour."
 }

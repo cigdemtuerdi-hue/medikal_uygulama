@@ -874,5 +874,15 @@
   "cart.paymentUnavailable": "Online ödeme henüz yapılandırılmadı.",
   "cart.copyCheckoutLink": "Ödeme linkini kopyala",
   "cart.checkoutOpenedKeep": "Ödeme sayfası açıldı. Ödeme tamamlanana kadar sepetiniz durur.",
-  "shop.backToHome": "Ana sayfaya dön"
+  "shop.backToHome": "Ana sayfaya dön",
+  "shop.detailTitle": "İlan detayları",
+  "shop.detailLocation": "Konum",
+  "shop.detailNoDescription": "Açıklama eklenmemiş.",
+  "shop.photoIndex": "Fotoğraf {current} / {total}",
+  "shop.tapForDetails": "Detaylar için dokunun",
+  "shop.buyNow": "Hemen al",
+  "shop.editListing": "İlanı düzenle",
+  "shop.editSubtitle": "Satış ilanınızı güncelleyin. Kaydettikten sonra değişiklikler yayınlanır.",
+  "shop.saveEdits": "Değişiklikleri kaydet",
+  "shop.editSaved": "İlan güncellendi."
 }

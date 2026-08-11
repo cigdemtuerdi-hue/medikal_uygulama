@@ -627,8 +627,62 @@ async function update(req, res, next) {
     if (req.body?.sizeNote != null) {
       patch.sizeNote = clampText(req.body.sizeNote, 160) || null;
     }
+    if (req.body?.category != null) {
+      const category = clampText(req.body.category, 60);
+      if (!category) {
+        return res.status(400).json({
+          success: false,
+          message: 'Kategori gerekli.',
+          code: 'CATEGORY_REQUIRED',
+        });
+      }
+      patch.category = category;
+    }
+    if (req.body?.condition != null) {
+      const condition = clampText(req.body.condition, 20);
+      if (condition && !CONDITIONS.has(condition)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Geçersiz durum / condition.',
+          code: 'INVALID_CONDITION',
+        });
+      }
+      patch.condition = condition || null;
+    }
+    if (req.body?.city != null) {
+      patch.city = clampText(req.body.city, 80) || null;
+    }
+    if (req.body?.state != null) {
+      patch.state = clampText(req.body.state, 40) || null;
+    }
+    if (req.body?.postalCode != null) {
+      patch.postalCode = clampText(req.body.postalCode, 10) || null;
+    }
+    if (row.kind === 'sale' && req.body?.priceCents != null) {
+      const asCents = Math.round(Number(req.body.priceCents));
+      if (
+        !Number.isFinite(asCents) ||
+        asCents < MIN_PRICE_CENTS ||
+        asCents > MAX_PRICE_CENTS
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Geçersiz satış fiyatı.',
+          code: 'INVALID_PRICE',
+        });
+      }
+      patch.priceCents = asCents;
+      patch.commissionRate = COMMISSION_RATE;
+    }
     if (req.body?.photos != null) {
       const photos = await sanitizePhotos(req.body.photos);
+      if (photos.length < 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'En az bir fotoğraf gerekli.',
+          code: 'PHOTO_REQUIRED',
+        });
+      }
       patch.photos = photos;
       patch.photoUrl = photos[0] || null;
     }

@@ -15,6 +15,7 @@ import '../services/listing_photo_publish_helper.dart';
 import '../widgets/cart_icon_button.dart';
 import '../widgets/listing_location_fields.dart';
 import '../widgets/listing_photo_picker.dart';
+import 'sale_listing_detail_screen.dart';
 
 /// Paid equipment marketplace — browse sales, publish your own, buy via Stripe.
 class ShopScreen extends StatefulWidget {
@@ -337,6 +338,19 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
     );
   }
 
+  Future<void> _openDetail(Listing listing, {bool isOwner = false}) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => SaleListingDetailScreen(
+          listing: listing,
+          isOwner: isOwner,
+          onChanged: widget.onChanged,
+        ),
+      ),
+    );
+    if (mounted) await _reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -374,6 +388,7 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
               final listing = listings[index];
               return _SaleCard(
                 listing: listing,
+                onOpen: () => _openDetail(listing),
                 actionLabel: loc.t('shop.buy'),
                 onAction: () => _buy(listing),
                 secondaryLabel: loc.t('cart.add'),
@@ -467,6 +482,18 @@ class _ShopMineTabState extends State<_ShopMineTab> {
               return _SaleCard(
                 listing: listing,
                 showCommission: true,
+                onOpen: () async {
+                  await Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => SaleListingDetailScreen(
+                        listing: listing,
+                        isOwner: true,
+                        onChanged: widget.onChanged,
+                      ),
+                    ),
+                  );
+                  if (mounted) await _reload();
+                },
                 actionLabel: listing.status == 'active'
                     ? loc.t('shop.withdraw')
                     : null,
@@ -489,6 +516,7 @@ class _ShopMineTabState extends State<_ShopMineTab> {
 class _SaleCard extends StatelessWidget {
   const _SaleCard({
     required this.listing,
+    this.onOpen,
     this.actionLabel,
     this.onAction,
     this.secondaryLabel,
@@ -497,6 +525,7 @@ class _SaleCard extends StatelessWidget {
   });
 
   final Listing listing;
+  final VoidCallback? onOpen;
   final String? actionLabel;
   final VoidCallback? onAction;
   final String? secondaryLabel;
@@ -510,103 +539,116 @@ class _SaleCard extends StatelessWidget {
     final photos = listing.displayPhotos;
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (photos.isNotEmpty) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: AspectRatio(
-                  aspectRatio: 16 / 10,
-                  child: Image.network(
-                    ListingApiService.instance.photoUrlFor(photos.first),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => ColoredBox(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: const Center(child: Icon(Icons.broken_image)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (photos.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 10,
+                    child: Image.network(
+                      ListingApiService.instance.photoUrlFor(photos.first),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => ColoredBox(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const Center(child: Icon(Icons.broken_image)),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-            ],
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    listing.title,
+                const SizedBox(height: 10),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      listing.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    listing.priceLabel,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primaryDeepBlue,
                     ),
                   ),
-                ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${_categoryLabel(loc, listing.category)} · ${listing.locationLabel}',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (listing.description.isNotEmpty) ...[
+                const SizedBox(height: 6),
                 Text(
-                  listing.priceLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryDeepBlue,
+                  listing.description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              if (showCommission && listing.commissionCents != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  loc.t('shop.commissionNetLine', {
+                    'commission': formatUsdCents(listing.commissionCents!),
+                    'net': formatUsdCents(listing.sellerNetCents ?? 0),
+                  }),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppTheme.primaryBlue,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${_categoryLabel(loc, listing.category)} · ${listing.locationLabel}',
-              style: theme.textTheme.bodySmall,
-            ),
-            if (listing.description.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
-                listing.description,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            if (showCommission && listing.commissionCents != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                loc.t('shop.commissionNetLine', {
-                  'commission': formatUsdCents(listing.commissionCents!),
-                  'net': formatUsdCents(listing.sellerNetCents ?? 0),
+                loc.t('shop.statusLine', {
+                  'status': _statusLabel(loc, listing.status),
                 }),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppTheme.primaryBlue,
-                  fontWeight: FontWeight.w600,
+                style: theme.textTheme.labelMedium,
+              ),
+              if (onOpen != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  loc.t('shop.tapForDetails'),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppTheme.primaryBlue,
+                  ),
                 ),
-              ),
+              ],
+              if ((actionLabel != null && onAction != null) ||
+                  (secondaryLabel != null && onSecondary != null)) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (secondaryLabel != null && onSecondary != null)
+                      OutlinedButton.icon(
+                        onPressed: onSecondary,
+                        icon: const Icon(Icons.add_shopping_cart_outlined),
+                        label: Text(secondaryLabel!),
+                      ),
+                    if (actionLabel != null && onAction != null)
+                      FilledButton(
+                        onPressed: onAction,
+                        child: Text(actionLabel!),
+                      ),
+                  ],
+                ),
+              ],
             ],
-            const SizedBox(height: 6),
-            Text(
-              loc.t('shop.statusLine', {
-                'status': _statusLabel(loc, listing.status),
-              }),
-              style: theme.textTheme.labelMedium,
-            ),
-            if ((actionLabel != null && onAction != null) ||
-                (secondaryLabel != null && onSecondary != null)) ...[
-              const SizedBox(height: 10),
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (secondaryLabel != null && onSecondary != null)
-                    OutlinedButton.icon(
-                      onPressed: onSecondary,
-                      icon: const Icon(Icons.add_shopping_cart_outlined),
-                      label: Text(secondaryLabel!),
-                    ),
-                  if (actionLabel != null && onAction != null)
-                    FilledButton(
-                      onPressed: onAction,
-                      child: Text(actionLabel!),
-                    ),
-                ],
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );

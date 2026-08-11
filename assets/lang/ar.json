@@ -874,5 +874,15 @@
   "cart.paymentUnavailable": "الدفع عبر الإنترنت غير مُعد بعد.",
   "cart.copyCheckoutLink": "نسخ رابط الدفع",
   "cart.checkoutOpenedKeep": "فُتحت صفحة الدفع. تبقى السلة حتى يكتمل الدفع.",
-  "shop.backToHome": "العودة إلى الصفحة الرئيسية"
+  "shop.backToHome": "العودة إلى الصفحة الرئيسية",
+  "shop.detailTitle": "تفاصيل الإعلان",
+  "shop.detailLocation": "الموقع",
+  "shop.detailNoDescription": "لا يوجد وصف.",
+  "shop.photoIndex": "صورة {current} من {total}",
+  "shop.tapForDetails": "اضغط للتفاصيل",
+  "shop.buyNow": "اشترِ الآن",
+  "shop.editListing": "تعديل الإعلان",
+  "shop.editSubtitle": "حدّث إعلان البيع. تُنشر التغييرات بعد الحفظ.",
+  "shop.saveEdits": "حفظ التغييرات",
+  "shop.editSaved": "تم تحديث الإعلان."
 }
