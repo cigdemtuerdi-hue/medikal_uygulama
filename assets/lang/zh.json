@@ -917,5 +917,13 @@
   "disaster.announcementOrg": "MedGift LLC 管理层",
   "disaster.announcementContact": "联系：info@medgift.us | www.medgift.us",
   "disaster.announcementHashtags": "#哥伦比亚地震 #ColombiaEarthquake #MedGift #人道援助 #医疗援助 #紧急救援 #团结 #StandWithColombia #MedGiftUS",
-  "disaster.hashtagsLabel": "分享标签"
+  "disaster.hashtagsLabel": "分享标签",
+  "shop.searchHint": "搜索标题、类别、城市…",
+  "shop.filterFavorites": "收藏",
+  "shop.filterAllCategories": "全部",
+  "shop.emptySearch": "没有符合搜索条件的商品。",
+  "shop.favoriteAdd": "加入收藏",
+  "shop.favoriteRemove": "取消收藏",
+  "shop.favoriteAdded": "已加入收藏。",
+  "shop.favoriteRemoved": "已取消收藏。"
 }

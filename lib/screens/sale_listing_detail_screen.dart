@@ -7,6 +7,7 @@ import '../models/listing.dart';
 import '../services/cart_service.dart';
 import '../services/checkout_launcher.dart';
 import '../services/listing_api_service.dart';
+import '../services/shop_favorites_service.dart';
 import 'edit_sale_listing_sheet.dart';
 
 /// Full-screen Shop listing details (photos, specs, buy / cart / edit).
@@ -38,10 +39,17 @@ class _SaleListingDetailScreenState extends State<SaleListingDetailScreen> {
     super.initState();
     _listing = widget.listing;
     _pageController = PageController();
+    ShopFavoritesService.instance.ensureLoaded();
+    ShopFavoritesService.instance.addListener(_onFavChanged);
+  }
+
+  void _onFavChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    ShopFavoritesService.instance.removeListener(_onFavChanged);
     _pageController.dispose();
     super.dispose();
   }
@@ -256,6 +264,33 @@ class _SaleListingDetailScreenState extends State<SaleListingDetailScreen> {
       appBar: AppBar(
         title: Text(loc.t('shop.detailTitle')),
         actions: [
+          if (!widget.isOwner)
+            IconButton(
+              tooltip: ShopFavoritesService.instance.contains(_listing.id)
+                  ? loc.t('shop.favoriteRemove')
+                  : loc.t('shop.favoriteAdd'),
+              onPressed: () async {
+                await ShopFavoritesService.instance.toggle(_listing.id);
+                if (!mounted) return;
+                final now =
+                    ShopFavoritesService.instance.contains(_listing.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      now
+                          ? loc.t('shop.favoriteAdded')
+                          : loc.t('shop.favoriteRemoved'),
+                    ),
+                  ),
+                );
+              },
+              icon: Icon(
+                ShopFavoritesService.instance.contains(_listing.id)
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: const Color(0xFFC62828),
+              ),
+            ),
           if (widget.isOwner)
             IconButton(
               tooltip: loc.t('shop.editListing'),

@@ -11,6 +11,7 @@ import '../services/auth_session_service.dart';
 import '../services/cart_service.dart';
 import '../services/checkout_launcher.dart';
 import '../services/listing_api_service.dart';
+import '../services/shop_favorites_service.dart';
 import '../services/listing_photo_publish_helper.dart';
 import '../widgets/cart_icon_button.dart';
 import '../widgets/listing_location_fields.dart';
@@ -35,6 +36,7 @@ class _ShopScreenState extends State<ShopScreen>
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
     CartService.instance.ensureLoaded();
+    ShopFavoritesService.instance.ensureLoaded();
     AuthSessionService.instance.ensureLoaded().then((_) {
       if (mounted) setState(() {});
     });
@@ -197,16 +199,50 @@ class _ShopBrowseTab extends StatefulWidget {
 
 class _ShopBrowseTabState extends State<_ShopBrowseTab> {
   late Future<ListingApiResult<List<Listing>>> _future;
+  final _search = TextEditingController();
+  String _query = '';
+  String? _category; // null = all
+  bool _favoritesOnly = false;
 
   @override
   void initState() {
     super.initState();
     _future = ListingApiService.instance.shop();
+    ShopFavoritesService.instance.addListener(_onFavoritesChanged);
+  }
+
+  @override
+  void dispose() {
+    ShopFavoritesService.instance.removeListener(_onFavoritesChanged);
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _onFavoritesChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _reload() async {
     setState(() => _future = ListingApiService.instance.shop());
     await _future;
+  }
+
+  List<Listing> _filtered(List<Listing> source) {
+    final q = _query.trim().toLowerCase();
+    final favs = ShopFavoritesService.instance.ids;
+    return source.where((listing) {
+      if (_favoritesOnly && !favs.contains(listing.id)) return false;
+      if (_category != null && listing.category != _category) return false;
+      if (q.isEmpty) return true;
+      final hay = [
+        listing.title,
+        listing.description,
+        listing.category,
+        listing.locationLabel,
+        listing.condition ?? '',
+      ].join(' ').toLowerCase();
+      return hay.contains(q);
+    }).toList(growable: false);
   }
 
   Future<void> _buy(Listing listing) async {
@@ -354,50 +390,147 @@ class _ShopBrowseTabState extends State<_ShopBrowseTab> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    return RefreshIndicator(
-      onRefresh: _reload,
-      child: FutureBuilder(
-        future: _future,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final result = snapshot.data!;
-          if (!result.success) {
-            return ListView(
-              children: [
-                const SizedBox(height: 80),
-                Center(child: Text(result.message)),
-              ],
-            );
-          }
-          final listings = result.data ?? const <Listing>[];
-          if (listings.isEmpty) {
-            return ListView(
-              children: [
-                const SizedBox(height: 80),
-                Center(child: Text(loc.t('shop.emptyBrowse'))),
-              ],
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
-            itemCount: listings.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final listing = listings[index];
-              return _SaleCard(
-                listing: listing,
-                onOpen: () => _openDetail(listing),
-                actionLabel: loc.t('shop.buy'),
-                onAction: () => _buy(listing),
-                secondaryLabel: loc.t('cart.add'),
-                onSecondary: () => _addToCart(listing),
-              );
-            },
-          );
-        },
-      ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: TextField(
+            controller: _search,
+            onChanged: (v) => setState(() => _query = v),
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: loc.t('shop.searchHint'),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _query.isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: loc.t('common.close'),
+                      onPressed: () {
+                        _search.clear();
+                        setState(() => _query = '');
+                      },
+                      icon: const Icon(Icons.clear),
+                    ),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 8),
+                child: FilterChip(
+                  label: Text(loc.t('shop.filterFavorites')),
+                  selected: _favoritesOnly,
+                  onSelected: (v) => setState(() => _favoritesOnly = v),
+                  avatar: Icon(
+                    _favoritesOnly ? Icons.favorite : Icons.favorite_border,
+                    size: 18,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 8),
+                child: FilterChip(
+                  label: Text(loc.t('shop.filterAllCategories')),
+                  selected: _category == null,
+                  onSelected: (_) => setState(() => _category = null),
+                ),
+              ),
+              for (final key in _categoryKeys)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: FilterChip(
+                    label: Text(_categoryLabel(loc, key)),
+                    selected: _category == key,
+                    onSelected: (_) => setState(() => _category = key),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _reload,
+            child: FutureBuilder(
+              future: _future,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final result = snapshot.data!;
+                if (!result.success) {
+                  return ListView(
+                    children: [
+                      const SizedBox(height: 80),
+                      Center(child: Text(result.message)),
+                    ],
+                  );
+                }
+                final all = result.data ?? const <Listing>[];
+                if (all.isEmpty) {
+                  return ListView(
+                    children: [
+                      const SizedBox(height: 80),
+                      Center(child: Text(loc.t('shop.emptyBrowse'))),
+                    ],
+                  );
+                }
+                final listings = _filtered(all);
+                if (listings.isEmpty) {
+                  return ListView(
+                    children: [
+                      const SizedBox(height: 80),
+                      Center(child: Text(loc.t('shop.emptySearch'))),
+                    ],
+                  );
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+                  itemCount: listings.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final listing = listings[index];
+                    final fav =
+                        ShopFavoritesService.instance.contains(listing.id);
+                    return _SaleCard(
+                      listing: listing,
+                      isFavorite: fav,
+                      onFavoriteToggle: () async {
+                        await ShopFavoritesService.instance.toggle(listing.id);
+                        if (!context.mounted) return;
+                        final now = ShopFavoritesService.instance
+                            .contains(listing.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              now
+                                  ? loc.t('shop.favoriteAdded')
+                                  : loc.t('shop.favoriteRemoved'),
+                            ),
+                          ),
+                        );
+                      },
+                      onOpen: () => _openDetail(listing),
+                      actionLabel: loc.t('shop.buy'),
+                      onAction: () => _buy(listing),
+                      secondaryLabel: loc.t('cart.add'),
+                      onSecondary: () => _addToCart(listing),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -558,6 +691,8 @@ class _SaleCard extends StatelessWidget {
     this.secondaryLabel,
     this.onSecondary,
     this.secondaryIcon,
+    this.isFavorite = false,
+    this.onFavoriteToggle,
     this.showCommission = false,
   });
 
@@ -568,6 +703,8 @@ class _SaleCard extends StatelessWidget {
   final String? secondaryLabel;
   final VoidCallback? onSecondary;
   final IconData? secondaryIcon;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteToggle;
   final bool showCommission;
 
   @override
@@ -586,21 +723,60 @@ class _SaleCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (photos.isNotEmpty) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 10,
-                    child: Image.network(
-                      ListingApiService.instance.photoUrlFor(photos.first),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => ColoredBox(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        child: const Center(child: Icon(Icons.broken_image)),
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 10,
+                        child: Image.network(
+                          ListingApiService.instance.photoUrlFor(photos.first),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => ColoredBox(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            child: const Center(child: Icon(Icons.broken_image)),
+                          ),
+                        ),
                       ),
+                    ),
+                    if (onFavoriteToggle != null)
+                      PositionedDirectional(
+                        top: 6,
+                        end: 6,
+                        child: Material(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            tooltip: isFavorite
+                                ? loc.t('shop.favoriteRemove')
+                                : loc.t('shop.favoriteAdd'),
+                            onPressed: onFavoriteToggle,
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: const Color(0xFFC62828),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ] else if (onFavoriteToggle != null) ...[
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: IconButton(
+                    tooltip: isFavorite
+                        ? loc.t('shop.favoriteRemove')
+                        : loc.t('shop.favoriteAdd'),
+                    onPressed: onFavoriteToggle,
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: const Color(0xFFC62828),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
               ],
               Row(
                 children: [

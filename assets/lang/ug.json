@@ -917,5 +917,13 @@
   "disaster.announcementOrg": "MedGift LLC باشقۇرۇش",
   "disaster.announcementContact": "ئالاقە: info@medgift.us | www.medgift.us",
   "disaster.announcementHashtags": "#كولومبىيەيەرتەۋرەش #ColombiaEarthquake #MedGift #ئىنسانپەرۋەرياردەم #مېدىتسىناياردەم #جىددىيياردەم #ئىتتىپاقلىق #StandWithColombia #MedGiftUS",
-  "disaster.hashtagsLabel": "ھەمبەھىر بەلگىلىرى"
+  "disaster.hashtagsLabel": "ھەمبەھىر بەلگىلىرى",
+  "shop.searchHint": "ماۋزۇ، تۈر، شەھەر ئىزدە…",
+  "shop.filterFavorites": "ياقتۇرغانلار",
+  "shop.filterAllCategories": "ھەممىسى",
+  "shop.emptySearch": "ئىزدەشكە ماس ئېلان يوق.",
+  "shop.favoriteAdd": "ياقتۇرغانلارغا قوش",
+  "shop.favoriteRemove": "ياقتۇرغانلاردىن چىقىرىۋەت",
+  "shop.favoriteAdded": "ياقتۇرغانلارغا قوشۇلدى.",
+  "shop.favoriteRemoved": "ياقتۇرغانلاردىن چىقىرىلدى."
 }
