@@ -886,5 +886,14 @@
   "shop.saveEdits": "Änderungen speichern",
   "shop.editSaved": "Anzeige aktualisiert.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "LinkedIn konnte nicht geöffnet werden."
+  "partner.linkedinOpenFailed": "LinkedIn konnte nicht geöffnet werden.",
+  "common.confirm": "Bestätigen",
+  "shop.markSold": "Als verkauft markieren",
+  "shop.reactivate": "Erneut einstellen",
+  "shop.withdrawConfirmTitle": "Anzeige entfernen?",
+  "shop.withdrawConfirmBody": "Die Anzeige wird im Shop ausgeblendet. Sie können sie später erneut einstellen.",
+  "shop.markSoldConfirmTitle": "Als verkauft markieren?",
+  "shop.markSoldConfirmBody": "Käufer sehen diese Anzeige im Shop nicht mehr.",
+  "shop.reactivateConfirmTitle": "Erneut einstellen?",
+  "shop.reactivateConfirmBody": "Die Anzeige erscheint wieder aktiv im Shop."
 }

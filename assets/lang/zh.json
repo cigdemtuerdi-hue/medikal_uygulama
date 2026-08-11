@@ -886,5 +886,14 @@
   "shop.saveEdits": "保存更改",
   "shop.editSaved": "商品已更新。",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "无法打开 LinkedIn。"
+  "partner.linkedinOpenFailed": "无法打开 LinkedIn。",
+  "common.confirm": "确认",
+  "shop.markSold": "标记为已售出",
+  "shop.reactivate": "重新上架",
+  "shop.withdrawConfirmTitle": "下架商品？",
+  "shop.withdrawConfirmBody": "商品将从商店隐藏，之后可以重新上架。",
+  "shop.markSoldConfirmTitle": "标记为已售出？",
+  "shop.markSoldConfirmBody": "买家将无法再在商店中看到此商品。",
+  "shop.reactivateConfirmTitle": "重新上架？",
+  "shop.reactivateConfirmBody": "商品将再次以在售状态出现在商店中。"
 }

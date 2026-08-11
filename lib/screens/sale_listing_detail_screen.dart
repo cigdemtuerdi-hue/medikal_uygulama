@@ -190,6 +190,62 @@ class _SaleListingDetailScreenState extends State<SaleListingDetailScreen> {
     );
   }
 
+  Future<bool> _confirmStatusChange({
+    required String title,
+    required String body,
+  }) async {
+    final loc = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(loc.t('common.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(loc.t('common.confirm')),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  Future<void> _setStatus(String status) async {
+    final loc = AppLocalizations.of(context);
+    final titles = <String, String>{
+      'withdrawn': loc.t('shop.withdrawConfirmTitle'),
+      'fulfilled': loc.t('shop.markSoldConfirmTitle'),
+      'active': loc.t('shop.reactivateConfirmTitle'),
+    };
+    final bodies = <String, String>{
+      'withdrawn': loc.t('shop.withdrawConfirmBody'),
+      'fulfilled': loc.t('shop.markSoldConfirmBody'),
+      'active': loc.t('shop.reactivateConfirmBody'),
+    };
+    final confirmed = await _confirmStatusChange(
+      title: titles[status] ?? loc.t('common.confirm'),
+      body: bodies[status] ?? '',
+    );
+    if (!confirmed || !mounted) return;
+
+    setState(() => _busy = true);
+    final result =
+        await ListingApiService.instance.updateStatus(_listing.id, status);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.message)),
+    );
+    if (!result.success || result.data == null) return;
+    setState(() => _listing = result.data!);
+    widget.onChanged?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -339,10 +395,31 @@ class _SaleListingDetailScreenState extends State<SaleListingDetailScreen> {
           if (widget.isOwner) ...[
             const SizedBox(height: 24),
             FilledButton.tonalIcon(
-              onPressed: _edit,
+              onPressed: _busy ? null : _edit,
               icon: const Icon(Icons.edit_outlined),
               label: Text(loc.t('shop.editListing')),
             ),
+            const SizedBox(height: 10),
+            if (_listing.status == 'active') ...[
+              FilledButton.icon(
+                onPressed: _busy ? null : () => _setStatus('fulfilled'),
+                icon: const Icon(Icons.check_circle_outline),
+                label: Text(loc.t('shop.markSold')),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: _busy ? null : () => _setStatus('withdrawn'),
+                icon: const Icon(Icons.visibility_off_outlined),
+                label: Text(loc.t('shop.withdraw')),
+              ),
+            ] else if (_listing.status == 'withdrawn' ||
+                _listing.status == 'fulfilled') ...[
+              FilledButton.icon(
+                onPressed: _busy ? null : () => _setStatus('active'),
+                icon: const Icon(Icons.restart_alt),
+                label: Text(loc.t('shop.reactivate')),
+              ),
+            ],
           ],
         ],
       ),

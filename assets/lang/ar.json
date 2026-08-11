@@ -886,5 +886,14 @@
   "shop.saveEdits": "حفظ التغييرات",
   "shop.editSaved": "تم تحديث الإعلان.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "تعذر فتح LinkedIn."
+  "partner.linkedinOpenFailed": "تعذر فتح LinkedIn.",
+  "common.confirm": "تأكيد",
+  "shop.markSold": "تعليم كـ مباع",
+  "shop.reactivate": "إعادة النشر",
+  "shop.withdrawConfirmTitle": "إزالة الإعلان؟",
+  "shop.withdrawConfirmBody": "سيُخفى الإعلان من المتجر. يمكنك إعادة نشره لاحقًا.",
+  "shop.markSoldConfirmTitle": "تعليم كـ مباع؟",
+  "shop.markSoldConfirmBody": "لن يرى المشترون هذا الإعلان في المتجر بعد الآن.",
+  "shop.reactivateConfirmTitle": "إعادة النشر؟",
+  "shop.reactivateConfirmBody": "سيظهر الإعلان مرة أخرى في المتجر كنشط."
 }

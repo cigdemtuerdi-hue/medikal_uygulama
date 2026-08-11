@@ -886,5 +886,14 @@
   "shop.saveEdits": "Değişiklikleri kaydet",
   "shop.editSaved": "İlan güncellendi.",
   "partner.linkedin": "LinkedIn",
-  "partner.linkedinOpenFailed": "LinkedIn açılamadı."
+  "partner.linkedinOpenFailed": "LinkedIn açılamadı.",
+  "common.confirm": "Onayla",
+  "shop.markSold": "Satıldı olarak işaretle",
+  "shop.reactivate": "Yeniden yayınla",
+  "shop.withdrawConfirmTitle": "İlan kaldırılsın mı?",
+  "shop.withdrawConfirmBody": "İlan Shop’tan gizlenir. İsterseniz sonra yeniden yayınlayabilirsiniz.",
+  "shop.markSoldConfirmTitle": "Satıldı olarak işaretlensin mi?",
+  "shop.markSoldConfirmBody": "Alıcılar bu ilanı Shop’ta artık görmez.",
+  "shop.reactivateConfirmTitle": "İlan yeniden yayınlansın mı?",
+  "shop.reactivateConfirmBody": "İlan Shop’ta tekrar aktif görünür."
 }
