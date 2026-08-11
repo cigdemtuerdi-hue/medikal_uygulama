@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
@@ -6,6 +7,10 @@ import '../l10n/localized_labels.dart';
 import '../models/contact_inquiry.dart';
 import '../services/contact_inquiry_service.dart';
 import '../services/site_settings_service.dart';
+
+/// Public LinkedIn profile for MedGift / founder.
+const String kMedGiftLinkedInUrl =
+    'https://www.linkedin.com/in/tuerdi-a-574147428';
 
 /// Opens the Contact Us / Sponsorship inquiry bottom sheet.
 void openPartnershipInquiry(BuildContext context) {
@@ -15,6 +20,20 @@ void openPartnershipInquiry(BuildContext context) {
     useSafeArea: true,
     builder: (_) => const _ContactInquirySheet(),
   );
+}
+
+Future<void> _openLinkedIn(BuildContext context) async {
+  final uri = Uri.parse(kMedGiftLinkedInUrl);
+  final ok = await launchUrl(
+    uri,
+    mode: LaunchMode.platformDefault,
+    webOnlyWindowName: '_blank',
+  );
+  if (!ok && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).t('partner.linkedinOpenFailed'))),
+    );
+  }
 }
 
 /// Landing-page footer for sponsorship and collaboration inquiries.
@@ -74,15 +93,33 @@ class PartnershipFooter extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 22),
-          FilledButton.icon(
-            onPressed: () => openPartnershipInquiry(context),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppTheme.primaryDeepBlue,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            ),
-            icon: const Icon(Icons.handshake_outlined),
-            label: Text(button),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              FilledButton.icon(
+                onPressed: () => openPartnershipInquiry(context),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.primaryDeepBlue,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                ),
+                icon: const Icon(Icons.handshake_outlined),
+                label: Text(button),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _openLinkedIn(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white70),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                ),
+                icon: const Icon(Icons.open_in_new, size: 18),
+                label: Text(loc.t('partner.linkedin')),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Text(

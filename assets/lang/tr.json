@@ -884,5 +884,7 @@
   "shop.editListing": "İlanı düzenle",
   "shop.editSubtitle": "Satış ilanınızı güncelleyin. Kaydettikten sonra değişiklikler yayınlanır.",
   "shop.saveEdits": "Değişiklikleri kaydet",
-  "shop.editSaved": "İlan güncellendi."
+  "shop.editSaved": "İlan güncellendi.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "LinkedIn açılamadı."
 }

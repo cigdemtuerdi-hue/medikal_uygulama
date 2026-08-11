@@ -884,5 +884,7 @@
   "shop.editListing": "Edit listing",
   "shop.editSubtitle": "Update your sale listing. Changes go live after you save.",
   "shop.saveEdits": "Save changes",
-  "shop.editSaved": "Listing updated."
+  "shop.editSaved": "Listing updated.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "Could not open LinkedIn."
 }

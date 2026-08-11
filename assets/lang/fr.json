@@ -884,5 +884,7 @@
   "shop.editListing": "Modifier l’annonce",
   "shop.editSubtitle": "Mettez à jour votre annonce. Les changements sont publiés après enregistrement.",
   "shop.saveEdits": "Enregistrer",
-  "shop.editSaved": "Annonce mise à jour."
+  "shop.editSaved": "Annonce mise à jour.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "Impossible d’ouvrir LinkedIn."
 }

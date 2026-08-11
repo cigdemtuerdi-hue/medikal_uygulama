@@ -884,5 +884,7 @@
   "shop.editListing": "ئېلاننى تەھرىرلە",
   "shop.editSubtitle": "سېتىش ئېلانىڭىزنى يېڭىلاڭ. ساقلىغاندىن كېيىن ئۆزگىرىشلەر ئېلان قىلىنىدۇ.",
   "shop.saveEdits": "ئۆزگەرتىشلەرنى ساقلا",
-  "shop.editSaved": "ئېلان يېڭىلاندى."
+  "shop.editSaved": "ئېلان يېڭىلاندى.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "LinkedIn ئېچىلمىدى."
 }
