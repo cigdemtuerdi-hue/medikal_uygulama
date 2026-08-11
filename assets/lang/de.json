@@ -874,5 +874,15 @@
   "cart.paymentUnavailable": "Online-Zahlung ist noch nicht eingerichtet.",
   "cart.copyCheckoutLink": "Zahlungslink kopieren",
   "cart.checkoutOpenedKeep": "Zahlungsseite geöffnet. Der Warenkorb bleibt bis zur erfolgreichen Zahlung.",
-  "shop.backToHome": "Zur Startseite"
+  "shop.backToHome": "Zur Startseite",
+  "shop.detailTitle": "Anzeigendetails",
+  "shop.detailLocation": "Standort",
+  "shop.detailNoDescription": "Keine Beschreibung.",
+  "shop.photoIndex": "Foto {current} von {total}",
+  "shop.tapForDetails": "Tippen für Details",
+  "shop.buyNow": "Jetzt kaufen",
+  "shop.editListing": "Anzeige bearbeiten",
+  "shop.editSubtitle": "Aktualisieren Sie Ihre Anzeige. Änderungen gelten nach dem Speichern.",
+  "shop.saveEdits": "Änderungen speichern",
+  "shop.editSaved": "Anzeige aktualisiert."
 }

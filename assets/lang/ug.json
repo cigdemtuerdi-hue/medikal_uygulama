@@ -874,5 +874,15 @@
   "cart.paymentUnavailable": "تور چىقىمى تېخى تەڭشەلمىگەن.",
   "cart.copyCheckoutLink": "چىقىم ئۇلانمىسىنى كۆچۈر",
   "cart.checkoutOpenedKeep": "چىقىم بېتى ئاچىلدى. چىقىم تاماملانغۇچە ھارۋا ساقلىنىدۇ.",
-  "shop.backToHome": "باش بەتكە قايت"
+  "shop.backToHome": "باش بەتكە قايت",
+  "shop.detailTitle": "ئېلان تەپسىلاتى",
+  "shop.detailLocation": "ئورۇن",
+  "shop.detailNoDescription": "چۈشەندۈرۈش يوق.",
+  "shop.photoIndex": "رەسىم {current} / {total}",
+  "shop.tapForDetails": "تەپسىلات ئۈچۈن بېسىڭ",
+  "shop.buyNow": "دەرھال سېتىۋال",
+  "shop.editListing": "ئېلاننى تەھرىرلە",
+  "shop.editSubtitle": "سېتىش ئېلانىڭىزنى يېڭىلاڭ. ساقلىغاندىن كېيىن ئۆزگىرىشلەر ئېلان قىلىنىدۇ.",
+  "shop.saveEdits": "ئۆزگەرتىشلەرنى ساقلا",
+  "shop.editSaved": "ئېلان يېڭىلاندى."
 }

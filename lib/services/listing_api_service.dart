@@ -541,12 +541,43 @@ class ListingApiService {
     String listingId,
     String status,
   ) async {
+    return updateListing(listingId, status: status);
+  }
+
+  /// Owner-only listing field edits (title, price, photos, location, …).
+  Future<ListingApiResult<Listing>> updateListing(
+    String listingId, {
+    String? title,
+    String? description,
+    String? category,
+    String? condition,
+    String? sizeNote,
+    String? city,
+    String? state,
+    String? postalCode,
+    int? priceCents,
+    List<String>? photos,
+    String? status,
+  }) async {
     try {
+      final body = <String, Object?>{
+        if (title != null) 'title': title,
+        if (description != null) 'description': description,
+        if (category != null) 'category': category,
+        if (condition != null) 'condition': condition,
+        if (sizeNote != null) 'sizeNote': sizeNote,
+        if (city != null) 'city': city,
+        if (state != null) 'state': state,
+        if (postalCode != null) 'postalCode': postalCode,
+        if (priceCents != null) 'priceCents': priceCents,
+        if (photos != null) 'photos': photos,
+        if (status != null) 'status': status,
+      };
       final response = await http
           .patch(
             _uri('/api/listings/$listingId'),
             headers: _headers(await _sessionToken()),
-            body: jsonEncode({'status': status}),
+            body: jsonEncode(body),
           )
           .timeout(_timeout);
 
@@ -563,7 +594,7 @@ class ListingApiService {
       }
       return _failure<Listing>(response, 'İlan güncellenemedi.');
     } catch (err, stack) {
-      debugPrint('[ListingApi] updateStatus failed: $err\n$stack');
+      debugPrint('[ListingApi] updateListing failed: $err\n$stack');
       return _offline<Listing>();
     }
   }
