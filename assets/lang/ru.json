@@ -884,5 +884,7 @@
   "shop.editListing": "Редактировать",
   "shop.editSubtitle": "Обновите объявление. Изменения появятся после сохранения.",
   "shop.saveEdits": "Сохранить",
-  "shop.editSaved": "Объявление обновлено."
+  "shop.editSaved": "Объявление обновлено.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "Не удалось открыть LinkedIn."
 }

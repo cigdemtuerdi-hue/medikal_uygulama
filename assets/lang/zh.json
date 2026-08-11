@@ -884,5 +884,7 @@
   "shop.editListing": "编辑商品",
   "shop.editSubtitle": "更新您的销售信息。保存后立即生效。",
   "shop.saveEdits": "保存更改",
-  "shop.editSaved": "商品已更新。"
+  "shop.editSaved": "商品已更新。",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "无法打开 LinkedIn。"
 }

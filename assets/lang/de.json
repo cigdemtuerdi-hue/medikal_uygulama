@@ -884,5 +884,7 @@
   "shop.editListing": "Anzeige bearbeiten",
   "shop.editSubtitle": "Aktualisieren Sie Ihre Anzeige. Änderungen gelten nach dem Speichern.",
   "shop.saveEdits": "Änderungen speichern",
-  "shop.editSaved": "Anzeige aktualisiert."
+  "shop.editSaved": "Anzeige aktualisiert.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "LinkedIn konnte nicht geöffnet werden."
 }

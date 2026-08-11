@@ -884,5 +884,7 @@
   "shop.editListing": "تعديل الإعلان",
   "shop.editSubtitle": "حدّث إعلان البيع. تُنشر التغييرات بعد الحفظ.",
   "shop.saveEdits": "حفظ التغييرات",
-  "shop.editSaved": "تم تحديث الإعلان."
+  "shop.editSaved": "تم تحديث الإعلان.",
+  "partner.linkedin": "LinkedIn",
+  "partner.linkedinOpenFailed": "تعذر فتح LinkedIn."
 }
