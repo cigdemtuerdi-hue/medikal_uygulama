@@ -4,6 +4,18 @@ import '../l10n/app_localizations.dart';
 import '../services/emergency_mode_service.dart';
 import '../services/site_settings_service.dart';
 
+/// Keep the Colombia public crisis notice visible even if CMS emergency
+/// toggles were left off in production.
+const bool kForceCrisisAnnouncement = true;
+
+bool _crisisAnnouncementVisible() {
+  if (kForceCrisisAnnouncement) return true;
+  final cms = SiteSettingsService.instance;
+  final flags = cms.settings.flags;
+  final emergency = cms.settings.emergency;
+  return flags.showEmergencyBanner &&
+      (emergency.enabled || EmergencyModeService.instance.enabled);
+}
 
 List<String> _disasterHashtags(AppLocalizations loc) {
   return loc
@@ -92,10 +104,8 @@ class _EmergencyResponseBannerState extends State<EmergencyResponseBanner>
       ]),
       builder: (context, _) {
         final cms = SiteSettingsService.instance;
-        final flags = cms.settings.flags;
         final emergency = cms.settings.emergency;
-        final enabled = flags.showEmergencyBanner &&
-            (emergency.enabled || EmergencyModeService.instance.enabled);
+        final enabled = _crisisAnnouncementVisible();
         if (!enabled) {
           return const SizedBox.shrink();
         }
@@ -226,11 +236,7 @@ class _EmergencyLandingCalloutState extends State<EmergencyLandingCallout>
         SiteSettingsService.instance,
       ]),
       builder: (context, _) {
-        final cms = SiteSettingsService.instance;
-        final emergency = cms.settings.emergency;
-        final enabled = cms.settings.flags.showEmergencyBanner &&
-            (emergency.enabled || EmergencyModeService.instance.enabled);
-        if (!enabled) return const SizedBox.shrink();
+        if (!_crisisAnnouncementVisible()) return const SizedBox.shrink();
 
         final loc = AppLocalizations.of(context);
         return AnimatedBuilder(
