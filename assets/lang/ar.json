@@ -917,5 +917,13 @@
   "disaster.announcementOrg": "إدارة MedGift LLC",
   "disaster.announcementContact": "التواصل: info@medgift.us | www.medgift.us",
   "disaster.announcementHashtags": "#زلزال_كولومبيا #ColombiaEarthquake #MedGift #مساعدات_إنسانية #مساعدات_طبية #طوارئ #تضامن #StandWithColombia #MedGiftUS",
-  "disaster.hashtagsLabel": "وسوم للمشاركة"
+  "disaster.hashtagsLabel": "وسوم للمشاركة",
+  "shop.searchHint": "ابحث عن العنوان أو الفئة أو المدينة…",
+  "shop.filterFavorites": "المفضلة",
+  "shop.filterAllCategories": "الكل",
+  "shop.emptySearch": "لا توجد إعلانات تطابق بحثك.",
+  "shop.favoriteAdd": "إضافة إلى المفضلة",
+  "shop.favoriteRemove": "إزالة من المفضلة",
+  "shop.favoriteAdded": "تمت الإضافة إلى المفضلة.",
+  "shop.favoriteRemoved": "تمت الإزالة من المفضلة."
 }

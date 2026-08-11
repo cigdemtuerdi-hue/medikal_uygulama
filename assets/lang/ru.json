@@ -917,5 +917,13 @@
   "disaster.announcementOrg": "Руководство MedGift LLC",
   "disaster.announcementContact": "Контакты: info@medgift.us | www.medgift.us",
   "disaster.announcementHashtags": "#ЗемлетрясениеКолумбия #ColombiaEarthquake #MedGift #ГуманитарнаяПомощь #МедицинскаяПомощь #ЧС #Солидарность #StandWithColombia #MedGiftUS",
-  "disaster.hashtagsLabel": "Хэштеги для публикации"
+  "disaster.hashtagsLabel": "Хэштеги для публикации",
+  "shop.searchHint": "Поиск: название, категория, город…",
+  "shop.filterFavorites": "Избранное",
+  "shop.filterAllCategories": "Все",
+  "shop.emptySearch": "Нет объявлений по вашему запросу.",
+  "shop.favoriteAdd": "В избранное",
+  "shop.favoriteRemove": "Убрать из избранного",
+  "shop.favoriteAdded": "Добавлено в избранное.",
+  "shop.favoriteRemoved": "Удалено из избранного."
 }

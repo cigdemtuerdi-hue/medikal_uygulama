@@ -917,5 +917,13 @@
   "disaster.announcementOrg": "Medgift LLC Yönetimi",
   "disaster.announcementContact": "İletişim: info@medgift.us | www.medgift.us",
   "disaster.announcementHashtags": "#KolombiyaDeprem #ColombiaEarthquake #MedGift #İnsaniYardım #MedikalYardım #AcilYardım #DepremYardımı #HumanitarianAid #MedicalRelief #StandWithColombia #Solidarity #MedGiftUS",
-  "disaster.hashtagsLabel": "Paylaşım etiketleri"
+  "disaster.hashtagsLabel": "Paylaşım etiketleri",
+  "shop.searchHint": "Başlık, kategori, şehir ara…",
+  "shop.filterFavorites": "Favoriler",
+  "shop.filterAllCategories": "Tümü",
+  "shop.emptySearch": "Aramanıza uyan ilan yok.",
+  "shop.favoriteAdd": "Favorilere ekle",
+  "shop.favoriteRemove": "Favorilerden çıkar",
+  "shop.favoriteAdded": "Favorilere eklendi.",
+  "shop.favoriteRemoved": "Favorilerden çıkarıldı."
 }

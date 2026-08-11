@@ -917,5 +917,13 @@
   "disaster.announcementOrg": "Dirección de MedGift LLC",
   "disaster.announcementContact": "Contacto: info@medgift.us | www.medgift.us",
   "disaster.announcementHashtags": "#TerremotoColombia #ColombiaEarthquake #MedGift #AyudaHumanitaria #AyudaMédica #Emergencia #Solidaridad #StandWithColombia #MedGiftUS",
-  "disaster.hashtagsLabel": "Etiquetas para compartir"
+  "disaster.hashtagsLabel": "Etiquetas para compartir",
+  "shop.searchHint": "Buscar título, categoría, ciudad…",
+  "shop.filterFavorites": "Favoritos",
+  "shop.filterAllCategories": "Todos",
+  "shop.emptySearch": "Ningún anuncio coincide con tu búsqueda.",
+  "shop.favoriteAdd": "Guardar en favoritos",
+  "shop.favoriteRemove": "Quitar de favoritos",
+  "shop.favoriteAdded": "Añadido a favoritos.",
+  "shop.favoriteRemoved": "Eliminado de favoritos."
 }
