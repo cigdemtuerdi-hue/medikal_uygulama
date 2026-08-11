@@ -43,8 +43,8 @@
   "auth.showPassword": "Show password",
   "auth.hidePassword": "Hide password",
   "about.appBarTitle": "About Us",
-  "about.title": "About MedGift US",
-  "about.intro": "We connect surplus medical equipment with people and clinics who need it — cutting waste, empowering communities, and building a greener care ecosystem.",
+  "about.title": "About Us & Our Founding Story",
+  "about.intro": "MedGift LLC was founded to make healthcare and medical solutions easier to access—with transparent, fast, and secure service.",
   "about.openLink": "About Us",
   "manifesto.eyebrow": "OUR MANIFESTO",
   "manifesto.title": "THE MEDGIFT MANIFESTO: Reuse, Empower, Heal the Planet",
@@ -895,5 +895,15 @@
   "shop.markSoldConfirmTitle": "Mark as sold?",
   "shop.markSoldConfirmBody": "Buyers will no longer see this listing in the Shop.",
   "shop.reactivateConfirmTitle": "Relist this item?",
-  "shop.reactivateConfirmBody": "The listing will appear in the Shop again as active."
+  "shop.reactivateConfirmBody": "The listing will appear in the Shop again as active.",
+  "story.title": "About Us & Our Founding Story",
+  "story.greeting": "Welcome to MedGift US",
+  "story.whoTitle": "Who We Are and Why We Started",
+  "story.whoBody1": "MedGift LLC was founded to make access to healthcare and medical solutions easier—and to bring trusted service standards together with the speed of the digital world. As a U.S.-based company, we set out with one core purpose: help people reach their healthcare and medical needs in the most transparent, fast, and secure way.",
+  "story.whoBody2": "We launched the MedGift.us platform with a vision to remove complex processes, access barriers, and trust gaps in healthcare. By integrating technology with legal requirements, high data-security standards (HIPAA), and a user-first service mindset, we aim to make a real difference in the industry.",
+  "story.missionTitle": "Our Mission",
+  "story.missionBody": "To make life easier for our users by delivering an innovative, accessible, and fully secure digital infrastructure in medical and healthcare services.",
+  "story.visionTitle": "Our Vision",
+  "story.visionBody": "Starting from the U.S. market, to become one of the first, most trusted, and most ethical platforms people think of worldwide for health technology and medical services.",
+  "story.continueCta": "Continue"
 }

@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/site_settings_service.dart';
+import '../widgets/founding_story_welcome.dart';
 import '../widgets/language_menu_button.dart';
 import '../widgets/medgift_logo.dart';
 import '../widgets/medgift_manifesto_section.dart';
 import '../widgets/partnership_footer.dart';
 
-/// About Us — brand story and The MedGift Manifesto.
+/// About Us — founding story, manifesto, and Partner with Us.
 class AboutUsScreen extends StatelessWidget {
   const AboutUsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final cms = SiteSettingsService.instance;
 
     return ListenableBuilder(
@@ -24,8 +23,6 @@ class AboutUsScreen extends StatelessWidget {
         final s = cms.settings;
         final appBar =
             cms.text(s.about.appBarTitle, loc.t('about.appBarTitle'));
-        final title = cms.text(s.about.title, loc.t('about.title'));
-        final intro = cms.text(s.about.intro, loc.t('about.intro'));
 
         return Scaffold(
           appBar: AppBar(
@@ -45,21 +42,7 @@ class AboutUsScreen extends StatelessWidget {
                         child: MedGiftBrand(showLabel: true, logoSize: 64),
                       ),
                       const SizedBox(height: 20),
-                      Text(
-                        title,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryDeepBlue,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        intro,
-                        style:
-                            theme.textTheme.bodyLarge?.copyWith(height: 1.45),
-                        textAlign: TextAlign.center,
-                      ),
+                      const FoundingStoryContent(),
                       const SizedBox(height: 28),
                       if (s.flags.showManifesto)
                         const MedGiftManifestoSection(),
