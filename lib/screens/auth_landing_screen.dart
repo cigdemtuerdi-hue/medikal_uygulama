@@ -4,6 +4,7 @@ import '../config/app_routes.dart';
 import '../config/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/site_settings_service.dart';
+import '../widgets/disaster_emergency_widgets.dart';
 import '../widgets/language_menu_button.dart';
 import '../widgets/medgift_logo.dart';
 import '../widgets/medgift_manifesto_section.dart';
@@ -96,6 +97,8 @@ class AuthLandingScreen extends StatelessWidget {
                         style: theme.textTheme.bodyLarge,
                         textAlign: TextAlign.center,
                       ),
+                      const SizedBox(height: 16),
+                      const EmergencyLandingCallout(),
                       const SizedBox(height: 16),
                       const Center(child: LanguageMenuButton()),
                       const SizedBox(height: 24),
