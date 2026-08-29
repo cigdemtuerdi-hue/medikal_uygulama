@@ -4,7 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/emergency_mode_service.dart';
 import '../services/site_settings_service.dart';
 
-/// Keep the Colombia public crisis notice visible even if CMS emergency
+/// Keep the Nepal climate-crisis public notice visible even if CMS emergency
 /// toggles were left off in production.
 const bool kForceCrisisAnnouncement = true;
 
