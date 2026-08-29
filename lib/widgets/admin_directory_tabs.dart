@@ -453,76 +453,245 @@ class _AdminListingCard extends StatelessWidget {
 
   final Listing listing;
 
+  void _openDetail(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _AdminListingDetailSheet(listing: listing),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final kindLabel = listing.isOffer ? 'Bağış' : 'Talep';
+    final kindLabel = listing.isOffer
+        ? 'Bağış'
+        : (listing.kind == 'sale' ? 'Satış' : 'Talep');
     final kindColor =
         listing.isOffer ? AppTheme.primaryBlue : AppTheme.primaryDeepBlue;
 
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _openDetail(context),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: kindColor.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      kindLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: kindColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      listing.title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (listing.hidden)
+                    const Icon(Icons.visibility_off_outlined, size: 18),
+                  const Icon(Icons.chevron_right, size: 20),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${listing.category} · ${_statusLabels[listing.status] ?? listing.status}'
+                ' · ${listing.quantity} adet',
+                style: theme.textTheme.bodySmall,
+              ),
+              Text(listing.locationLabel, style: theme.textTheme.bodySmall),
+              Text(
+                'Sahibi: ${listing.ownerEmail ?? '—'}'
+                '${listing.ownerRole != null ? ' (${_roleLabels[listing.ownerRole] ?? listing.ownerRole})' : ''}',
+                style: theme.textTheme.bodySmall,
+              ),
+              Text(
+                'Yüklenme: ${_formatDate(listing.createdAt)}',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (listing.description.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  listing.description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+              const SizedBox(height: 6),
+              Text(
+                'Detay için dokunun',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: AppTheme.primaryDeepBlue,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminListingDetailSheet extends StatelessWidget {
+  const _AdminListingDetailSheet({required this.listing});
+
+  final Listing listing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bottom = MediaQuery.viewInsetsOf(context).bottom;
+    final kindLabel = listing.isOffer
+        ? 'Bağış ilanı'
+        : (listing.kind == 'sale' ? 'Satış ilanı' : 'Hasta talebi');
+    final photos = <String>[
+      if (listing.photoUrl != null && listing.photoUrl!.isNotEmpty)
+        listing.photoUrl!,
+      ...listing.photos.where((p) => p.isNotEmpty),
+    ];
+    final uniquePhotos = <String>{...photos}.toList(growable: false);
+
+    Widget row(String label, String value) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: kindColor.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    kindLabel,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: kindColor,
-                    ),
-                  ),
+            Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 2),
+            SelectableText(
+              value.isEmpty ? '—' : value,
+              style: theme.textTheme.bodyLarge,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottom),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    listing.title,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                if (listing.hidden)
-                  const Icon(Icons.visibility_off_outlined, size: 18),
-              ],
+              ),
+            ),
+            Text(
+              kindLabel,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: AppTheme.primaryDeepBlue,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
-              '${listing.category} · ${_statusLabels[listing.status] ?? listing.status}'
-              ' · ${listing.quantity} adet',
-              style: theme.textTheme.bodySmall,
-            ),
-            Text(listing.locationLabel, style: theme.textTheme.bodySmall),
-            Text(
-              'Sahibi: ${listing.ownerEmail ?? '—'}'
-              '${listing.ownerRole != null ? ' (${_roleLabels[listing.ownerRole] ?? listing.ownerRole})' : ''}',
-              style: theme.textTheme.bodySmall,
-            ),
-            Text(
-              'Yüklenme: ${_formatDate(listing.createdAt)}',
-              style: theme.textTheme.bodySmall,
-            ),
-            if (listing.description.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                listing.description,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall,
+              listing.title,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
+            ),
+            const SizedBox(height: 16),
+            if (uniquePhotos.isNotEmpty) ...[
+              SizedBox(
+                height: 180,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: uniquePhotos.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final url = uniquePhotos[index];
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        url,
+                        width: 180,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 180,
+                          height: 180,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
+            row('Kategori', listing.category),
+            row('Durum', _statusLabels[listing.status] ?? listing.status),
+            row('Adet', '${listing.quantity}'),
+            if (listing.condition != null && listing.condition!.isNotEmpty)
+              row('Kondisyon', listing.condition!),
+            if (listing.sizeNote != null && listing.sizeNote!.isNotEmpty)
+              row('Ölçü / not', listing.sizeNote!),
+            row('Aciliyet', listing.urgency),
+            row('Konum', listing.locationLabel),
+            if (listing.postalCode != null && listing.postalCode!.isNotEmpty)
+              row('ZIP', listing.postalCode!),
+            row(
+              'Sahip e-posta',
+              listing.ownerEmail ?? '—',
+            ),
+            row(
+              'Sahip rolü',
+              listing.ownerRole != null
+                  ? (_roleLabels[listing.ownerRole!] ?? listing.ownerRole!)
+                  : '—',
+            ),
+            row('Yüklenme', _formatDate(listing.createdAt)),
+            if (listing.priceCents != null)
+              row(
+                'Fiyat',
+                '${(listing.priceCents! / 100).toStringAsFixed(2)} '
+                '${listing.currency ?? 'USD'}',
+              ),
+            row('Açıklama', listing.description),
+            row('İlan ID', listing.id),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              child: const Text('Kapat'),
+            ),
           ],
         ),
       ),
